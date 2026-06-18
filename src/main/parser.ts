@@ -1,6 +1,7 @@
+import { BOX_TYPES, kindFromTypeValue, type BoxKind } from '@shared/boxes'
 import { heroName } from '@shared/heroes'
 import { decodeStage } from '@shared/stage'
-import type { HeroSnapshot, Snapshot } from '@shared/types'
+import type { BoxCount, HeroSnapshot, Snapshot } from '@shared/types'
 
 type Json = unknown
 
@@ -74,16 +75,39 @@ function parseGold(player: Json): number | null {
   return null
 }
 
-/** Baus: soma de BoxData.BoxQuantity (array por tipo de bau). */
-function parseBoxes(player: Json): number | null {
+/**
+ * Baus por categoria. BoxData sao arrays PARALELOS (validado em save real):
+ *   { BoxTypes:[...], BoxUniqueId:[...], BoxQuantity:[...] }
+ * Cada indice i e um lote: tipo = BoxTypes[i], quantidade = BoxQuantity[i].
+ * Agrupamos por categoria (Comum/Estagio/Ato) somando as quantidades; valores
+ * de tipo desconhecidos sao ignorados (o jogo so tem estas tres categorias).
+ * Retorna sempre as 3 categorias (0 quando nao ha baus) se BoxData existir.
+ */
+function parseBoxesByType(player: Json): BoxCount[] {
   const boxData = pick(player, ['BoxData', 'boxData'])
-  const qty = pick(boxData, ['BoxQuantity', 'boxQuantity'])
-  if (Array.isArray(qty)) {
-    const nums = qty.map(toNumber).filter((n): n is number => n !== null)
-    if (nums.length) return nums.reduce((a, b) => a + b, 0)
-    return 0
-  }
-  return toNumber(qty)
+  const typesRaw = pick(boxData, ['BoxTypes', 'boxTypes'])
+  if (!Array.isArray(typesRaw)) return []
+  const qtyRaw = pick(boxData, ['BoxQuantity', 'boxQuantity'])
+  const quantities = Array.isArray(qtyRaw) ? qtyRaw : []
+
+  const sums = new Map<BoxKind, number>()
+  typesRaw.forEach((t, i) => {
+    const kind = kindFromTypeValue(Number(t))
+    if (!kind) return
+    sums.set(kind, (sums.get(kind) ?? 0) + (toNumber(quantities[i]) ?? 0))
+  })
+
+  return BOX_TYPES.map((meta) => ({
+    kind: meta.kind,
+    label: meta.label,
+    quantity: sums.get(meta.kind) ?? 0
+  }))
+}
+
+/** Total de baus nao abertos; null quando o save nao expoe BoxData. */
+function totalBoxes(boxes: BoxCount[]): number | null {
+  if (boxes.length === 0) return null
+  return boxes.reduce((a, b) => a + b.quantity, 0)
 }
 
 /**
@@ -149,6 +173,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
   const cube = pick(player, ['cubeSaveLevelData', 'CubeSaveLevelData'])
 
   const playTime = toNumber(pick(common, ['playTime', 'PlayTime']))
+  const boxes = parseBoxesByType(player)
 
   return {
     capturedAt: Date.now(),
@@ -161,7 +186,8 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     ),
     cubeLevel: toNumber(pick(cube, ['Level', 'level'])),
     cubeExp: toNumber(pick(cube, ['Exp', 'exp'])),
-    boxQuantity: parseBoxes(player),
+    boxQuantity: totalBoxes(boxes),
+    boxes,
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
     clearCount: parseClearCount(player),

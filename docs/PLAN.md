@@ -52,7 +52,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 - **Fase 1 — MVP leitura:** ✅ *concluída.* localizar/descriptografar/parsear o save; Dashboard com ouro, estágio (DAPP decodificado), onda, heróis (com nome), cubo, baús, máx. estágio; status (monitorando / sem chave / sem save). Parser calibrado contra save real (estrutura `PlayerSaveData.value` duplamente codificada — ver TBHPEDIA › Save).
 - **Fase 2 — Farm analytics:** 🚧 em andamento. detecção de corridas (✅ v3.0 parcial: estágio + tempo + histórico), ouro/h e xp/h por estágio, recomendação de melhor estágio (ouro / xp / combo).
 - **Fase 3 — Aba TBHPedia:** ✅ v2.0 (entregue antes da Fase 2). referência navegável dentro do app (heróis, estágios, cubo, runas, pets, raridades, baús).
-- **Fase 4 — Qualidade de vida:** alertas (baús perto de transbordar, level-up, novo estágio), gráficos de sessão, i18n PT/EN.
+- **Fase 4 — Qualidade de vida:** 🚧 alertas (✅ baús acumulando — B2 v4.0, por tipo; pendente: level-up, novo estágio), gráficos de sessão, i18n PT/EN.
 - **Fase 5 — Extras:** suporte Proton/Linux, marcos do Cubo, calibração de gasto de runas, exportação de dados.
 
 ## 5. Estrutura de docs

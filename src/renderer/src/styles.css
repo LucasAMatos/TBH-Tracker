@@ -302,6 +302,57 @@ body {
   font-size: 12px;
 }
 
+.card--warn {
+  border-color: var(--warn);
+}
+
+.card--warn .card__hint {
+  color: var(--warn);
+}
+
+.card--alert {
+  border-color: var(--err);
+}
+
+.card--alert .card__hint {
+  color: var(--err);
+}
+
+/* Baús por tipo */
+.boxbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.boxchip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.boxchip__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.boxchip__qty {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.boxchip__meta {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
 /* Sections / table */
 .section {
   margin-top: 28px;
@@ -310,6 +361,46 @@ body {
 .section__title {
   margin: 0 0 12px;
   font-size: 15px;
+}
+
+.section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section__head .section__title {
+  margin: 0;
+}
+
+/* Editor de limiares de baús */
+.threshold {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.threshold__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.input--sm {
+  width: 90px;
+  flex: none;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  font-size: 13px;
 }
 
 .table {

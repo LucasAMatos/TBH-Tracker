@@ -73,6 +73,11 @@ function registerIpc(): void {
 
   ipcMain.handle('tbh:refresh', () => tracker?.refresh())
 
+  ipcMain.handle('tbh:getBoxThresholds', () => store.getBoxThresholds())
+  ipcMain.handle('tbh:setBoxThresholds', (_e, warn: number, high: number) =>
+    store.setBoxThresholds(warn, high)
+  )
+
   ipcMain.handle('tbh:getRuns', () => runsStore.getRuns())
   ipcMain.handle('tbh:clearRuns', () => {
     // Reancora a detecção: a próxima corrida marcada começa no próximo clear.

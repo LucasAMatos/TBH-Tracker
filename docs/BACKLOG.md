@@ -47,7 +47,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 ### Baús (P1/P2) — `BoxData.BoxQuantity`
 - **B1 (P1):** ✅ v1.0 — Contagem de baús não abertos.
-- **B2 (P2):** Alerta de transbordo (capacidade ↔ runas do Nordeste/Extremo Norte).
+- **B2 (P2):** ✅ v4.0 — Baús por categoria (Comum/Estágio/Ato; soma de `BoxQuantity` agrupada por `BoxTypes`) + alerta de **acúmulo** (não há teto fixo no jogo; limiares calibráveis na UI).
 - **B3 (P2):** Estimar cooldowns de auto-abrir (comum 300s / boss 600s) — informativo.
 
 ### Itens / drops (P2) — `ItemSaveDatas[]`
