@@ -14,7 +14,10 @@ const api = {
     const listener = (_e: unknown, state: TrackerState): void => cb(state)
     ipcRenderer.on('tbh:state', listener)
     return () => ipcRenderer.removeListener('tbh:state', listener)
-  }
+  },
+  getBoxThresholds: () => ipcRenderer.invoke('tbh:getBoxThresholds'),
+  setBoxThresholds: (warn: number, high: number) =>
+    ipcRenderer.invoke('tbh:setBoxThresholds', warn, high)
 }
 
 contextBridge.exposeInMainWorld('tbh', api)
