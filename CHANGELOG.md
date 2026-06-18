@@ -14,6 +14,39 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v6.0 — Heróis: dashboard só com ativos + aba Heróis (H5, H6, U7)
+
+### Adicionado
+- Nova aba **Heróis** (U7) com o **roster completo dos 6** (H5): cada herói num card
+  com **estado** (Ativo · Slot N / Desbloqueado / Bloqueado, via `IsUnLock` +
+  `arrangedHeroKey`), **nível** e **XP** do save, e dados do **catálogo** — papel,
+  arma, **tier**, disponibilidade e **stats base** (HP, ATK, Crít., Armadura,
+  Vel. atq.). Funciona mesmo sem save lido (mostra só o catálogo).
+- Catálogo de heróis em `src/shared/heroes.ts` (`HERO_CATALOG`): os 6 heróis com
+  papel/arma/tier/disponibilidade/stats base; `HERO_NAMES` agora deriva dele e
+  novo helper `heroByKey`.
+
+### Alterado
+- O card de heróis do Dashboard (H6) agora mostra **apenas os heróis arranjados**
+  (`arrangedHeroKey`), em **3 slots de formação** na ordem do save, com nome e
+  nível. Slots não ocupados aparecem como **"Vazio"** (slot livre), refletindo os
+  `-1` da formação.
+- O card "Heróis ativos" do grid passa a exibir o uso da formação (`ativos / 3`)
+  com o tamanho do roster como dica.
+
+### Removido
+- A **tabela do roster completo** saiu do Dashboard (H6) — essa visão completa
+  passou para a aba **Heróis**.
+
+### Notas / limitações
+- "Progresso até o próximo nível" (barra de XP) fica para depois: o save expõe o XP
+  acumulado, mas a **curva de XP por nível** ainda não está catalogada (datamine).
+- Drill-down do herói com **árvore de habilidades** é o item **H9** (separado).
+
+Backlog entregue: H5, H6, U7.
+
+---
+
 ## v5.0 — Baús por tipo + alerta de acúmulo (B2)
 
 Item de qualidade de vida (B2), sem tocar no agente de detecção de corridas
