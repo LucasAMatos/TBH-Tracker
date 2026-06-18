@@ -5,6 +5,12 @@ interface Sample {
   gold: number
 }
 
+// Estado serializável para persistência entre sessões (I6).
+export interface GoldFlowState {
+  samples: Sample[]
+  events: GoldEvent[]
+}
+
 const MAX_EVENTS = 50
 const MAX_SAMPLES = 2000
 // Janela móvel para a taxa "recente". O save é esparso (só relemos quando ele muda),
@@ -25,6 +31,17 @@ export class GoldFlowTracker {
   reset(): void {
     this.samples = []
     this.events = []
+  }
+
+  /** Estado serializável (para persistir entre sessões, I6). */
+  serialize(): GoldFlowState {
+    return { samples: this.samples, events: this.events }
+  }
+
+  /** Recarrega o estado persistido (ou começa vazio se não houver). */
+  restore(state: GoldFlowState | null): void {
+    this.samples = state?.samples ?? []
+    this.events = state?.events ?? []
   }
 
   /** Registra uma leitura. Só cria amostra/evento quando o ouro realmente muda. */

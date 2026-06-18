@@ -12,7 +12,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 | # | Status | Item | Observável / base | Notas |
 |---|--------|------|-------------------|-------|
-| I6 | ⬜ | Persistência local de histórico | — | Histórico por estágio, entre sessões |
+| I6 | ✅ v14.0 | Persistência local de histórico | — | Camada reutilizável (`src/main/history.ts`) que persiste o estado dos trackers (ouro, level-ups, eventos de estágio) por arquivo de save no `userData`; os eventos sobrevivem a reinícios. Base para F3/U5 e histórico por estágio. |
 
 ## Pontos observáveis → features
 

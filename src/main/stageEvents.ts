@@ -2,6 +2,14 @@ import type { StageEvent, StageEvents, StageInfo } from '@shared/types'
 
 const MAX_EVENTS = 50
 
+// Estado serializável para persistência entre sessões (I6).
+export interface StageEventsState {
+  lastStageRaw: string | null
+  lastMaxRaw: string | null
+  events: StageEvent[]
+  sessionStartAt: number | null
+}
+
 /**
  * Detecta eventos de progresso comparando o estágio entre leituras do save (S3):
  *  - `stage-change`: o estágio atual (`CurrentStageKey`) mudou;
@@ -23,6 +31,24 @@ export class StageEventsTracker {
     this.lastMaxRaw = null
     this.events = []
     this.sessionStartAt = null
+  }
+
+  /** Estado serializável (para persistir entre sessões, I6). */
+  serialize(): StageEventsState {
+    return {
+      lastStageRaw: this.lastStageRaw,
+      lastMaxRaw: this.lastMaxRaw,
+      events: this.events,
+      sessionStartAt: this.sessionStartAt
+    }
+  }
+
+  /** Recarrega o estado persistido (ou começa vazio se não houver). */
+  restore(state: StageEventsState | null): void {
+    this.lastStageRaw = state?.lastStageRaw ?? null
+    this.lastMaxRaw = state?.lastMaxRaw ?? null
+    this.events = state?.events ?? []
+    this.sessionStartAt = state?.sessionStartAt ?? null
   }
 
   record(at: number, stage: StageInfo | null, maxStage: StageInfo | null): StageEvents | null {

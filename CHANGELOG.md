@@ -14,6 +14,27 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v14.0 — Persistência local de histórico (I6)
+
+### Adicionado
+- **Camada de persistência reutilizável** `src/main/history.ts`: grava o estado dos
+  trackers num único JSON no `userData` (`tbh-tracker-history.json`), **isolado por
+  arquivo de save** (hash do caminho), com escrita *debounced* e *flush* ao fechar.
+- **Histórico entre sessões (I6):** o **fluxo de ouro** (G2/G3), os **level-ups** (H2) e
+  os **eventos de estágio** (S3) agora **sobrevivem a reinícios** — ao abrir, o tracker
+  recarrega os eventos e as linhas de base do save monitorado em vez de começar do zero.
+  Trocar de save carrega o histórico daquele save (cada um retoma o seu).
+- Trackers ganharam `serialize()`/`restore()`; `Tracker` carrega no início e persiste a
+  cada leitura; `flushHistory()` no `stop()`/`before-quit`.
+
+### Notas
+- Base de fundação para **F3** (histórico por estágio) e **U5** (gráficos de sessão).
+- Como o fluxo de ouro agora acumula entre sessões, a **taxa "de sessão"** passa a refletir
+  o histórico persistido (limitado pelos tetos de amostras/eventos); a taxa por **janela
+  móvel (120s)** segue sendo a métrica "recente".
+
+---
+
 ## v13.0 — Estimativa de esvaziamento de baús (B3)
 
 ### Adicionado
