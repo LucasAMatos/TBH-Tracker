@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
 import { KeyPanel } from './components/KeyPanel'
 import { StatusBar } from './components/StatusBar'
+import { TbhPedia } from './components/TbhPedia'
 import type { TrackerState } from '@shared/types'
+
+type Tab = 'dashboard' | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -20,6 +23,7 @@ function formatVersion(raw: string): string {
 export function App(): JSX.Element {
   const [state, setState] = useState<TrackerState>(EMPTY)
   const [version, setVersion] = useState('')
+  const [tab, setTab] = useState<Tab>('dashboard')
 
   useEffect(() => {
     let mounted = true
@@ -51,8 +55,25 @@ export function App(): JSX.Element {
         <StatusBar state={state} />
       </header>
 
+      <nav className="tabs">
+        <button
+          className={`tabs__btn ${tab === 'dashboard' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('dashboard')}
+        >
+          Dashboard
+        </button>
+        <button
+          className={`tabs__btn ${tab === 'tbhpedia' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('tbhpedia')}
+        >
+          TBHPedia
+        </button>
+      </nav>
+
       <main className="app__main">
-        {state.status === 'monitoring' && state.snapshot ? (
+        {tab === 'tbhpedia' ? (
+          <TbhPedia />
+        ) : state.status === 'monitoring' && state.snapshot ? (
           <Dashboard snapshot={state.snapshot} />
         ) : (
           <KeyPanel state={state} onChange={setState} />
