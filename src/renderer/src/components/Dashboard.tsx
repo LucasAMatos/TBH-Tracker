@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
 import type { Snapshot } from '@shared/types'
 
 function fmtNum(n: number | null): string {
@@ -35,6 +36,7 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
   const [showRaw, setShowRaw] = useState(false)
   const s = snapshot
   const activeHeroes = s.heroes.filter((h) => h.active)
+  const nextCube = nextCubeMilestone(s.cubeLevel)
 
   return (
     <div className="dashboard">
@@ -55,7 +57,17 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
           value={s.maxCompletedStage ? s.maxCompletedStage.raw : '—'}
           hint={s.maxCompletedStage ? s.maxCompletedStage.label : undefined}
         />
-        <Card label="Cubo" value={s.cubeLevel !== null ? `Nv ${s.cubeLevel}` : '—'} />
+        <Card
+          label="Cubo"
+          value={s.cubeLevel !== null ? `Nv ${s.cubeLevel}` : '—'}
+          hint={
+            s.cubeLevel === null
+              ? undefined
+              : nextCube
+                ? `Próx: Nv ${nextCube.level} · ${nextCube.name}`
+                : 'tudo desbloqueado'
+          }
+        />
         <Card label="Baus" value={fmtNum(s.boxQuantity)} />
         <Card
           label="Herois ativos"
@@ -63,6 +75,41 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
         />
         <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
       </div>
+
+      {s.cubeLevel !== null && (
+        <section className="section">
+          <h3 className="section__title">Marcos do Cubo</h3>
+          {nextCube ? (
+            <div className="alert alert--info">
+              Cubo <strong>Nv {s.cubeLevel}</strong> — faltam{' '}
+              <strong>{nextCube.level - s.cubeLevel}</strong> nível(is) para{' '}
+              <strong>
+                Nv {nextCube.level} · {nextCube.name}
+              </strong>
+            </div>
+          ) : (
+            <div className="alert alert--ok">Todos os marcos do Cubo desbloqueados.</div>
+          )}
+          <ul className="milestones">
+            {CUBE_MILESTONES.map((m) => {
+              const reached = isMilestoneReached(m, s.cubeLevel)
+              const isNext = nextCube?.level === m.level
+              const cls =
+                'milestone' +
+                (reached ? ' milestone--reached' : '') +
+                (isNext ? ' milestone--next' : '')
+              return (
+                <li key={m.level} className={cls}>
+                  <span className="milestone__mark">{reached ? '✓' : isNext ? '→' : '•'}</span>
+                  <span className="milestone__lvl">Nv {m.level}</span>
+                  <span className="milestone__name">{m.name}</span>
+                  <span className="milestone__desc">{m.description}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       {s.heroes.length > 0 && (
         <section className="section">
