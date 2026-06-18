@@ -1,6 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  boxAutoOpenSeconds,
+  boxColor,
+  classifyBoxBacklog,
+  DEFAULT_BOX_THRESHOLDS,
+  type BoxBacklogLevel,
+  type BoxThresholds
+} from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
-import type { Snapshot } from '@shared/types'
+import type { BoxCount, Snapshot } from '@shared/types'
 
 function fmtNum(n: number | null): string {
   if (n === null || n === undefined) return '—'
@@ -14,17 +22,25 @@ function fmtPlayTime(seconds: number | null): string {
   return `${h}h ${m}m`
 }
 
+function fmtAutoOpen(seconds: number | null): string {
+  if (seconds === null) return 'sem auto-abrir'
+  return `auto-abrir ${seconds}s`
+}
+
 function Card({
   label,
   value,
-  hint
+  hint,
+  tone
 }: {
   label: string
   value: string
   hint?: string
+  tone?: 'warn' | 'alert'
 }): JSX.Element {
+  const cls = tone ? `card card--${tone}` : 'card'
   return (
-    <div className="card">
+    <div className={cls}>
       <span className="card__label">{label}</span>
       <span className="card__value">{value}</span>
       {hint && <span className="card__hint">{hint}</span>}
@@ -32,11 +48,145 @@ function Card({
   )
 }
 
+const BACKLOG_TONE: Record<BoxBacklogLevel, 'warn' | 'alert' | undefined> = {
+  ok: undefined,
+  warn: 'warn',
+  high: 'alert'
+}
+
+function ThresholdEditor({
+  thresholds,
+  onSave
+}: {
+  thresholds: BoxThresholds
+  onSave: (warn: number, high: number) => void
+}): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const [warn, setWarn] = useState(String(thresholds.warn))
+  const [high, setHigh] = useState(String(thresholds.high))
+
+  useEffect(() => {
+    setWarn(String(thresholds.warn))
+    setHigh(String(thresholds.high))
+  }, [thresholds.warn, thresholds.high])
+
+  const apply = (): void => {
+    onSave(Number(warn), Number(high))
+    setOpen(false)
+  }
+
+  if (!open) {
+    return (
+      <button className="btn btn--ghost btn--sm" onClick={() => setOpen(true)}>
+        Ajustar limiares
+      </button>
+    )
+  }
+
+  return (
+    <div className="threshold">
+      <label className="threshold__field">
+        Avisar a partir de
+        <input
+          className="input input--sm"
+          type="number"
+          min={1}
+          value={warn}
+          onChange={(e) => setWarn(e.target.value)}
+        />
+      </label>
+      <label className="threshold__field">
+        Alerta a partir de
+        <input
+          className="input input--sm"
+          type="number"
+          min={1}
+          value={high}
+          onChange={(e) => setHigh(e.target.value)}
+        />
+      </label>
+      <button className="btn btn--primary btn--sm" onClick={apply}>
+        Salvar
+      </button>
+      <button className="btn btn--ghost btn--sm" onClick={() => setOpen(false)}>
+        Cancelar
+      </button>
+    </div>
+  )
+}
+
+function BoxesSection({
+  boxes,
+  total,
+  level,
+  thresholds,
+  onSaveThresholds
+}: {
+  boxes: BoxCount[]
+  total: number | null
+  level: BoxBacklogLevel
+  thresholds: BoxThresholds
+  onSaveThresholds: (warn: number, high: number) => void
+}): JSX.Element | null {
+  if (boxes.length === 0) return null
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h3 className="section__title">Baús por tipo</h3>
+        <ThresholdEditor thresholds={thresholds} onSave={onSaveThresholds} />
+      </div>
+      {level !== 'ok' && (
+        <div className={`alert ${level === 'high' ? 'alert--err' : 'alert--warn'}`}>
+          {level === 'high'
+            ? `Muitos baús não abertos (${fmtNum(total)}) — risco de perder drops se o inventário/stash encher. `
+            : `Baús acumulando (${fmtNum(total)}). `}
+          Abra-os ou garanta o auto-abrir (runas do Extremo Norte) e espaço de inventário/stash.
+        </div>
+      )}
+      <div className="boxbar">
+        {boxes.map((b) => (
+          <div className="boxchip" key={b.kind}>
+            <span className="boxchip__dot" style={{ background: boxColor(b.kind) }} />
+            <div>
+              <div className="boxchip__qty">{fmtNum(b.quantity)}</div>
+              <div className="boxchip__meta">
+                {b.label} · {fmtAutoOpen(boxAutoOpenSeconds(b.kind))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="card__hint">
+        Avisa a partir de {thresholds.warn} e alerta a partir de {thresholds.high} baús (não há
+        teto fixo no jogo).
+      </p>
+    </section>
+  )
+}
+
 export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
   const [showRaw, setShowRaw] = useState(false)
+  const [boxThresholds, setBoxThresholds] = useState<BoxThresholds>(DEFAULT_BOX_THRESHOLDS)
   const s = snapshot
   const activeHeroes = s.heroes.filter((h) => h.active)
   const nextCube = nextCubeMilestone(s.cubeLevel)
+  const boxLevel = classifyBoxBacklog(s.boxQuantity, boxThresholds)
+
+  useEffect(() => {
+    let mounted = true
+    window.tbh.getBoxThresholds().then((t) => {
+      if (mounted && t) setBoxThresholds(t)
+    })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const saveBoxThresholds = (warn: number, high: number): void => {
+    window.tbh.setBoxThresholds(warn, high).then((t) => {
+      if (t) setBoxThresholds(t)
+    })
+  }
 
   return (
     <div className="dashboard">
@@ -68,13 +218,28 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
                 : 'tudo desbloqueado'
           }
         />
-        <Card label="Baus" value={fmtNum(s.boxQuantity)} />
+        <Card
+          label="Baús"
+          value={fmtNum(s.boxQuantity)}
+          hint={
+            boxLevel === 'high' ? 'transbordando' : boxLevel === 'warn' ? 'acumulando' : undefined
+          }
+          tone={BACKLOG_TONE[boxLevel]}
+        />
         <Card
           label="Herois ativos"
           value={activeHeroes.length ? String(activeHeroes.length) : String(s.heroes.length || '—')}
         />
         <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
       </div>
+
+      <BoxesSection
+        boxes={s.boxes}
+        total={s.boxQuantity}
+        level={boxLevel}
+        thresholds={boxThresholds}
+        onSaveThresholds={saveBoxThresholds}
+      />
 
       {s.cubeLevel !== null && (
         <section className="section">

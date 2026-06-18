@@ -1,3 +1,5 @@
+import type { BoxKind, BoxThresholds } from './boxes'
+
 export type ConnectionStatus =
   | 'monitoring' // chave + save OK, lendo
   | 'no-key' // falta a chave ES3
@@ -29,6 +31,13 @@ export interface HeroSnapshot {
   active: boolean
 }
 
+// Baús não abertos de uma categoria (soma de BoxData.BoxQuantity por BoxTypes).
+export interface BoxCount {
+  kind: BoxKind // 'common' | 'stageBoss' | 'actBoss'
+  label: string // "Comum" · "Estágio" · "Ato"
+  quantity: number
+}
+
 export interface Snapshot {
   capturedAt: number // epoch ms da leitura
   playTimeSeconds: number | null
@@ -38,7 +47,8 @@ export interface Snapshot {
   maxCompletedStage: StageInfo | null
   cubeLevel: number | null
   cubeExp: number | null
-  boxQuantity: number | null
+  boxQuantity: number | null // total de baús não abertos (soma de todos os tipos)
+  boxes: BoxCount[] // baús não abertos separados por tipo
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
@@ -63,6 +73,8 @@ export interface TbhApi {
   pickSaveFile(): Promise<TrackerState>
   refresh(): Promise<TrackerState>
   onState(cb: (state: TrackerState) => void): () => void
+  getBoxThresholds(): Promise<BoxThresholds>
+  setBoxThresholds(warn: number, high: number): Promise<BoxThresholds>
 }
 
 declare global {

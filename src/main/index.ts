@@ -67,6 +67,11 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('tbh:refresh', () => tracker?.refresh())
+
+  ipcMain.handle('tbh:getBoxThresholds', () => store.getBoxThresholds())
+  ipcMain.handle('tbh:setBoxThresholds', (_e, warn: number, high: number) =>
+    store.setBoxThresholds(warn, high)
+  )
 }
 
 app.whenReady().then(() => {
