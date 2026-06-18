@@ -38,7 +38,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Por que é difícil |
 |---|-----------|------|-------------------|
-| H9 | P2 | Análise detalhada do herói (árvore de habilidades) | Catálogo grande `heroes.ts` (stats + skill tree dos 6) + UI de tiers |
 | D3 | P2 | Aba Inventário (tipo × raridade + visualização) | Mapear `ItemKey`→tipo/raridade (~5760 itens) + viz |
 | U8 | P2 | Aba Inventário (UI) | Depende de D3 |
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |

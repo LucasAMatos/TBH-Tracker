@@ -14,6 +14,31 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v8.0 — Análise detalhada do herói: stats com ranking + árvore de habilidades (H9)
+
+### Adicionado
+- **Drill-down do herói na aba Heróis (H9):** clicar em um herói abre uma tela de
+  detalhe modelada na página da TBH Wiki, com **voltar ao roster**.
+- **Atributos base com ranking:** os **9 atributos** (Dano, Vel. de ataque, Chance crít.,
+  Dano crítico, PV, Armadura, Vel. de movimento, Vel. de conjuração, Red. recarga) com
+  a **posição de cada um entre os 6 heróis** (★ destaca o melhor). O ranking é
+  **calculado em código** a partir do catálogo (não fixado manualmente).
+- **Árvore de habilidades por tier (Tiers 1–8):** habilidades **passivas/ativas** com o
+  **nível máximo** e o **custo em pontos** de cada tier; tiers 7–8 marcados como
+  **bloqueados** (ainda indisponíveis no jogo) e tiers **alcançáveis** destacados pelo
+  nível atual do herói (1 ponto por nível).
+- **Dados ao vivo do save:** nível, XP, pontos de habilidade e estado (ativo/desbloqueado)
+  no cabeçalho do detalhe.
+
+### Mudanças internas
+- `src/shared/heroes.ts` reescrito: catálogo completo dos 6 heróis (papel, armas,
+  desbloqueio, descrição, DPS, 9 stats base e árvore de habilidades por tier) + helpers
+  `HERO_STAT_DEFS` e `heroStatRank`. Fonte: `taskbarhero.wiki/pt/heroes/<slug>`.
+
+Backlog entregue: H9.
+
+---
+
 ## v7.0 — Fluxo de ouro: delta por evento + ouro/h (G3, G2 parcial)
 
 ### Adicionado
