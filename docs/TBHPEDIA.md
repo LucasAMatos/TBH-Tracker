@@ -147,7 +147,7 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 |----------------------------|----------|-----|
 | `commonSaveData.playTime` | Tempo de jogo (s, float) | Relógio das corridas |
 | `commonSaveData.currentStageKey` | Estágio atual (DAPP, número) | Onde está farmando |
-| `commonSaveData.currentStageWave` | Onda atual | Fim de corrida (onda→0 = clear) |
+| `commonSaveData.currentStageWave` | Onda atual | Progresso na fase (⚠️ não confiável p/ detectar clear — ver "Detecção de corridas") |
 | `commonSaveData.maxCompletedStage` | Estágio máx. concluído (DAPP) | Progresso / push |
 | `commonSaveData.arrangedHeroKey` | Heróis ativos (array; `-1` = slot vazio) | Nº de heróis ativos |
 | `currenySaveDatas[]` (sic; `{Key,Quantity}`, Key 100001) | Ouro | Ouro total e ouro/h |
@@ -161,3 +161,19 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 | `inventorySaveDatas[]` / `stashSaveDatas[]` | Slots de inventário/stash | Capacidade |
 
 > Nota: o nome do campo de moeda tem typo no próprio jogo (`currenySaveDatas`). heroKey: 101 Knight · 201 Ranger · 301 Sorcerer · 401 Priest · 501 Hunter · 601 Slayer.
+
+#### `aggregateSaveDatas[]` — estatísticas cumulativas `{Type, SubKey, Value}` (validado)
+
+- **`Type 0`** = kills por monstro (`SubKey` = ID do monstro; `SubKey 0` = total de kills). No estágio 1‑1, ~11 kills por clear (= nº de monstros do estágio).
+- **`Type 2`** = ouro ganho cumulativo (`SubKey 0` = total; `SubKey 1/2/3` = por ato).
+- **`Type 15` / `Type 16`** = contadores ligados a **tempo/progresso**, **NÃO a clears** (Type 15 sobe ~1 por minuto). ⚠️ Não usar como contador de corridas.
+
+#### Detecção de corridas — achados (item F1 PARADO)
+
+Investigação concluída: **não dá (hoje) para medir o tempo por corrida individual a partir do save.** Resumo:
+
+1. **Não existe contador de "clears" no save.** Os únicos sinais por‑clear são ouro (sobe em *lumps*, ~10.247 no 1‑1) e kills (+11 no 1‑1) — ambos com magnitude **dependente do estágio**.
+2. **O tempo por corrida NÃO é persistido.** Só há `playTime` (cumulativo) e `lastSavedTime` (.NET ticks da gravação). Não há campo de tempo/recorde por estágio. O `Player.log` só tem debug (contagem de baús, erros de Steam, `[OfflineReward]`); o log com timestamp na tela (`settingSaveData.LogShowTime`) é UI em memória, não vai pro disco.
+3. **Cadência de save esparsa e fora de ciclo** (~28‑30s, com backups rotativos `SaveFile_Live_N.es3.bak`); `currentStageWave` quase sempre é capturado em 0 — cedo/tarde demais para reconstruir corridas de ~26s.
+
+**Caminhos para retomar:** (a) detecção por **salto de ouro** auto‑calibrando o *lump* por estágio + leitura mais frequente (~30s) → tempo aproximado por corrida; (b) pivotar para **ouro/h, kills/h e clears estimados**, que são exatos e robustos ao intervalo de leitura.

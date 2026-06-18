@@ -35,7 +35,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 - **Localização do save:** auto-detectar no caminho padrão (Windows; suportar Proton/Linux depois).
 - **Chave ES3:** fornecida pelo usuário (campo na UI, guardada com proteção local; ou variável de ambiente). Nunca commitada.
 - **Catálogo:** dados de `docs/TBHPEDIA.md` viram JSON de apoio (`farm_stages`, `heroes`, `runes`, `pets`, `rarities`).
-- **Analytics:** corrida = onda volta a 0 (clear); medir tempo/ouro/xp da janela e calibrar com filtros anti-ruído.
+- **Analytics:** ⚠️ a hipótese "corrida = onda volta a 0" não se sustentou (save esparso e sem contador de clears; tempo por corrida não é persistido — ver `TBHPEDIA.md › Detecção de corridas`). Caminho preferido: ouro/h e xp/h por estágio (exatos via contadores cumulativos) e, se quiser tempo por corrida, detecção por salto de ouro + leitura mais frequente.
 
 ## 3. Decisões em aberto (precisam de você)
 
