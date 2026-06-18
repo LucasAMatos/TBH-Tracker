@@ -39,6 +39,13 @@ Início da Fase 2 (farm analytics).
   acumulando playTime através dos saves intermediários) e descartando a 1ª medição após
   iniciar/trocar de estágio (warm-up).
 
+### Alterado
+- **Leitura do save a cada 2 minutos** (antes: a cada gravação, ~28s), para reduzir a
+  frequência de descriptografia. As informações do app atualizam nesse intervalo.
+- A marcação de corridas **recomeça no próximo clear** após iniciar o monitoramento ou
+  limpar o histórico (o detector é reancorado), evitando que a 1ª corrida registrada some
+  o tempo acumulado de antes.
+
 ### Notas / limitações
 - O tempo por corrida pode ter um leve viés (poucos segundos) porque o save que registra
   o clear às vezes chega um pouco depois do clear de fato; sem os outliers grosseiros de

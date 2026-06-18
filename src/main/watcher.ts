@@ -1,4 +1,4 @@
-import { type FSWatcher, statSync, watch } from 'node:fs'
+import { statSync } from 'node:fs'
 
 export interface Fingerprint {
   size: number
@@ -6,67 +6,49 @@ export interface Fingerprint {
 }
 
 /**
- * Observa um arquivo de save e dispara `onChange` apenas quando o conteudo
- * realmente muda (fingerprint = tamanho + mtime). Debounce para evitar
- * leituras parciais enquanto o jogo grava. 100% passivo: so le metadados.
+ * Lê o save por polling em intervalo fixo (padrão 2 min) e dispara `onChange`
+ * apenas quando o conteúdo realmente mudou (fingerprint = tamanho + mtime).
+ *
+ * Antes observava cada gravação do save (~28s); agora atualiza a cada 2 min para
+ * reduzir a frequência de leitura/descriptografia. 100% passivo: só lê metadados
+ * para o fingerprint e o arquivo quando muda.
  */
 export class SaveWatcher {
-  private watcher: FSWatcher | null = null
+  private timer: NodeJS.Timeout | null = null
   private last: Fingerprint | null = null
-  private debounceTimer: NodeJS.Timeout | null = null
-  private pollTimer: NodeJS.Timeout | null = null
 
   constructor(
     private readonly filePath: string,
     private readonly onChange: () => void,
-    private readonly debounceMs = 300
+    private readonly intervalMs = 120_000
   ) {}
 
   start(): void {
     this.stop()
-    try {
-      this.watcher = watch(this.filePath, () => this.handleEvent())
-    } catch {
-      // se o watch nativo falhar, o polling abaixo cobre
-    }
-    // Polling leve de fallback (alguns saves sao reescritos via rename atomico,
-    // o que pode escapar do fs.watch).
-    this.pollTimer = setInterval(() => this.handleEvent(), 2000)
-    // Leitura inicial
-    this.handleEvent(true)
+    this.check(true) // leitura inicial imediata
+    this.timer = setInterval(() => this.check(), this.intervalMs)
   }
 
-  private handleEvent(force = false): void {
-    if (this.debounceTimer) clearTimeout(this.debounceTimer)
-    this.debounceTimer = setTimeout(() => {
-      let fp: Fingerprint
-      try {
-        const s = statSync(this.filePath)
-        fp = { size: s.size, mtimeMs: s.mtimeMs }
-      } catch {
-        return
-      }
-      const changed =
-        force || !this.last || this.last.size !== fp.size || this.last.mtimeMs !== fp.mtimeMs
-      if (changed) {
-        this.last = fp
-        this.onChange()
-      }
-    }, this.debounceMs)
+  private check(force = false): void {
+    let fp: Fingerprint
+    try {
+      const s = statSync(this.filePath)
+      fp = { size: s.size, mtimeMs: s.mtimeMs }
+    } catch {
+      return
+    }
+    const changed =
+      force || !this.last || this.last.size !== fp.size || this.last.mtimeMs !== fp.mtimeMs
+    if (changed) {
+      this.last = fp
+      this.onChange()
+    }
   }
 
   stop(): void {
-    if (this.watcher) {
-      this.watcher.close()
-      this.watcher = null
-    }
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer)
-      this.pollTimer = null
-    }
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer)
-      this.debounceTimer = null
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
     }
     this.last = null
   }

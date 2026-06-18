@@ -8,6 +8,9 @@ import * as store from './store'
 import { SaveWatcher } from './watcher'
 import type { RunRecord, TrackerState } from '@shared/types'
 
+/** Intervalo de leitura do save (polling). */
+const POLL_INTERVAL_MS = 120_000
+
 export class Tracker {
   private watcher: SaveWatcher | null = null
   private readonly detector = new RunDetector()
@@ -34,13 +37,16 @@ export class Tracker {
     this.state.savePath = savePath
     this.state.hasKey = store.hasKey()
 
+    // Reancorar a detecção: a marcação de corridas recomeça no próximo clear.
+    this.detector.reset()
+
     if (this.watcher) {
       this.watcher.stop()
       this.watcher = null
     }
 
     if (savePath && existsSync(savePath)) {
-      this.watcher = new SaveWatcher(savePath, () => this.readSave())
+      this.watcher = new SaveWatcher(savePath, () => this.readSave(), POLL_INTERVAL_MS)
       this.watcher.start()
     } else {
       this.state.status = 'no-save'
@@ -87,6 +93,11 @@ export class Tracker {
   refresh(): TrackerState {
     this.start()
     return this.state
+  }
+
+  /** Reancora a detecção de corridas (ex.: ao limpar o histórico). */
+  resetDetector(): void {
+    this.detector.reset()
   }
 
   private update(patch: Partial<TrackerState>): void {

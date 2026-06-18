@@ -74,7 +74,11 @@ function registerIpc(): void {
   ipcMain.handle('tbh:refresh', () => tracker?.refresh())
 
   ipcMain.handle('tbh:getRuns', () => runsStore.getRuns())
-  ipcMain.handle('tbh:clearRuns', () => runsStore.clearRuns())
+  ipcMain.handle('tbh:clearRuns', () => {
+    // Reancora a detecção: a próxima corrida marcada começa no próximo clear.
+    tracker?.resetDetector()
+    return runsStore.clearRuns()
+  })
 }
 
 app.whenReady().then(() => {
