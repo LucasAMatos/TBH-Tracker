@@ -8,7 +8,7 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
-import type { BoxCount, HeroSnapshot, Snapshot } from '@shared/types'
+import type { BoxCount, GoldFlow, HeroSnapshot, Snapshot } from '@shared/types'
 
 // A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
 const HERO_SLOTS = 3
@@ -16,6 +16,22 @@ const HERO_SLOTS = 3
 function fmtNum(n: number | null): string {
   if (n === null || n === undefined) return '—'
   return new Intl.NumberFormat('pt-BR').format(n)
+}
+
+/** Número com sinal explícito (+/−) e separador pt-BR. */
+function fmtSigned(n: number): string {
+  const sign = n > 0 ? '+' : n < 0 ? '−' : ''
+  return `${sign}${new Intl.NumberFormat('pt-BR').format(Math.abs(Math.round(n)))}`
+}
+
+/** Taxa de ouro/h com sinal, ou '—' quando indisponível. */
+function fmtRate(perHour: number | null): string {
+  if (perHour === null || perHour === undefined) return '—'
+  return `${fmtSigned(perHour)}/h`
+}
+
+function fmtClock(at: number): string {
+  return new Date(at).toLocaleTimeString('pt-BR')
 }
 
 function fmtPlayTime(seconds: number | null): string {
@@ -167,6 +183,61 @@ function BoxesSection({
   )
 }
 
+function GoldFlowSection({ flow }: { flow: GoldFlow }): JSX.Element {
+  const hasEvents = flow.events.length > 0
+  return (
+    <section className="section">
+      <h3 className="section__title">Fluxo de ouro</h3>
+      <div className="goldflow__rates">
+        <div className="goldflow__rate">
+          <span className="card__label">Ouro/h (janela {flow.windowSeconds}s)</span>
+          <span
+            className={`goldflow__rate-val ${
+              (flow.windowRatePerHour ?? 0) < 0 ? 'goldflow__neg' : ''
+            }`}
+          >
+            {fmtRate(flow.windowRatePerHour)}
+          </span>
+        </div>
+        <div className="goldflow__rate">
+          <span className="card__label">Ouro/h (sessão)</span>
+          <span
+            className={`goldflow__rate-val ${
+              (flow.sessionRatePerHour ?? 0) < 0 ? 'goldflow__neg' : ''
+            }`}
+          >
+            {fmtRate(flow.sessionRatePerHour)}
+          </span>
+        </div>
+        <div className="goldflow__rate">
+          <span className="card__label">Líquido da sessão</span>
+          <span className={`goldflow__rate-val ${flow.netDelta < 0 ? 'goldflow__neg' : ''}`}>
+            {fmtSigned(flow.netDelta)}
+          </span>
+        </div>
+      </div>
+      {hasEvents ? (
+        <ul className="goldlog">
+          {flow.events.map((e) => (
+            <li className="goldlog__item" key={`${e.at}-${e.gold}`}>
+              <span className="goldlog__time">{fmtClock(e.at)}</span>
+              <span className={`goldlog__delta ${e.delta < 0 ? 'goldflow__neg' : ''}`}>
+                {fmtSigned(e.delta)}
+              </span>
+              <span className="goldlog__total">total {fmtNum(e.gold)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="card__hint">
+          Coletando… os eventos de ouro aparecem conforme o save é atualizado (o jogo precisa
+          estar rodando). Gasto (ex.: runas) aparece como valor negativo.
+        </p>
+      )}
+    </section>
+  )
+}
+
 function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
   return (
     <section className="section">
@@ -206,6 +277,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
   })
   const nextCube = nextCubeMilestone(s.cubeLevel)
   const boxLevel = classifyBoxBacklog(s.boxQuantity, boxThresholds)
+  const flow = s.goldFlow
+  const goldRate = flow ? flow.windowRatePerHour ?? flow.sessionRatePerHour : null
 
   useEffect(() => {
     let mounted = true
@@ -226,7 +299,11 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
   return (
     <div className="dashboard">
       <div className="grid">
-        <Card label="Ouro" value={fmtNum(s.gold)} />
+        <Card
+          label="Ouro"
+          value={fmtNum(s.gold)}
+          hint={goldRate !== null ? fmtRate(goldRate) : undefined}
+        />
         <Card
           label="Estagio atual"
           value={s.stage ? s.stage.raw : '—'}
@@ -268,6 +345,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
         />
         <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
       </div>
+
+      {flow && <GoldFlowSection flow={flow} />}
 
       <BoxesSection
         boxes={s.boxes}

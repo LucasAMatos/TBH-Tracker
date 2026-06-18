@@ -17,8 +17,8 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 ## Pontos observáveis → features
 
 ### Ouro (P1) — `CurrencySaveDatas` (key 100001)
-- **G2 (P1):** Taxa de ouro/h por janela móvel (ex.: 30s) e média de sessão.
-- **G3 (P1):** Delta de ouro por evento (com sinal e total).
+- **G2 (P1):** ✅ v7.0 (base) — Taxa de ouro/h por janela móvel (120s) e média de sessão. *(Em memória, sem persistência — depende de I6 para histórico entre sessões.)*
+- **G3 (P1):** ✅ v7.0 — Delta de ouro por evento (com sinal e total).
 - **G4 (P2):** **Calculadora de ouro por kill** — estima o ganho de ouro por abate aplicando os **bônus de ouro das runas** (categoria Ouro do catálogo) sobre o ouro base, com resultados **separados para monstro comum e boss**. *Observável:* `RuneSaveData[]` (níveis) + `runeTree.ts` (runas de ouro: efeito/valor por nível). *Dependência/assunção:* ouro base por kill (comum vs boss) — derivar de catálogo de monstros/estágio (wiki "Monstros 61") ou permitir entrada manual; registrar a origem do valor base.
 
 ### Estágio & progresso (P1/P2) — `CurrentStageKey`, `CurrentStageWave`, `MaxCompletedStage`

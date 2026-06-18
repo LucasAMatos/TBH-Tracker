@@ -31,6 +31,26 @@ export interface HeroSnapshot {
   active: boolean
 }
 
+// Um evento de mudança de ouro entre duas leituras consecutivas do save (G3).
+export interface GoldEvent {
+  at: number // epoch ms da leitura em que o ouro mudou
+  delta: number // variação de ouro (com sinal) vs. a leitura anterior
+  gold: number // ouro resultante após a mudança
+}
+
+// Fluxo de ouro da sessão atual (em memória, sem persistência — I6 é separado).
+export interface GoldFlow {
+  sessionStartAt: number // 1ª amostra de ouro da sessão (epoch ms)
+  sessionStartGold: number
+  currentGold: number
+  netDelta: number // currentGold - sessionStartGold (com sinal)
+  elapsedSeconds: number // tempo entre 1ª e última amostra de ouro
+  sessionRatePerHour: number | null // taxa média da sessão (ouro/h); null se sem tempo
+  windowRatePerHour: number | null // taxa na janela móvel; null se sem amostras suficientes
+  windowSeconds: number // tamanho da janela móvel usada
+  events: GoldEvent[] // eventos recentes (mais recente primeiro), limitados
+}
+
 // Baús não abertos de uma categoria (soma de BoxData.BoxQuantity por BoxTypes).
 export interface BoxCount {
   kind: BoxKind // 'common' | 'stageBoss' | 'actBoss'
@@ -52,6 +72,7 @@ export interface Snapshot {
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
+  goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 

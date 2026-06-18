@@ -13,7 +13,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | # | Prioridade | Item | Por que é fácil |
 |---|-----------|------|-----------------|
 | H2 | P1 | Detectar level-ups | Comparar `HeroLevel` entre snapshots |
-| G3 | P1 | Delta de ouro por evento | Diferença de ouro entre snapshots |
 | S3 | P1 | Detectar troca de estágio / novos desbloqueados | Diff de `CurrentStageKey`/`MaxCompletedStage` |
 | A2 | P2 | Heartbeat de status | Sinal quando não há mudança no save |
 | B3 | P2 | Estimar cooldowns de auto-abrir | Valores fixos (300s/600s), informativo |
@@ -25,7 +24,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | H8 | P2 | Retratos/ícones dos heróis | Baixar assets + mapear por `heroKey` (padrão runas v4.0) |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | R3 | P2 | Runa-alvo + ouro faltante (com pré-requisitos) | Catálogo de custos/arestas já existe (v4.0); falta o cálculo de caminho |
-| G2 | P1 | Ouro/h por janela móvel + média de sessão | Histórico em memória + amostragem |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ | Fácil se a raridade vier no item; senão precisa catálogo |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | I6 | P0 | Persistência local de histórico | Camada de storage reutilizável por vários itens |
