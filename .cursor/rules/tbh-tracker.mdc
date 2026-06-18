@@ -9,6 +9,13 @@ alwaysApply: false
 ## Backlog
 - Sempre que entregar um item de `docs/BACKLOG.md`, **atualizar o backlog** marcando-o
   como `✅ vA.B` (a versão em que foi entregue). Itens pendentes ficam `⬜`.
+- **Arquivamento a cada 5 versões** (`a` múltiplo de 5: v5, v10, v15…): ao fechar uma
+  dessas versões, **separar** o backlog — mover os itens **entregues (✅)** para
+  `docs/BACKLOG-HISTORICO.md` e manter em `docs/BACKLOG.md` apenas o que está **a fazer**
+  (`⬜`) ou **parado/bloqueado** (`⛔`). Preservar no histórico a versão de entrega de cada
+  item; manter no backlog as notas de contexto ainda relevantes (ex.: bloqueios).
+- `docs/BACKLOG.md` é a **fonte da verdade**. `docs/BACKLOG-ESFORCO.md` é uma **visão**
+  (ranking por esforço) — ao adicionar/entregar/remover um item, atualizar também essa visão.
 
 ## Versionamento (`va.b`)
 - Formato **`va.b`**: `a` sobe a cada **nova implementação** (feature); `b` sobe a cada

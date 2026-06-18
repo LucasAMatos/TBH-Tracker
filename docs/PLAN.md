@@ -59,5 +59,8 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 
 - `docs/TBHPEDIA.md` — base de conhecimento do jogo (dados).
 - `docs/PLAN.md` — este plano.
-- `docs/BACKLOG.md` — backlog focada nos pontos observáveis do save.
+- `docs/BACKLOG.md` — backlog focada nos pontos observáveis do save (só itens a fazer/bloqueados).
+- `docs/BACKLOG-HISTORICO.md` — itens entregues, arquivados a cada 5 versões.
+- `docs/BACKLOG-ESFORCO.md` — visão do backlog ranqueada por esforço de implementação.
+- `docs/FONTES.md` — repositórios, wikis e páginas usados para datamine/catálogos/assets.
 - Canvas `TBHpedia.canvas.tsx` — versão interativa da TBHPedia.
