@@ -390,6 +390,13 @@ body {
   font-size: 12px;
 }
 
+.boxchip__eta {
+  color: var(--text-dim);
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
 /* Fluxo de ouro (G3 + ouro/h) */
 .goldflow__rates {
   display: grid;
