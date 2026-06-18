@@ -22,5 +22,13 @@ alwaysApply: false
 - **Nunca** ler/escrever memória do jogo, anexar a processo, injetar, automatizar input
   ou modificar o save. A chave ES3 nunca é commitada.
 
+## Git — branches e PR (obrigatório)
+- A branch `main` é **protegida**: push direto é proibido (inclui admin). Toda mudança
+  entra via **Pull Request**.
+- Toda alteração é feita numa **feature branch** a partir da `main` atualizada
+  (ex.: `feature/<assunto>` ou `fix/<assunto>`).
+- O agente **nunca** faz merge na `main`: abre o PR (`gh pr create`) e o **merge é feito
+  por um humano**. Nunca usar `--admin`/bypass nem force-push na `main`.
+
 ## Repositório
 - Pessoal (GitHub `github.com/LucasAMatos/TBH-Tracker`), branch padrão `main`.
