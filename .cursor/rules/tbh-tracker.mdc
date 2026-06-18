@@ -36,6 +36,9 @@ alwaysApply: false
   (ex.: `feature/<assunto>` ou `fix/<assunto>`).
 - O agente **nunca** faz merge na `main`: abre o PR (`gh pr create`) e o **merge é feito
   por um humano**. Nunca usar `--admin`/bypass nem force-push na `main`.
+- **Sempre que um PR for mencionado** (na conversa ou em respostas), citá-lo como **link
+  Markdown** para a URL do PR — ex.: `[PR #15 — título](https://github.com/LucasAMatos/TBH-Tracker/pull/15)`.
+  Nunca mencionar um PR apenas pelo número sem o link.
 
 ## Repositório
 - Pessoal (GitHub `github.com/LucasAMatos/TBH-Tracker`), branch padrão `main`.
