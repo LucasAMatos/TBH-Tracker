@@ -14,6 +14,38 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v4.0 — Baús por tipo + alerta de acúmulo
+
+Item de qualidade de vida (B2), sem tocar no agente de detecção de corridas.
+
+### Adicionado
+- **Baús separados por tipo** no dashboard. `BoxData` são arrays paralelos
+  (`BoxTypes`/`BoxUniqueId`/`BoxQuantity`); a contagem agrupa por `BoxTypes` e
+  soma `BoxQuantity`. Exibe as três categorias do jogo — Comum (300s) · Estágio
+  (600s) · Ato (sem auto-abrir) — com quantidade, cor e cooldown de auto-abrir.
+- **Alerta de transbordo (B2):** o card "Baús" e um banner mudam de cor quando os
+  baús não abertos acumulam (⚠️ a partir de 25, 🔴 a partir de 75 por padrão). O
+  texto orienta a abrir/garantir auto-abrir (runas do Extremo Norte) e espaço de
+  inventário/stash.
+- **Limiares configuráveis na UI:** botão "Ajustar limiares" na seção de baús edita
+  os valores de aviso/alerta; persistidos localmente (`tbh-tracker-config.json`) e
+  normalizados (inteiros ≥ 1, alerta ≥ aviso).
+- `shared/boxes.ts`: metadados dos tipos de baú + classificação de acúmulo,
+  reutilizáveis por main e renderer. `Snapshot.boxes[]` (por tipo) somado a
+  `boxQuantity` (total, mantido para compatibilidade).
+
+### Notas / limitações
+- O jogo **não tem um teto fixo** de baús; o gargalo real é o acúmulo (auto-abrir
+  lento/desligado ou inventário/stash cheio param de processar drops). Por isso o
+  alerta é de **acúmulo**, não de um "limite".
+- O enum `BoxTypes` foi validado contra save real: tipo 1 = baú azul (Estágio).
+  0 (Comum/branco) e 2 (Ato/vermelho) inferidos pela ordem das categorias; tipos
+  fora do mapa são ignorados (o jogo só tem estas três categorias).
+
+Backlog entregue: B2.
+
+---
+
 ## v3.0 — Farm analytics: detecção de corridas
 
 Início da Fase 2 (farm analytics).

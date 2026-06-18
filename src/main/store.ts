@@ -1,6 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { app, safeStorage } from 'electron'
+import {
+  DEFAULT_BOX_THRESHOLDS,
+  normalizeBoxThresholds,
+  type BoxThresholds
+} from '@shared/boxes'
 
 interface PersistShape {
   // chave ES3 cifrada em base64 (via safeStorage do SO); nunca em texto puro
@@ -8,6 +13,9 @@ interface PersistShape {
   // chave em texto puro (fallback se o SO nao suporta cifragem)
   plainKey?: string
   savePathOverride?: string | null
+  // limiares de alerta de acumulo de baus (calibraveis pelo usuario)
+  boxBacklogWarn?: number
+  boxBacklogHigh?: number
 }
 
 let cache: PersistShape | null = null
@@ -87,4 +95,21 @@ export function setSavePathOverride(path: string | null): void {
   if (path) data.savePathOverride = path
   else delete data.savePathOverride
   save(data)
+}
+
+export function getBoxThresholds(): BoxThresholds {
+  const data = load()
+  return normalizeBoxThresholds({
+    warn: data.boxBacklogWarn ?? DEFAULT_BOX_THRESHOLDS.warn,
+    high: data.boxBacklogHigh ?? DEFAULT_BOX_THRESHOLDS.high
+  })
+}
+
+export function setBoxThresholds(warn: number, high: number): BoxThresholds {
+  const normalized = normalizeBoxThresholds({ warn, high })
+  const data = load()
+  data.boxBacklogWarn = normalized.warn
+  data.boxBacklogHigh = normalized.high
+  save(data)
+  return normalized
 }

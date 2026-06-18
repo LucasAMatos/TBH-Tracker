@@ -156,7 +156,7 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 | `currenySaveDatas[]` (sic; `{Key,Quantity}`, Key 100001) | Ouro | Ouro total e ouro/h |
 | `heroSaveDatas[]` (`heroKey,HeroLevel,HeroExp,IsUnLock`) | Heróis | Level-ups, XP/h, composição |
 | `cubeSaveLevelData.Level/Exp` | Cubo | Marcos (nível 10 = Trade Ship) |
-| `BoxData.BoxQuantity[]` (soma por tipo) | Baús não abertos | Contagem / transbordo |
+| `BoxData` = arrays paralelos `BoxTypes[]`/`BoxUniqueId[]`/`BoxQuantity[]` | Baús não abertos (lote i: tipo `BoxTypes[i]`, qtd `BoxQuantity[i]`) | Somar `BoxQuantity` agrupando por `BoxTypes` (0=Comum · 1=Estágio · 2=Ato) + alerta de acúmulo |
 | `itemSaveDatas[]` (`ItemKey,UniqueId,...`) | Itens/inventário | Drops novos por corrida |
 | `RuneSaveData[]` (`RuneKey,Level`) | Runas (197) | Gasto de ouro (calibrar recuperação) |
 | `PetSaveData[]` (`PetKey,IsUnlock`) | Pets (8) | Progresso de pets |

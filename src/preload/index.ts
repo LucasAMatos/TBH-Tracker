@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { BoxThresholds } from '@shared/boxes'
 import type { RunRecord, TrackerState } from '@shared/types'
 
 const api = {
@@ -15,6 +16,9 @@ const api = {
     ipcRenderer.on('tbh:state', listener)
     return () => ipcRenderer.removeListener('tbh:state', listener)
   },
+  getBoxThresholds: (): Promise<BoxThresholds> => ipcRenderer.invoke('tbh:getBoxThresholds'),
+  setBoxThresholds: (warn: number, high: number): Promise<BoxThresholds> =>
+    ipcRenderer.invoke('tbh:setBoxThresholds', warn, high),
   getRuns: () => ipcRenderer.invoke('tbh:getRuns'),
   clearRuns: () => ipcRenderer.invoke('tbh:clearRuns'),
   onRun: (cb: (run: RunRecord) => void) => {
