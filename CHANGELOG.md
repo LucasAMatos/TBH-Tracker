@@ -14,6 +14,30 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v7.0 — Fluxo de ouro: delta por evento + ouro/h (G3, G2 parcial)
+
+### Adicionado
+- **Delta de ouro por evento (G3):** a cada leitura do save em que o ouro muda, o
+  app registra um evento com a **variação (com sinal)** e o **total resultante**. O
+  Dashboard ganha uma seção **"Fluxo de ouro"** com o log dos eventos recentes
+  (horário · delta · total). Gasto (ex.: runas) aparece como valor negativo.
+- **Ouro/h (G2, básico/"por enquanto"):** taxa de ouro por hora em duas visões —
+  **janela móvel** (120s) e **média da sessão** — além do **líquido da sessão**. O
+  card "Ouro" mostra a taxa como dica.
+- `GoldFlowTracker` (`src/main/goldFlow.ts`): acumula as leituras de ouro da sessão
+  **em memória** e deriva deltas + taxas; zera ao trocar de arquivo de save. Os
+  dados viajam anexados ao snapshot (`Snapshot.goldFlow`), sem mudanças no preload.
+
+### Notas / limitações
+- **Sem persistência entre sessões** — o histórico vive na memória do processo
+  enquanto o app está aberto (persistência é o item **I6**, separado).
+- As taxas dependem do jogo **estar rodando** e gravando o save; com save esparso a
+  janela curta pode oscilar — por isso há também a média de sessão.
+
+Backlog entregue: G3 (e base do G2).
+
+---
+
 ## v6.0 — Heróis: dashboard só com ativos + aba Heróis (H5, H6, U7)
 
 ### Adicionado

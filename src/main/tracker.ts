@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { decryptAndParseES3, Es3DecryptError } from './es3'
+import { GoldFlowTracker } from './goldFlow'
 import { locateSave } from './locator'
 import { parseSnapshot } from './parser'
 import * as store from './store'
@@ -8,6 +9,8 @@ import type { TrackerState } from '@shared/types'
 
 export class Tracker {
   private watcher: SaveWatcher | null = null
+  private goldFlow = new GoldFlowTracker()
+  private trackedPath: string | null = null
   private state: TrackerState = {
     status: 'no-save',
     savePath: null,
@@ -25,6 +28,11 @@ export class Tracker {
   /** (Re)avalia caminho do save, inicia o watcher e faz uma leitura. */
   start(): void {
     const savePath = store.getSavePathOverride() ?? locateSave()
+    // Trocar de arquivo de save zera o fluxo de ouro (sessão nova).
+    if (savePath !== this.trackedPath) {
+      this.goldFlow.reset()
+      this.trackedPath = savePath
+    }
     this.state.savePath = savePath
     this.state.hasKey = store.hasKey()
 
@@ -61,6 +69,8 @@ export class Tracker {
       const buffer = readFileSync(savePath)
       const json = decryptAndParseES3(buffer, key)
       const snapshot = parseSnapshot(json, true)
+      const flow = this.goldFlow.record(snapshot.capturedAt, snapshot.gold)
+      if (flow) snapshot.goldFlow = flow
       this.update({ status: 'monitoring', snapshot, lastError: null })
     } catch (err) {
       const message =
