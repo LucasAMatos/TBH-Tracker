@@ -33,7 +33,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **F5 (P2):** Projeção para estágios ainda não medidos (modelo de tempo/retenção de XP).
 
 ### Heróis (P1) — `HeroSaveDatas[]`, `ArrangedHeroKey`
-- **H2 (P1):** Detectar level-ups (eventos).
+- **H2 (P1):** ✅ v11.0 — Detectar level-ups (eventos): compara `HeroLevel` entre snapshots e registra herói + nível anterior→novo + horário; seção **Level-ups** no Dashboard. *(Em memória, sem persistência — depende de I6 para histórico entre sessões.)*
 - **H5 (P1):** ✅ v6.0 — Nova aba **Heróis** com a visão completa do roster: os 6 heróis com estado **desbloqueado/bloqueado** (`IsUnLock`), nível e XP (progresso até o próximo nível), e dados do catálogo (papel, arma, tier, stats base, disponibilidade). Marcar quais estão **ativos** no momento (`arrangedHeroKey`). *Observável:* `heroSaveDatas[]` + catálogo de heróis. *(Barra de progresso de XP fica pendente: falta a curva de XP por nível.)*
 - **H6 (P1):** ✅ v6.0 — **Dashboard só com heróis ativos:** o card de heróis da tela principal passa a mostrar **apenas os heróis arranjados** (`arrangedHeroKey`, até 3), com nome/nível e indicação de **slots vazios** (`-1`). A lista completa do roster sai do dashboard e vai para a aba **Heróis** (H5).
 - **H7 (P2):** Herói **líder** em destaque no card de ativos (pendência herdada de H1) — identificar/marcar o líder da formação quando observável no save.

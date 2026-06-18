@@ -14,9 +14,31 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v10.0 — Progresso de estágio + heartbeat de status (S3, A2)
+## v11.0 — Detecção de level-ups de heróis (H2)
 
-> Sequência de versões: v9.0 entrega o H2 (level-ups). Esta release entra **após** a v9.0.
+> Renumerada de v9.0 para v11.0 após rebase sobre a `main` (que já tinha v8.0–v10.0).
+
+### Adicionado
+- **Level-ups (H2):** o app compara o **nível de cada herói** (`HeroLevel`) entre
+  leituras consecutivas do save e registra um evento quando um herói sobe de nível,
+  com **herói**, **nível anterior → novo** e **horário**. O Dashboard ganha uma seção
+  **"Level-ups"** com o log dos eventos recentes (mais recente primeiro).
+- `HeroEventsTracker` (`src/main/heroEvents.ts`): acumula os níveis observados da
+  sessão **em memória** e deriva os level-ups; a 1ª leitura de cada herói fixa a linha
+  de base (sem evento). Zera ao trocar de arquivo de save. Os dados viajam anexados ao
+  snapshot (`Snapshot.heroEvents`), sem mudanças no preload — mesmo padrão do fluxo de ouro.
+
+### Notas / limitações
+- **Sem persistência entre sessões** — o histórico vive na memória do processo enquanto
+  o app está aberto (persistência é o item **I6**, separado).
+- Depende do jogo **estar rodando** e gravando o save; só registra level-ups ocorridos
+  **após** a primeira leitura da sessão.
+
+Backlog entregue: H2.
+
+---
+
+## v10.0 — Progresso de estágio + heartbeat de status (S3, A2)
 
 ### Adicionado
 - **Progresso de estágio (S3):** o app compara o **estágio atual** (`CurrentStageKey`) e o
@@ -38,8 +60,8 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ### Pendência de processo
 - **Arquivamento do backlog (marco v10):** mover os itens entregues (✅) de `BACKLOG.md`
-  para `BACKLOG-HISTORICO.md`. Adiado para um passo dedicado após v9.0 e v10.0 estarem na
-  `main`, para refletir o estado real do backlog.
+  para `BACKLOG-HISTORICO.md`. Adiado para um passo dedicado após as versões em PR
+  (H2/H8) estarem na `main`, para refletir o estado real do backlog.
 
 Backlog entregue: S3, A2.
 
