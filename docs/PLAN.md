@@ -41,7 +41,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 
 | Tema | Opções | Observação |
 |------|--------|------------|
-| **Stack** | (a) .NET + WinForms (como o projeto antigo) · (b) Electron/web (como tbh-farm/tbh-copilot) · (c) outro | Web/Electron facilita a "aba TBHPedia" rica; .NET é o que já temos experiência |
+| **Stack** | ✅ **Electron + Vite + React + TypeScript** (decidido em 18/06/2026) | Facilita a "aba TBHPedia" rica; mesmo padrão de tbh-farm/tbh-copilot |
 | **Escopo do MVP** | Dashboard básico (ouro/estágio/baús) primeiro, farm depois | Ver fases abaixo |
 | **TBHPedia no app** | Reaproveitar o conteúdo do canvas/`TBHPEDIA.md` como aba navegável | Conteúdo já compilado |
 | **Detectar jogo ativo** | Inferir por mudança do save (seguro) vs. enumerar processo (evitar) | Preferir inferência pelo save |
@@ -49,7 +49,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 ## 4. Fases
 
 - **Fase 0 — Fundação:** pesquisa + TBHPedia + plano + backlog. ✅ (este documento)
-- **Fase 1 — MVP leitura:** localizar/descriptografar/parsear o save; Dashboard com ouro, estágio (DAPP decodificado), heróis, cubo, baús, máx. estágio; status (monitorando / sem chave / sem save).
+- **Fase 1 — MVP leitura:** ✅ *concluída.* localizar/descriptografar/parsear o save; Dashboard com ouro, estágio (DAPP decodificado), onda, heróis (com nome), cubo, baús, máx. estágio; status (monitorando / sem chave / sem save). Parser calibrado contra save real (estrutura `PlayerSaveData.value` duplamente codificada — ver TBHPEDIA › Save).
 - **Fase 2 — Farm analytics:** detecção de corridas, ouro/h e xp/h por estágio, histórico persistente, recomendação de melhor estágio (ouro / xp / combo).
 - **Fase 3 — Aba TBHPedia:** referência navegável dentro do app (heróis, estágios, cubo, runas, pets, raridades, baús).
 - **Fase 4 — Qualidade de vida:** alertas (baús perto de transbordar, level-up, novo estágio), gráficos de sessão, i18n PT/EN.

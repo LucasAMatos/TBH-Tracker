@@ -139,16 +139,25 @@ Soul Stones gateiam bosses de Ato (consumidas só ao vencer); dropam de baús (m
 
 Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Live.es3` (Easy Save 3: AES-CBC + PBKDF2-SHA1; chave extraída do `GameAssembly.dll`). Linux/Proton: sob `compatdata/3678970/pfx/...`.
 
-| Campo (save) | Conteúdo | Uso |
-|--------------|----------|-----|
-| `CommonSaveData.PlayTime` | Tempo de jogo (s) | Relógio das corridas |
-| `CommonSaveData.CurrentStageKey` | Estágio atual (DAPP) | Onde está farmando |
-| `CommonSaveData.CurrentStageWave` | Onda atual | Fim de corrida (onda→0 = clear) |
-| `CommonSaveData.MaxCompletedStage` | Estágio máx. concluído | Progresso / push |
-| `CommonSaveData.ArrangedHeroKey` | Heróis ativos | Nº de heróis (XP/h por herói) |
-| `CurrencySaveDatas` (key 100001) | Ouro | Ouro total e ouro/h |
-| `HeroSaveDatas[].HeroLevel/exp` | Nível e XP por herói | Level-ups, XP/h, retenção |
-| `CubeSaveLevelData.Level/Exp` | Cubo | Marcos (nível 10 = Trade Ship) |
-| `BoxData.BoxQuantity` | Baús não abertos | Contagem / transbordo |
-| `ItemSaveDatas[].ItemKey/UniqueId` | Itens/inventário | Drops novos por corrida |
-| `RuneSaveData[].RuneKey/Level` | Runas | Gasto de ouro (calibrar recuperação) |
+**Cripto (validado):** os 16 primeiros bytes são o IV, usado também como **salt** no PBKDF2-SHA1 (100 iterações, chave de 16 bytes / AES-128-CBC, PKCS7). Chave observada (v1.00.14): `emuMqG3bLYJ938ZDCfieWJ` (também hardcoded no `tbh-copilot`). **Pode mudar com patches.**
+
+**Estrutura real (validada em v1.00.14) — duplamente codificada:** o JSON externo tem `SystemInfo`, `PlayerSaveData`, `AccountSaveData`, cada um no formato ES3 `{ "__type": "string", "value": <...> }`. O `value` de `PlayerSaveData` é uma **string JSON** que precisa de novo `JSON.parse` → objeto `player`. (`SystemInfo.value` é base64 opaco.)
+
+| Caminho real (em `player`) | Conteúdo | Uso |
+|----------------------------|----------|-----|
+| `commonSaveData.playTime` | Tempo de jogo (s, float) | Relógio das corridas |
+| `commonSaveData.currentStageKey` | Estágio atual (DAPP, número) | Onde está farmando |
+| `commonSaveData.currentStageWave` | Onda atual | Fim de corrida (onda→0 = clear) |
+| `commonSaveData.maxCompletedStage` | Estágio máx. concluído (DAPP) | Progresso / push |
+| `commonSaveData.arrangedHeroKey` | Heróis ativos (array; `-1` = slot vazio) | Nº de heróis ativos |
+| `currenySaveDatas[]` (sic; `{Key,Quantity}`, Key 100001) | Ouro | Ouro total e ouro/h |
+| `heroSaveDatas[]` (`heroKey,HeroLevel,HeroExp,IsUnLock`) | Heróis | Level-ups, XP/h, composição |
+| `cubeSaveLevelData.Level/Exp` | Cubo | Marcos (nível 10 = Trade Ship) |
+| `BoxData.BoxQuantity[]` (soma por tipo) | Baús não abertos | Contagem / transbordo |
+| `itemSaveDatas[]` (`ItemKey,UniqueId,...`) | Itens/inventário | Drops novos por corrida |
+| `RuneSaveData[]` (`RuneKey,Level`) | Runas (197) | Gasto de ouro (calibrar recuperação) |
+| `PetSaveData[]` (`PetKey,IsUnlock`) | Pets (8) | Progresso de pets |
+| `attributeSaveDatas[]` (`Key,Level`) | Atributos da árvore | — |
+| `inventorySaveDatas[]` / `stashSaveDatas[]` | Slots de inventário/stash | Capacidade |
+
+> Nota: o nome do campo de moeda tem typo no próprio jogo (`currenySaveDatas`). heroKey: 101 Knight · 201 Ranger · 301 Sorcerer · 401 Priest · 501 Hunter · 601 Slayer.

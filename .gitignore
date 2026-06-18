@@ -1,0 +1,11 @@
+node_modules/
+out/
+dist/
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Nunca commitar a chave ES3 nem saves locais
+*.es3
+*.key
+local-secrets.json
