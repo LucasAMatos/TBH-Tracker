@@ -13,8 +13,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | # | Prioridade | Item | Por que é fácil |
 |---|-----------|------|-----------------|
 | H2 | P1 | Detectar level-ups | Comparar `HeroLevel` entre snapshots |
-| S3 | P1 | Detectar troca de estágio / novos desbloqueados | Diff de `CurrentStageKey`/`MaxCompletedStage` |
-| A2 | P2 | Heartbeat de status | Sinal quando não há mudança no save |
 | B3 | P2 | Estimar cooldowns de auto-abrir | Valores fixos (300s/600s), informativo |
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado

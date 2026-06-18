@@ -14,6 +14,37 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v10.0 — Progresso de estágio + heartbeat de status (S3, A2)
+
+> Sequência de versões: v9.0 entrega o H2 (level-ups). Esta release entra **após** a v9.0.
+
+### Adicionado
+- **Progresso de estágio (S3):** o app compara o **estágio atual** (`CurrentStageKey`) e o
+  **estágio máximo concluído** (`MaxCompletedStage`) entre leituras do save e registra
+  eventos de **troca de estágio** e **novo recorde** (estágio máximo avançou), com rótulo
+  legível e horário. O Dashboard ganha a seção **"Progresso de estágio"**.
+- **Heartbeat de status (A2):** o tracker emite um **pulso periódico** (5s) mesmo quando o
+  save não muda, atualizando `heartbeatAt`/`lastChangeAt`. A barra de status passa a mostrar
+  **"ativo · atualizado há Xs"** ou **"parado há Xs"** (sem mudança ≥ 30s) e um **ponto que
+  pulsa** enquanto o tracker está vivo.
+- `StageEventsTracker` (`src/main/stageEvents.ts`): acumula os estágios observados da sessão
+  **em memória** e deriva os eventos; a 1ª leitura fixa a linha de base. Zera ao trocar de
+  save. Dados anexados ao snapshot (`Snapshot.stageEvents`), sem mudanças no preload.
+
+### Notas / limitações
+- **Sem persistência entre sessões** (memória do processo enquanto o app está aberto — I6).
+- Os eventos dependem do jogo **estar rodando**; só registram mudanças após a 1ª leitura.
+- O heartbeat é **passivo**: apenas um timer no processo; não toca no jogo nem no save.
+
+### Pendência de processo
+- **Arquivamento do backlog (marco v10):** mover os itens entregues (✅) de `BACKLOG.md`
+  para `BACKLOG-HISTORICO.md`. Adiado para um passo dedicado após v9.0 e v10.0 estarem na
+  `main`, para refletir o estado real do backlog.
+
+Backlog entregue: S3, A2.
+
+---
+
 ## v8.0 — Análise detalhada do herói: stats com ranking + árvore de habilidades (H9)
 
 ### Adicionado

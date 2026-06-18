@@ -14,7 +14,9 @@ const EMPTY: TrackerState = {
   savePath: null,
   hasKey: false,
   lastError: null,
-  snapshot: null
+  snapshot: null,
+  lastChangeAt: null,
+  heartbeatAt: null
 }
 
 function formatVersion(raw: string): string {
