@@ -86,6 +86,26 @@ function parseBoxes(player: Json): number | null {
   return toNumber(qty)
 }
 
+/**
+ * Contador cumulativo de clears: aggregateSaveDatas, entrada {Type:15, SubKey:0}.
+ * Validado por amostragem: incrementa +1 a cada estagio limpo (independente de waves).
+ */
+const CLEAR_AGG_TYPE = 15
+const CLEAR_AGG_SUBKEY = 0
+function parseClearCount(player: Json): number | null {
+  const aggs = pick(player, ['aggregateSaveDatas', 'AggregateSaveDatas'])
+  const entries = Array.isArray(aggs) ? aggs : isObj(aggs) ? Object.values(aggs) : []
+  for (const entry of entries) {
+    if (!isObj(entry)) continue
+    const type = toNumber(pick(entry, ['Type', 'type']))
+    const sub = toNumber(pick(entry, ['SubKey', 'subKey', 'Subkey']))
+    if (type === CLEAR_AGG_TYPE && sub === CLEAR_AGG_SUBKEY) {
+      return toNumber(pick(entry, ['Value', 'value']))
+    }
+  }
+  return null
+}
+
 function parseArrangedHeroKeys(common: Json): (number | string)[] {
   const arranged = pick(common, ['arrangedHeroKey', 'ArrangedHeroKey', 'ArrangedHeroKeys'])
   if (Array.isArray(arranged)) {
@@ -144,6 +164,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     boxQuantity: parseBoxes(player),
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
+    clearCount: parseClearCount(player),
     raw: includeRaw ? player : undefined
   }
 }

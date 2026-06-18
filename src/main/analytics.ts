@@ -1,62 +1,71 @@
 import type { RunRecord, Snapshot } from '@shared/types'
 
+/** Acima disto, assume-se um gap (app/jogo fechado) e não se registram corridas. */
+const MAX_CLEARS_PER_WINDOW = 50
+
 /**
- * Detecta corridas (clears) a partir da sequência de snapshots.
+ * Detecta corridas (clears) a partir do contador cumulativo de clears do save
+ * (`Snapshot.clearCount`, aggregate Type 15 / SubKey 0).
  *
- * Sinal de clear: transição `currentStageWave > 0 → 0` (validado ao vivo: a onda
- * sobe durante a corrida e zera no clear, que dispara uma gravação do save).
- * Duração = delta de `playTime` entre clears consecutivos no mesmo estágio.
+ * Por quê não usar `currentStageWave → 0`: o jogo autossalva de forma esparsa
+ * (~a cada 28-30s) e o instante exato do clear (wave == 0) quase nunca coincide
+ * com uma gravação, então aquele sinal era raríssimo e media intervalos enormes.
  *
- * Limitação conhecida: o jogo autossalva de forma esparsa/irregular, então a
- * medição é aproximada (pode agregar corridas muito curtas). Refinável depois.
+ * Abordagem por contador (exata mesmo com save esparso):
+ *  - Entre dois snapshots no MESMO estágio, ΔclearCount = nº de corridas e
+ *    ΔplayTime = tempo total gasto nelas.
+ *  - Tempo por corrida = ΔplayTime / ΔclearCount (ciclo de farm, incluindo gaps
+ *    entre corridas — que é justamente o que importa pra ouro/h).
+ *  - Quando ΔclearCount == 1 (caso típico nessa cadência), o tempo é o da própria
+ *    corrida (~28s), em vez do antigo 2m46s.
  */
 export class RunDetector {
-  private lastClear: { stageRaw: string; playTime: number } | null = null
-  private prevWave: number | null = null
-  private prevStageRaw: string | null = null
+  private prev: { clearCount: number; playTime: number; stageRaw: string } | null = null
 
-  /** Processa um snapshot; retorna uma corrida se um clear medível foi detectado. */
-  process(snap: Snapshot): RunRecord | null {
+  /** Processa um snapshot; retorna 0+ corridas detectadas desde o último snapshot. */
+  process(snap: Snapshot): RunRecord[] {
     const stageRaw = snap.stage?.raw ?? null
-    const wave = snap.currentWave
+    const clearCount = snap.clearCount
     const play = snap.playTimeSeconds
 
-    if (stageRaw === null || wave === null || play === null) {
-      return null
+    if (stageRaw === null || clearCount === null || play === null) {
+      return []
     }
 
-    // Troca de estágio: zera a baseline (não medir entre estágios diferentes).
-    if (this.prevStageRaw !== null && this.prevStageRaw !== stageRaw) {
-      this.lastClear = null
+    const prev = this.prev
+    this.prev = { clearCount, playTime: play, stageRaw }
+
+    // Primeiro snapshot ou troca de estágio: apenas (re)estabelece a baseline.
+    if (!prev || prev.stageRaw !== stageRaw) {
+      return []
     }
 
-    let run: RunRecord | null = null
-    const isClear = this.prevWave !== null && this.prevWave > 0 && wave === 0
+    const deltaClears = clearCount - prev.clearCount
+    const deltaPlay = play - prev.playTime
 
-    if (isClear) {
-      if (this.lastClear && this.lastClear.stageRaw === stageRaw) {
-        const duration = Math.floor(play - this.lastClear.playTime)
-        if (duration > 0) {
-          run = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            stageRaw,
-            stageLabel: snap.stage?.label ?? stageRaw,
-            durationSeconds: duration,
-            endedAt: Date.now()
-          }
-        }
-      }
-      this.lastClear = { stageRaw, playTime: play }
+    // Sem clears novos, tempo inválido, ou gap improvável: nada a registrar.
+    if (deltaClears <= 0 || deltaPlay <= 0 || deltaClears > MAX_CLEARS_PER_WINDOW) {
+      return []
     }
 
-    this.prevWave = wave
-    this.prevStageRaw = stageRaw
-    return run
+    const perRun = Math.max(1, Math.round(deltaPlay / deltaClears))
+    const stageLabel = snap.stage?.label ?? stageRaw
+    const now = Date.now()
+
+    const runs: RunRecord[] = []
+    for (let i = 0; i < deltaClears; i++) {
+      runs.push({
+        id: `${now}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+        stageRaw,
+        stageLabel,
+        durationSeconds: perRun,
+        endedAt: now
+      })
+    }
+    return runs
   }
 
   reset(): void {
-    this.lastClear = null
-    this.prevWave = null
-    this.prevStageRaw = null
+    this.prev = null
   }
 }

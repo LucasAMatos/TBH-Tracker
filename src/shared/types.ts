@@ -35,6 +35,7 @@ export interface Snapshot {
   boxQuantity: number | null
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
+  clearCount: number | null // contador cumulativo de clears (aggregate Type 15 / SubKey 0)
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 

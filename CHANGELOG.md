@@ -19,16 +19,24 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 Início da Fase 2 (farm analytics).
 
 ### Adicionado
-- **Detecção de corridas (F1, parcial):** clear detectado pela transição
-  `currentStageWave > 0 → 0`; duração medida pelo delta de `playTime` entre clears
-  consecutivos no mesmo estágio. Validado com amostragem do save ao vivo.
+- **Detecção de corridas (F1, parcial):** corridas contadas pelo **contador cumulativo
+  de clears** do save (`aggregateSaveDatas` Type 15 / SubKey 0). Entre dois snapshots no
+  mesmo estágio: nº de corridas = Δcontador e tempo por corrida = Δ`playTime` ÷ Δcontador.
+  Validado por amostragem ao vivo.
 - **Aba Corridas:** histórico persistente (estágio + duração + quando), resumo
   (total, duração média, estágios farmados) e agregação por estágio. Botão para limpar.
 - Persistência local das corridas (`tbh-tracker-runs.json` em userData).
 
+### Corrigido
+- A detecção inicial usava a transição `currentStageWave > 0 → 0`, mas o jogo autossalva
+  esparsamente (~28-30s) e o instante do clear quase nunca era gravado, fazendo o tempo
+  agregar várias corridas (ex.: 1‑1 real ~26s marcava 2m46s). Trocado pelo método de
+  contador cumulativo, que é exato mesmo com save esparso.
+
 ### Notas / limitações
-- O jogo autossalva de forma esparsa/irregular, então a duração é **aproximada** (pode
-  agregar corridas muito curtas). Calibração e ouro/xp por corrida virão na F2.
+- O tempo por corrida tem um pequeno jitter (poucos segundos) da cadência de save; quando
+  duas corridas caem entre o mesmo par de saves, registra-se a **média** das duas.
+  Ouro/xp por corrida virão na F2.
 
 Backlog: F1 (parcial — estágio + tempo).
 

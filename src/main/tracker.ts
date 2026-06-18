@@ -69,8 +69,7 @@ export class Tracker {
       const snapshot = parseSnapshot(json, true)
       this.update({ status: 'monitoring', snapshot, lastError: null })
 
-      const run = this.detector.process(snapshot)
-      if (run) {
+      for (const run of this.detector.process(snapshot)) {
         runsStore.addRun(run)
         this.onRun(run)
       }

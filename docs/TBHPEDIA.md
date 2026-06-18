@@ -147,7 +147,10 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 |----------------------------|----------|-----|
 | `commonSaveData.playTime` | Tempo de jogo (s, float) | Relógio das corridas |
 | `commonSaveData.currentStageKey` | Estágio atual (DAPP, número) | Onde está farmando |
-| `commonSaveData.currentStageWave` | Onda atual | Fim de corrida (onda→0 = clear) |
+| `commonSaveData.currentStageWave` | Onda atual | Indicador de progresso (ver nota sobre detecção de corridas) |
+| `aggregateSaveDatas[]` `{Type:15,SubKey:0}` | **Contador cumulativo de clears** (+1 por estágio limpo) | Detecção/contagem de corridas |
+| `aggregateSaveDatas[]` `{Type:2,SubKey:0}` | Ouro total ganho (SubKey 1/2/3 = por ato) | Ouro/h acumulado |
+| `aggregateSaveDatas[]` `{Type:0,SubKey:0}` | Total de kills (SubKeys = IDs de monstro) | Estatísticas |
 | `commonSaveData.maxCompletedStage` | Estágio máx. concluído (DAPP) | Progresso / push |
 | `commonSaveData.arrangedHeroKey` | Heróis ativos (array; `-1` = slot vazio) | Nº de heróis ativos |
 | `currenySaveDatas[]` (sic; `{Key,Quantity}`, Key 100001) | Ouro | Ouro total e ouro/h |
@@ -161,3 +164,5 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 | `inventorySaveDatas[]` / `stashSaveDatas[]` | Slots de inventário/stash | Capacidade |
 
 > Nota: o nome do campo de moeda tem typo no próprio jogo (`currenySaveDatas`). heroKey: 101 Knight · 201 Ranger · 301 Sorcerer · 401 Priest · 501 Hunter · 601 Slayer.
+
+> **Detecção de corridas:** o jogo **autossalva esparsamente** (~28-30s, com backups rotativos `SaveFile_Live_N.es3.bak`), então o instante exato do clear (`currentStageWave == 0`) quase nunca é gravado. Em vez disso, contamos corridas pelo **delta do contador cumulativo de clears** (`aggregateSaveDatas` Type 15/SubKey 0) e medimos o tempo por corrida como Δ`playTime` ÷ Δcontador — exato mesmo com save esparso.
