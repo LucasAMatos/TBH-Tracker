@@ -2,6 +2,13 @@ import type { HeroEvents, HeroSnapshot, LevelUpEvent } from '@shared/types'
 
 const MAX_EVENTS = 50
 
+// Estado serializável para persistência entre sessões (I6).
+export interface HeroEventsState {
+  levels: [string, number][]
+  events: LevelUpEvent[]
+  sessionStartAt: number | null
+}
+
 /**
  * Detecta level-ups de heróis comparando o `HeroLevel` entre leituras consecutivas
  * do save (H2). A primeira vez que um herói é visto apenas registra a linha de base
@@ -19,6 +26,22 @@ export class HeroEventsTracker {
     this.levels.clear()
     this.events = []
     this.sessionStartAt = null
+  }
+
+  /** Estado serializável (para persistir entre sessões, I6). */
+  serialize(): HeroEventsState {
+    return {
+      levels: [...this.levels.entries()],
+      events: this.events,
+      sessionStartAt: this.sessionStartAt
+    }
+  }
+
+  /** Recarrega o estado persistido (ou começa vazio se não houver). */
+  restore(state: HeroEventsState | null): void {
+    this.levels = new Map(state?.levels ?? [])
+    this.events = state?.events ?? []
+    this.sessionStartAt = state?.sessionStartAt ?? null
   }
 
   /** Registra uma leitura de heróis. Emite eventos para níveis que subiram. */

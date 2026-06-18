@@ -89,3 +89,8 @@ app.on('window-all-closed', () => {
   tracker?.stop()
   if (process.platform !== 'darwin') app.quit()
 })
+
+// Garante o flush do histórico (I6) em qualquer caminho de saída (inclui macOS).
+app.on('before-quit', () => {
+  tracker?.stop()
+})

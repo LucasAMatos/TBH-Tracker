@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { decryptAndParseES3, Es3DecryptError } from './es3'
-import { GoldFlowTracker } from './goldFlow'
-import { HeroEventsTracker } from './heroEvents'
+import { GoldFlowTracker, type GoldFlowState } from './goldFlow'
+import { HeroEventsTracker, type HeroEventsState } from './heroEvents'
+import { flushHistory, loadHistory, saveHistory } from './history'
 import { locateSave } from './locator'
 import { parseSnapshot } from './parser'
-import { StageEventsTracker } from './stageEvents'
+import { StageEventsTracker, type StageEventsState } from './stageEvents'
 import * as store from './store'
 import { SaveWatcher } from './watcher'
 import type { TrackerState } from '@shared/types'
@@ -39,11 +40,12 @@ export class Tracker {
   /** (Re)avalia caminho do save, inicia o watcher e faz uma leitura. */
   start(): void {
     const savePath = store.getSavePathOverride() ?? locateSave()
-    // Trocar de arquivo de save zera o fluxo de ouro (sessão nova).
+    // Trocar de arquivo de save recarrega o histórico persistido daquele save (I6):
+    // o estado é isolado por caminho, então cada save retoma seus próprios eventos.
     if (savePath !== this.trackedPath) {
-      this.goldFlow.reset()
-      this.heroEvents.reset()
-      this.stageEvents.reset()
+      this.goldFlow.restore(loadHistory<GoldFlowState>(savePath, 'goldFlow'))
+      this.heroEvents.restore(loadHistory<HeroEventsState>(savePath, 'heroEvents'))
+      this.stageEvents.restore(loadHistory<StageEventsState>(savePath, 'stageEvents'))
       this.trackedPath = savePath
     }
     this.state.savePath = savePath
@@ -103,6 +105,10 @@ export class Tracker {
         snapshot.maxCompletedStage
       )
       if (stageEvents) snapshot.stageEvents = stageEvents
+      // Persiste o histórico desta leitura (I6, debounced por save).
+      saveHistory(savePath, 'goldFlow', this.goldFlow.serialize())
+      saveHistory(savePath, 'heroEvents', this.heroEvents.serialize())
+      saveHistory(savePath, 'stageEvents', this.stageEvents.serialize())
       const now = Date.now()
       this.update({
         status: 'monitoring',
@@ -143,5 +149,7 @@ export class Tracker {
       clearInterval(this.heartbeatTimer)
       this.heartbeatTimer = null
     }
+    // Garante que o histórico pendente (debounced) vá pro disco antes de fechar.
+    flushHistory()
   }
 }

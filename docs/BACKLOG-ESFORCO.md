@@ -20,7 +20,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | R3 | P2 | Runa-alvo + ouro faltante (com pré-requisitos) | Catálogo de custos/arestas já existe (v4.0); falta o cálculo de caminho |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ | Fácil se a raridade vier no item; senão precisa catálogo |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
-| I6 | P0 | Persistência local de histórico | Camada de storage reutilizável por vários itens |
 | N1 | P2 | Aba Atualizações (Steam News) | HTTP fetch + render; 1ª feature de rede externa |
 | U9 | P2 | Aba Atualizações (UI) | Render do feed do N1 |
 | U4 | P2 | Eventos coloridos / log | Depende de G3/H2/S3 (detecção de eventos) |
