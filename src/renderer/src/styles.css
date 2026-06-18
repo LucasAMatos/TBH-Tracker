@@ -368,6 +368,193 @@ body {
   font-size: 12px;
 }
 
+/* Heróis ativos (slots da formação) */
+.heroslots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.heroslot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.heroslot--empty {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.heroslot__slot {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.heroslot__name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.heroslot--empty .heroslot__name {
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.heroslot__meta {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+/* Aba Heróis — roster completo */
+.herogrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.herocard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.herocard--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.herocard--locked {
+  opacity: 0.6;
+}
+
+.herocard__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.herocard__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.herocard__name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tierbadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--border);
+  color: var(--text);
+}
+
+.tierbadge--s {
+  background: rgba(255, 176, 32, 0.18);
+  color: var(--accent);
+}
+
+.tierbadge--a {
+  background: rgba(63, 185, 80, 0.18);
+  color: var(--ok);
+}
+
+.tierbadge--b {
+  background: rgba(139, 148, 158, 0.18);
+  color: var(--text-dim);
+}
+
+.herotag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.herotag--active {
+  background: rgba(255, 176, 32, 0.18);
+  color: var(--accent);
+}
+
+.herotag--unlocked {
+  background: rgba(63, 185, 80, 0.18);
+  color: var(--ok);
+}
+
+.herotag--locked {
+  background: rgba(139, 148, 158, 0.15);
+  color: var(--text-dim);
+}
+
+.herocard__meta {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.herocard__progress {
+  display: flex;
+  gap: 24px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.herocard__progress > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.herocard__level,
+.herocard__exp {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.herostats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+.herostat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.herostat__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+}
+
+.herostat__value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* Editor de limiares de baús */
 .threshold {
   display: flex;

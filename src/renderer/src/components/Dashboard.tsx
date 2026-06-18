@@ -8,7 +8,10 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
-import type { BoxCount, Snapshot } from '@shared/types'
+import type { BoxCount, HeroSnapshot, Snapshot } from '@shared/types'
+
+// A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
+const HERO_SLOTS = 3
 
 function fmtNum(n: number | null): string {
   if (n === null || n === undefined) return '—'
@@ -164,11 +167,43 @@ function BoxesSection({
   )
 }
 
+function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
+  return (
+    <section className="section">
+      <h3 className="section__title">Heróis ativos</h3>
+      <div className="heroslots">
+        {slots.map((h, i) =>
+          h ? (
+            <div className="heroslot" key={`${h.key}-${i}`}>
+              <span className="heroslot__slot">Slot {i + 1}</span>
+              <span className="heroslot__name">{h.name}</span>
+              <span className="heroslot__meta">Nível {h.level ?? '—'}</span>
+            </div>
+          ) : (
+            <div className="heroslot heroslot--empty" key={`empty-${i}`}>
+              <span className="heroslot__slot">Slot {i + 1}</span>
+              <span className="heroslot__name">Vazio</span>
+              <span className="heroslot__meta">slot livre</span>
+            </div>
+          )
+        )}
+      </div>
+      <p className="card__hint">Roster completo (todos os 6 heróis) vai para a aba Heróis (H5).</p>
+    </section>
+  )
+}
+
 export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
   const [showRaw, setShowRaw] = useState(false)
   const [boxThresholds, setBoxThresholds] = useState<BoxThresholds>(DEFAULT_BOX_THRESHOLDS)
   const s = snapshot
   const activeHeroes = s.heroes.filter((h) => h.active)
+  // Slots da formação na ordem de arrangedHeroKey; preenche com null os slots vazios (-1).
+  const heroSlots: (HeroSnapshot | null)[] = Array.from({ length: HERO_SLOTS }, (_, i) => {
+    const key = s.arrangedHeroKeys[i]
+    if (key === undefined) return null
+    return s.heroes.find((h) => String(h.key) === String(key)) ?? null
+  })
   const nextCube = nextCubeMilestone(s.cubeLevel)
   const boxLevel = classifyBoxBacklog(s.boxQuantity, boxThresholds)
 
@@ -228,7 +263,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
         />
         <Card
           label="Herois ativos"
-          value={activeHeroes.length ? String(activeHeroes.length) : String(s.heroes.length || '—')}
+          value={`${activeHeroes.length} / ${HERO_SLOTS}`}
+          hint={s.heroes.length ? `${s.heroes.length} no roster` : undefined}
         />
         <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
       </div>
@@ -276,35 +312,7 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
         </section>
       )}
 
-      {s.heroes.length > 0 && (
-        <section className="section">
-          <h3 className="section__title">Herois</h3>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Herói</th>
-                <th>Nível</th>
-                <th>XP</th>
-                <th>Desbloqueado</th>
-                <th>Ativo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {s.heroes.map((h, i) => (
-                <tr key={`${h.key}-${i}`}>
-                  <td>
-                    {h.name} <span className="card__hint">({String(h.key)})</span>
-                  </td>
-                  <td>{h.level ?? '—'}</td>
-                  <td>{fmtNum(h.exp)}</td>
-                  <td>{h.unlocked ? 'sim' : '—'}</td>
-                  <td>{h.active ? 'sim' : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      )}
+      {s.heroes.length > 0 && <ActiveHeroesSection slots={heroSlots} />}
 
       <section className="section">
         <button className="btn btn--ghost" onClick={() => setShowRaw((v) => !v)}>
