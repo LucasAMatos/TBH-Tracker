@@ -16,6 +16,7 @@ import type {
   Snapshot,
   StageEvents
 } from '@shared/types'
+import { heroPortrait } from '../data/heroPortraits'
 
 // A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
 const HERO_SLOTS = 3
@@ -314,6 +315,9 @@ function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX
         {slots.map((h, i) =>
           h ? (
             <div className="heroslot" key={`${h.key}-${i}`}>
+              {heroPortrait(h.key) && (
+                <img className="heroavatar heroavatar--sm" src={heroPortrait(h.key)} alt="" />
+              )}
               <span className="heroslot__slot">Slot {i + 1}</span>
               <span className="heroslot__name">{h.name}</span>
               <span className="heroslot__meta">Nível {h.level ?? '—'}</span>

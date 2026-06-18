@@ -14,6 +14,24 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v12.0 — Retratos dos heróis (H8)
+
+> Renumerada de v11.0 para v12.0 após rebase sobre a `main` (que já recebeu o H2 em v11.0).
+
+### Adicionado
+- **Retratos dos heróis (H8):** as artes dos 6 heróis (baixadas da TBH Wiki) passam a
+  aparecer nos **cards do roster** e no **detalhe do herói** (aba Heróis) e nos **heróis
+  ativos** do Dashboard. Mesmo padrão dos ícones de runa (v4.0): assets versionados em
+  `src/renderer/src/assets/heroes/`, **mapeados por `heroKey`** e resolvidos pelo Vite.
+- `scripts/gen-heroes.cjs`: baixa os retratos (`Arrage_ChaAnim_<asset>_Large_0.png`) para
+  `assets/heroes/<heroKey>.png`. O Hunter usa o nome interno **"Abalist"** no asset do jogo.
+- `src/renderer/src/data/heroPortraits.ts`: helper `heroPortrait(heroKey)` via `import.meta.glob`.
+
+### Notas
+- Assets são de fã/comunidade (TBH Wiki, ver `FONTES.md`); podem mudar com patches.
+
+---
+
 ## v11.0 — Detecção de level-ups de heróis (H2)
 
 > Renumerada de v9.0 para v11.0 após rebase sobre a `main` (que já tinha v8.0–v10.0).

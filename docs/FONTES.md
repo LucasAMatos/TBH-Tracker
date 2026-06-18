@@ -8,7 +8,7 @@ fãs/comunidade — **valores e chaves podem mudar com patches**.
 
 | Fonte | Link | Usado para |
 |-------|------|-----------|
-| TBH Wiki (PT) | https://taskbarhero.wiki/pt/heroes | **Imagens/ícones dos heróis** (6) e atributos; ícones de runas (v4.0/R1). Páginas por herói (ex.: `/pt/heroes/ranger`) trazem **stats base com ranking entre os 6** e a **árvore de habilidades por tier** (passivas/ativas, custos) — base do catálogo `heroes.ts` (H9). Tem ainda equipamento, fases, habilidades, runas, cubo, mascotes e "Inspetor de save". |
+| TBH Wiki (PT) | https://taskbarhero.wiki/pt/heroes | **Imagens/ícones dos heróis** (6) e atributos; ícones de runas (v4.0/R1). Páginas por herói (ex.: `/pt/heroes/ranger`) trazem **stats base com ranking entre os 6** e a **árvore de habilidades por tier** (passivas/ativas, custos) — base do catálogo `heroes.ts` (H9). **Retratos dos heróis (H8):** `game/ui/Arrage_ChaAnim_<asset>_Large_0.png` — assets: Knight, Ranger, Sorcerer, Priest, **Abalist** (=Hunter), Slayer; baixados por `scripts/gen-heroes.cjs`. Tem ainda equipamento, fases, habilidades, runas, cubo, mascotes e "Inspetor de save". |
 | taskbarherowiki.com | https://taskbarherowiki.com | Categorias oficiais das runas (Baús, Herói, Ouro, EXP, Ranhuras, Offline, Cubo, Combate), sobrepostas por `key`. |
 | taskbarhero.org | https://taskbarhero.org | Referência geral (datamine de lançamento). |
 | task-bar-hero.wiki | https://task-bar-hero.wiki | Referência geral. |

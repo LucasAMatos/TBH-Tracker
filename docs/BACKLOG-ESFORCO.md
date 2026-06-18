@@ -18,7 +18,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
-| H8 | P2 | Retratos/ícones dos heróis | Baixar assets + mapear por `heroKey` (padrão runas v4.0) |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | R3 | P2 | Runa-alvo + ouro faltante (com pré-requisitos) | Catálogo de custos/arestas já existe (v4.0); falta o cálculo de caminho |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ | Fácil se a raridade vier no item; senão precisa catálogo |
