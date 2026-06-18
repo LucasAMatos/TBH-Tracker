@@ -14,6 +14,20 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v3.0 — Alertas de marcos do Cubo (C2)
+
+### Adicionado
+- **Marcos do Hero-dric Cube** no Dashboard: card do Cubo mostra o próximo
+  desbloqueio (ex.: "Próx: Nv 10 · Removal + Trade Ship") e uma nova seção
+  **"Marcos do Cubo"** lista todos os marcos por nível (4 = desbloqueio · 5 =
+  Crafting · 8 = Decoration · 10 = Removal + Trade Ship) com estado
+  alcançado/próximo/bloqueado e um alerta de quantos níveis faltam para o próximo.
+- Catálogo de marcos em `src/shared/cube.ts` (fonte: `docs/TBHPEDIA.md`).
+
+Backlog entregue: C2.
+
+---
+
 ## v2.0 — Aba TBHPedia
 
 ### Adicionado
