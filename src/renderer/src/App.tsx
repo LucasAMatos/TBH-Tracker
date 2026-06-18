@@ -12,13 +12,22 @@ const EMPTY: TrackerState = {
   snapshot: null
 }
 
+function formatVersion(raw: string): string {
+  const [major = '0', minor = '0'] = raw.split('.')
+  return `v${major}.${minor}`
+}
+
 export function App(): JSX.Element {
   const [state, setState] = useState<TrackerState>(EMPTY)
+  const [version, setVersion] = useState('')
 
   useEffect(() => {
     let mounted = true
     window.tbh.getState().then((s) => {
       if (mounted && s) setState(s)
+    })
+    window.tbh.getVersion().then((v) => {
+      if (mounted && v) setVersion(formatVersion(v))
     })
     const off = window.tbh.onState((s) => setState(s))
     return () => {
@@ -33,7 +42,9 @@ export function App(): JSX.Element {
         <div className="app__brand">
           <span className="app__logo">TBH</span>
           <div>
-            <h1>TBH-Tracker</h1>
+            <h1>
+              TBH-Tracker {version && <span className="app__version">{version}</span>}
+            </h1>
             <p className="app__subtitle">Leitura passiva do save · Task Bar Hero</p>
           </div>
         </div>

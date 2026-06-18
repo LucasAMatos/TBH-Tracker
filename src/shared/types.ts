@@ -49,6 +49,7 @@ export interface TrackerState {
 // API exposta ao renderer via preload (window.tbh)
 export interface TbhApi {
   getState(): Promise<TrackerState>
+  getVersion(): Promise<string>
   setKey(key: string): Promise<TrackerState>
   hasKey(): Promise<boolean>
   setSavePathOverride(path: string | null): Promise<TrackerState>

@@ -1,0 +1,26 @@
+---
+description: Convenções do projeto TBH-Tracker (backlog + versionamento)
+globs: TBH-Tracker/**
+alwaysApply: false
+---
+
+# TBH-Tracker — fluxo de trabalho
+
+## Backlog
+- Sempre que entregar um item de `docs/BACKLOG.md`, **atualizar o backlog** marcando-o
+  como `✅ vA.B` (a versão em que foi entregue). Itens pendentes ficam `⬜`.
+
+## Versionamento (`va.b`)
+- Formato **`va.b`**: `a` sobe a cada **nova implementação** (feature); `b` sobe a cada
+  **fix**. Ao subir `a`, zera `b`. Ex.: `v1.0` → feature → `v2.0`; `v2.0` → fix → `v2.1`.
+- A cada release: atualizar `package.json` (`a.b.0`), adicionar entrada no `CHANGELOG.md`
+  e criar tag git `vA.B` (`git tag -a vA.B -m ...` + `git push --tags`).
+- O app exibe a versão no cabeçalho (vinda de `package.json` via `app.getVersion()`).
+
+## Segurança (inegociável)
+- Tracker é **somente leitura e passivo**: só lê o arquivo de save quando ele muda.
+- **Nunca** ler/escrever memória do jogo, anexar a processo, injetar, automatizar input
+  ou modificar o save. A chave ES3 nunca é commitada.
+
+## Repositório
+- Pessoal (GitHub `github.com/LucasAMatos/TBH-Tracker`), branch padrão `main`.

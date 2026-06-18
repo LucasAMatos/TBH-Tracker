@@ -41,6 +41,7 @@ function createWindow(): void {
 
 function registerIpc(): void {
   ipcMain.handle('tbh:getState', () => tracker?.getState())
+  ipcMain.handle('tbh:getVersion', () => app.getVersion())
   ipcMain.handle('tbh:hasKey', () => store.hasKey())
 
   ipcMain.handle('tbh:setKey', (_e, key: string) => {

@@ -3,6 +3,7 @@ import type { TrackerState } from '@shared/types'
 
 const api = {
   getState: () => ipcRenderer.invoke('tbh:getState'),
+  getVersion: () => ipcRenderer.invoke('tbh:getVersion'),
   setKey: (key: string) => ipcRenderer.invoke('tbh:setKey', key),
   hasKey: () => ipcRenderer.invoke('tbh:hasKey'),
   setSavePathOverride: (path: string | null) =>
