@@ -119,7 +119,10 @@ export const TBHPEDIA: PediaSection[] = [
     id: 'runas',
     title: 'Árvore de Runas',
     icon: '🌳',
-    intro: ['197 nós, abre ~nível 3.'],
+    intro: [
+      '197 nós, abre ~nível 3.',
+      'A aba Runas tem o mapa interativo (zoom/pan) com seus níveis atuais, efeitos e custos.'
+    ],
     tables: [
       {
         headers: ['Direção / nó', 'Foco'],
@@ -136,7 +139,8 @@ export const TBHPEDIA: PediaSection[] = [
     ],
     notes: [
       'Prioridade comum: slots de herói → offline → automação Extremo Norte → ouro/XP → Despertar.',
-      'Nós finais 1–3M; zona de ouro começa ~20M; última stash 50M.'
+      'Nós finais 1–3M; zona de ouro começa ~20M; última stash 50M.',
+      'Catálogo (nomes/efeitos pt-BR, posições, custos) e ícones: taskbarhero.wiki. RuneKey do save = key do catálogo.'
     ]
   },
   {
