@@ -32,11 +32,17 @@ Início da Fase 2 (farm analytics).
   esparsamente (~28-30s) e o instante do clear quase nunca era gravado, fazendo o tempo
   agregar várias corridas (ex.: 1‑1 real ~26s marcava 2m46s). Trocado pelo método de
   contador cumulativo, que é exato mesmo com save esparso.
+- Outliers curtos (ex.: corridas de ~11-13s que não constavam no log do jogo): o save
+  grava também **fora de ciclo** e o clear às vezes caía numa janela curta entre dois
+  saves, enquanto a janela vizinha (com a maior parte do playTime) ficava com 0 clears.
+  Corrigido medindo **de clear-a-clear** (a baseline só avança quando o contador sobe,
+  acumulando playTime através dos saves intermediários) e descartando a 1ª medição após
+  iniciar/trocar de estágio (warm-up).
 
 ### Notas / limitações
-- O tempo por corrida tem um pequeno jitter (poucos segundos) da cadência de save; quando
-  duas corridas caem entre o mesmo par de saves, registra-se a **média** das duas.
-  Ouro/xp por corrida virão na F2.
+- O tempo por corrida pode ter um leve viés (poucos segundos) porque o save que registra
+  o clear às vezes chega um pouco depois do clear de fato; sem os outliers grosseiros de
+  antes. A média de muitas corridas converge para o valor real. Ouro/xp por corrida virão na F2.
 
 Backlog: F1 (parcial — estágio + tempo).
 
