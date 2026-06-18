@@ -458,6 +458,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.levelup__hero {
+  font-weight: 600;
+}
+
+.levelup__delta {
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* Eventos de estágio (S3) */
 .stageevt__label {
   display: flex;

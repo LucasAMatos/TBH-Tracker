@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { decryptAndParseES3, Es3DecryptError } from './es3'
 import { GoldFlowTracker } from './goldFlow'
+import { HeroEventsTracker } from './heroEvents'
 import { locateSave } from './locator'
 import { parseSnapshot } from './parser'
 import { StageEventsTracker } from './stageEvents'
@@ -15,6 +16,7 @@ const HEARTBEAT_MS = 5000
 export class Tracker {
   private watcher: SaveWatcher | null = null
   private goldFlow = new GoldFlowTracker()
+  private heroEvents = new HeroEventsTracker()
   private stageEvents = new StageEventsTracker()
   private heartbeatTimer: NodeJS.Timeout | null = null
   private trackedPath: string | null = null
@@ -40,6 +42,7 @@ export class Tracker {
     // Trocar de arquivo de save zera o fluxo de ouro (sessão nova).
     if (savePath !== this.trackedPath) {
       this.goldFlow.reset()
+      this.heroEvents.reset()
       this.stageEvents.reset()
       this.trackedPath = savePath
     }
@@ -92,6 +95,8 @@ export class Tracker {
       const snapshot = parseSnapshot(json, true)
       const flow = this.goldFlow.record(snapshot.capturedAt, snapshot.gold)
       if (flow) snapshot.goldFlow = flow
+      const heroEvents = this.heroEvents.record(snapshot.capturedAt, snapshot.heroes)
+      if (heroEvents) snapshot.heroEvents = heroEvents
       const stageEvents = this.stageEvents.record(
         snapshot.capturedAt,
         snapshot.stage,

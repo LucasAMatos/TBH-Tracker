@@ -5,6 +5,10 @@ dist/
 *.tsbuildinfo
 .DS_Store
 
+# Arquivos temporários do agente (mensagens de commit / corpo de PR)
+.commit-msg.txt
+.pr-body.md
+
 # Nunca commitar a chave ES3 nem saves locais
 *.es3
 *.key

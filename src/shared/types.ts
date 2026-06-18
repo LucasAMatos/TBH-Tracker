@@ -51,6 +51,21 @@ export interface GoldFlow {
   events: GoldEvent[] // eventos recentes (mais recente primeiro), limitados
 }
 
+// Um level-up de herói detectado entre duas leituras consecutivas do save (H2).
+export interface LevelUpEvent {
+  at: number // epoch ms da leitura em que o nível subiu
+  heroKey: number | string
+  heroName: string
+  fromLevel: number // nível anterior
+  toLevel: number // nível resultante
+}
+
+// Eventos de heróis da sessão atual (em memória, sem persistência — I6 é separado).
+export interface HeroEvents {
+  sessionStartAt: number // 1ª leitura com heróis na sessão (epoch ms)
+  levelUps: LevelUpEvent[] // level-ups recentes (mais recente primeiro), limitados
+}
+
 // Um evento de progresso de estágio detectado entre duas leituras do save (S3).
 export type StageEventKind =
   | 'stage-change' // o estágio atual (CurrentStageKey) mudou
@@ -92,6 +107,7 @@ export interface Snapshot {
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
+  heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)
   stageEvents?: StageEvents // eventos de estágio da sessão (preenchido pelo Tracker)
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }

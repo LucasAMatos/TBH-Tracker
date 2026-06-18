@@ -8,7 +8,14 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
-import type { BoxCount, GoldFlow, HeroSnapshot, Snapshot, StageEvents } from '@shared/types'
+import type {
+  BoxCount,
+  GoldFlow,
+  HeroEvents,
+  HeroSnapshot,
+  Snapshot,
+  StageEvents
+} from '@shared/types'
 
 // A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
 const HERO_SLOTS = 3
@@ -238,6 +245,33 @@ function GoldFlowSection({ flow }: { flow: GoldFlow }): JSX.Element {
   )
 }
 
+function LevelUpsSection({ heroEvents }: { heroEvents: HeroEvents }): JSX.Element {
+  const events = heroEvents.levelUps
+  return (
+    <section className="section">
+      <h3 className="section__title">Level-ups</h3>
+      {events.length > 0 ? (
+        <ul className="goldlog">
+          {events.map((e) => (
+            <li className="goldlog__item" key={`${e.at}-${e.heroKey}-${e.toLevel}`}>
+              <span className="goldlog__time">{fmtClock(e.at)}</span>
+              <span className="levelup__hero">{e.heroName}</span>
+              <span className="levelup__delta">
+                Nv {e.fromLevel} → {e.toLevel}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="card__hint">
+          Coletando… os level-ups aparecem conforme os heróis sobem de nível (o jogo precisa
+          estar rodando). Só registra a partir da 1ª leitura da sessão.
+        </p>
+      )}
+    </section>
+  )
+}
+
 function StageEventsSection({ stageEvents }: { stageEvents: StageEvents }): JSX.Element {
   const events = stageEvents.events
   return (
@@ -381,6 +415,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
       </div>
 
       {flow && <GoldFlowSection flow={flow} />}
+
+      {s.heroEvents && <LevelUpsSection heroEvents={s.heroEvents} />}
 
       {s.stageEvents && <StageEventsSection stageEvents={s.stageEvents} />}
 
