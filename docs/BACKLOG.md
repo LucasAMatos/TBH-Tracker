@@ -68,7 +68,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 |---|------|-------|
 | U1 (P0) ✅ v1.0 | Dashboard com cards (ouro, estágio, heróis, cubo, baús, máx. estágio) | MVP |
 | U2 (P1) | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Depende de F1–F4 |
-| U3 (P1) | Aba **TBHPedia** navegável dentro do app | Conteúdo já em TBHPEDIA.md / canvas |
+| U3 (P1) ✅ v2.0 | Aba **TBHPedia** navegável dentro do app | Conteúdo já em TBHPEDIA.md / canvas |
 | U4 (P2) | Eventos coloridos / log de atividade | Progress, gold, level-up, chest |
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
 | U6 (P3) | i18n PT/EN | Jogo já é multilíngue |

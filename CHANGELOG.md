@@ -14,6 +14,19 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v2.0 — Aba TBHPedia
+
+### Adicionado
+- Navegação por abas no app (Dashboard | TBHPedia).
+- Aba **TBHPedia** navegável estilo Civilopedia, com conteúdo do `docs/TBHPEDIA.md`
+  estruturado em dados: visão geral, heróis, estágios/atos, cubo, runas, pets, raridades,
+  baús & soul stones e segurança/anti-cheat.
+- Busca de texto que filtra as seções da TBHPedia.
+
+Backlog entregue: U3.
+
+---
+
 ## v1.0 — Fase 1: MVP de leitura
 
 Primeira versão funcional. Tracker somente-leitura do save do TBH.
