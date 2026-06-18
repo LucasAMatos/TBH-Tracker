@@ -7,6 +7,7 @@ import {
   type HeroTier
 } from '@shared/heroes'
 import type { HeroSnapshot } from '@shared/types'
+import { heroPortrait } from '../data/heroPortraits'
 
 function fmtNum(n: number | null | undefined): string {
   if (n === null || n === undefined) return '—'
@@ -54,10 +55,15 @@ function HeroCard({ row, onOpen }: { row: HeroRow; onOpen: () => void }): JSX.El
     (row.active ? ' herocard--active' : '') +
     (!row.unlocked ? ' herocard--locked' : '')
 
+  const portrait = heroPortrait(c.key)
+
   return (
     <button type="button" className={cls} onClick={onOpen}>
       <header className="herocard__head">
         <div className="herocard__title">
+          {portrait && (
+            <img className="heroavatar heroavatar--sm" src={portrait} alt="" loading="lazy" />
+          )}
           <span className="herocard__name">{c.namePt}</span>
           <span className={`tierbadge tierbadge--${c.tier.toLowerCase()}`}>Tier {c.tier}</span>
         </div>
@@ -147,6 +153,7 @@ function TierBlock({ tier, heroLevel }: { tier: HeroTier; heroLevel: number | nu
 function HeroDetail({ row, onBack }: { row: HeroRow; onBack: () => void }): JSX.Element {
   const c = row.catalog
   const skillPoints = row.level // 1 ponto por nível
+  const portrait = heroPortrait(c.key)
 
   return (
     <div className="herodetail">
@@ -156,16 +163,21 @@ function HeroDetail({ row, onBack }: { row: HeroRow; onBack: () => void }): JSX.
 
       <section className="section">
         <div className="herodetail__head">
-          <div className="herodetail__title">
-            <span className="herocard__name">{c.namePt}</span>
-            <span className="herodetail__en">{c.name}</span>
-            <span className={`tierbadge tierbadge--${c.tier.toLowerCase()}`}>Tier {c.tier}</span>
-            <HeroTag row={row} />
+          {portrait && (
+            <img className="heroavatar heroavatar--lg" src={portrait} alt={c.namePt} />
+          )}
+          <div className="herodetail__heading">
+            <div className="herodetail__title">
+              <span className="herocard__name">{c.namePt}</span>
+              <span className="herodetail__en">{c.name}</span>
+              <span className={`tierbadge tierbadge--${c.tier.toLowerCase()}`}>Tier {c.tier}</span>
+              <HeroTag row={row} />
+            </div>
+            <p className="herocard__meta">
+              {c.role} · {c.weapon} + {c.offHand} · {c.availability} · {c.unlock}
+            </p>
+            <p className="herodetail__desc">{c.description}</p>
           </div>
-          <p className="herocard__meta">
-            {c.role} · {c.weapon} + {c.offHand} · {c.availability} · {c.unlock}
-          </p>
-          <p className="herodetail__desc">{c.description}</p>
         </div>
 
         <div className="herodetail__live">
