@@ -14,6 +14,12 @@ export interface StageInfo {
   label: string // ex.: "Normal · Ato 1 · Fase 1"
 }
 
+// Nível observado de um nó da árvore de runas (apenas nós com nível > 0).
+export interface RuneLevel {
+  key: number // RuneKey (== key do catálogo runeTree)
+  level: number
+}
+
 export interface HeroSnapshot {
   key: number | string
   name: string
@@ -35,6 +41,7 @@ export interface Snapshot {
   boxQuantity: number | null
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
+  runes: RuneLevel[] // nós da árvore de runas com nível > 0
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 

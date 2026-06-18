@@ -1,6 +1,6 @@
 import { heroName } from '@shared/heroes'
 import { decodeStage } from '@shared/stage'
-import type { HeroSnapshot, Snapshot } from '@shared/types'
+import type { HeroSnapshot, RuneLevel, Snapshot } from '@shared/types'
 
 type Json = unknown
 
@@ -86,6 +86,21 @@ function parseBoxes(player: Json): number | null {
   return toNumber(qty)
 }
 
+/** Runas: RuneSaveData[] {RuneKey, Level}. Mantemos so os nos com nivel > 0. */
+function parseRunes(player: Json): RuneLevel[] {
+  const list = pick(player, ['RuneSaveData', 'runeSaveData', 'RuneSaveDatas'])
+  const arr = Array.isArray(list) ? list : isObj(list) ? Object.values(list) : []
+  const out: RuneLevel[] = []
+  for (const entry of arr) {
+    if (!isObj(entry)) continue
+    const key = toNumber(pick(entry, ['RuneKey', 'runeKey', 'Key', 'key']))
+    const level = toNumber(pick(entry, ['Level', 'level']))
+    if (key === null || level === null || level <= 0) continue
+    out.push({ key, level })
+  }
+  return out
+}
+
 function parseArrangedHeroKeys(common: Json): (number | string)[] {
   const arranged = pick(common, ['arrangedHeroKey', 'ArrangedHeroKey', 'ArrangedHeroKeys'])
   if (Array.isArray(arranged)) {
@@ -144,6 +159,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     boxQuantity: parseBoxes(player),
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
+    runes: parseRunes(player),
     raw: includeRaw ? player : undefined
   }
 }

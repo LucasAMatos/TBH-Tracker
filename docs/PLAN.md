@@ -53,7 +53,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 - **Fase 2 — Farm analytics:** detecção de corridas, ouro/h e xp/h por estágio, histórico persistente, recomendação de melhor estágio (ouro / xp / combo).
 - **Fase 3 — Aba TBHPedia:** ✅ v2.0 (entregue antes da Fase 2). referência navegável dentro do app (heróis, estágios, cubo, runas, pets, raridades, baús).
 - **Fase 4 — Qualidade de vida:** alertas (baús perto de transbordar, level-up, novo estágio), gráficos de sessão, i18n PT/EN.
-- **Fase 5 — Extras:** suporte Proton/Linux, ~~marcos do Cubo~~ (✅ v3.0 / C2), calibração de gasto de runas, exportação de dados.
+- **Fase 5 — Extras:** suporte Proton/Linux, ~~marcos do Cubo~~ (✅ v3.0 / C2), ~~níveis/mapa de runas~~ (✅ v4.0 / R1), calibração de gasto de runas, exportação de dados.
 
 ## 5. Estrutura de docs
 

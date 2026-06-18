@@ -14,6 +14,29 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v4.0 — Árvore de Runas (R1)
+
+### Adicionado
+- Nova aba **Runas** com o **mapa da árvore de runas** (197 nós) com **zoom** (roda
+  do mouse) e **pan** (arrastar). Nós trazem o ícone da runa, ficam acesos conforme
+  o nível observado no save e mostram `nível/máx`; arestas conectam os nós e
+  destacam o caminho já desbloqueado.
+- **Painel de detalhes** ao clicar numa runa: nome e efeito em pt-BR, categoria,
+  nível atual/máximo e custo em ouro (próximo nível ou total investido).
+- **Resumo** no topo: nós desbloqueados/total, nós no máximo e contagem pelas
+  categorias oficiais (Baús, Herói, Ouro, EXP, Ranhuras, Offline, Cubo, Combate).
+- Parsing de `RuneSaveData[]` (`RuneKey` + `Level`) no snapshot (`runes`), guardando
+  só os nós com nível > 0.
+- Catálogo de runas em `src/shared/runeTree.ts` (197 nós: posição `x,y`, nome/efeito
+  pt-BR, ícone, `maxLevel`, valores e **custo em ouro por nível**) + helpers em
+  `src/shared/runes.ts`. Ícones (39 únicos) baixados de `taskbarhero.wiki`; categorias
+  oficiais sobrepostas por `key` a partir de `taskbarherowiki.com`.
+- O `RuneKey` do save bate **1:1** com a `key` do catálogo (join direto).
+
+Backlog entregue: R1. (Base para R2 — custos de runa já catalogados.)
+
+---
+
 ## v3.0 — Alertas de marcos do Cubo (C2)
 
 ### Adicionado

@@ -55,8 +55,8 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **D2 (P3):** Classificar por raridade (catálogo) e destacar Legendary+ (vendável no Market).
 
 ### Runas (P2) — `RuneSaveData[]`
-- **R1 (P2):** Níveis de runa observados.
-- **R2 (P2):** Gasto de ouro em runas para **calibrar ouro recuperado** (corridas com ouro negativo).
+- **R1 (P2):** ✅ v4.0 — Níveis de runa observados + **mapa da árvore com zoom/pan** (197 nós, ícones, nomes/efeitos pt-BR, custos em ouro). Catálogo `RuneKey → nó` (join direto). Aba **Runas**.
+- **R2 (P2):** Gasto de ouro em runas para **calibrar ouro recuperado** (corridas com ouro negativo). *(Catálogo de custos já disponível em `runeTree.ts`; falta a detecção de upgrade + a calibração de ouro/h, que depende do agente de corridas.)*
 
 ### Sessão / atividade (P2) — `PlayTime`
 - **A1 (P2):** Tempo de sessão e detecção ativo vs. parado (inferido por mudança do save — **não** enumerar processo).
