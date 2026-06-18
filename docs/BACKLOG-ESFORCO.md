@@ -10,9 +10,7 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
-| # | Prioridade | Item | Por que é fácil |
-|---|-----------|------|-----------------|
-| B3 | P2 | Estimar cooldowns de auto-abrir | Valores fixos (300s/600s), informativo |
+> Sem itens pendentes nesta faixa no momento.
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 

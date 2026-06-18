@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   boxAutoOpenSeconds,
   boxColor,
+  boxDrainSeconds,
   classifyBoxBacklog,
   DEFAULT_BOX_THRESHOLDS,
   type BoxBacklogLevel,
@@ -52,6 +53,17 @@ function fmtPlayTime(seconds: number | null): string {
 function fmtAutoOpen(seconds: number | null): string {
   if (seconds === null) return 'sem auto-abrir'
   return `auto-abrir ${seconds}s`
+}
+
+/** Duração humana aproximada (ex.: "45s", "12min", "2h 30min"). */
+function fmtDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.round(seconds)}s`
+  const totalMin = Math.round(seconds / 60)
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  if (h === 0) return `${m}min`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
 }
 
 function Card({
@@ -156,6 +168,14 @@ function BoxesSection({
   onSaveThresholds: (warn: number, high: number) => void
 }): JSX.Element | null {
   if (boxes.length === 0) return null
+  // Os tipos auto-abrem em paralelo, então o acúmulo todo zera no tipo mais lento (B3).
+  const drains = boxes
+    .map((b) => boxDrainSeconds(b.kind, b.quantity))
+    .filter((s): s is number => s !== null)
+  const fullClear = drains.length > 0 ? Math.max(...drains) : null
+  const manualBoxes = boxes
+    .filter((b) => boxAutoOpenSeconds(b.kind) === null)
+    .reduce((sum, b) => sum + b.quantity, 0)
   return (
     <section className="section">
       <div className="section__head">
@@ -171,18 +191,36 @@ function BoxesSection({
         </div>
       )}
       <div className="boxbar">
-        {boxes.map((b) => (
-          <div className="boxchip" key={b.kind}>
-            <span className="boxchip__dot" style={{ background: boxColor(b.kind) }} />
-            <div>
-              <div className="boxchip__qty">{fmtNum(b.quantity)}</div>
-              <div className="boxchip__meta">
-                {b.label} · {fmtAutoOpen(boxAutoOpenSeconds(b.kind))}
+        {boxes.map((b) => {
+          const drain = boxDrainSeconds(b.kind, b.quantity)
+          return (
+            <div className="boxchip" key={b.kind}>
+              <span className="boxchip__dot" style={{ background: boxColor(b.kind) }} />
+              <div>
+                <div className="boxchip__qty">{fmtNum(b.quantity)}</div>
+                <div className="boxchip__meta">
+                  {b.label} · {fmtAutoOpen(boxAutoOpenSeconds(b.kind))}
+                </div>
+                <div className="boxchip__eta">
+                  {drain !== null
+                    ? `≈ esvazia em ${fmtDuration(drain)}`
+                    : b.quantity > 0
+                      ? 'abrir manualmente'
+                      : 'vazio'}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
+      {fullClear !== null && (
+        <p className="card__hint">
+          No auto-abrir base (sem runas do Extremo Norte), o acúmulo esvazia em ~
+          {fmtDuration(fullClear)}.
+          {manualBoxes > 0 &&
+            ` Baús de Ato (${fmtNum(manualBoxes)}) não têm auto-abrir — abra manualmente.`}
+        </p>
+      )}
       <p className="card__hint">
         Avisa a partir de {thresholds.warn} e alerta a partir de {thresholds.high} baús (não há
         teto fixo no jogo).

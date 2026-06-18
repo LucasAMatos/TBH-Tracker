@@ -14,6 +14,22 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v13.0 — Estimativa de esvaziamento de baús (B3)
+
+### Adicionado
+- **Cooldowns de auto-abrir (B3):** o card **Baús por tipo** passa a estimar, por
+  categoria, **quanto tempo o auto-abrir leva para esvaziar o acúmulo** (quantidade ×
+  cooldown base: Comum 300s, Estágio 600s), além de um **resumo** do tempo total para
+  zerar o acúmulo (limitado pelo tipo mais lento, já que as categorias auto-abrem em
+  paralelo). Baús de **Ato** (sem auto-abrir) são marcados como **"abrir manualmente"**.
+- `boxDrainSeconds(kind, quantity)` em `src/shared/boxes.ts` e `fmtDuration` no Dashboard.
+
+### Notas
+- Estimativa **base** (sem as runas do Extremo Norte, que reduzem o cooldown); puramente
+  informativa — o jogo não expõe o timestamp do último auto-abrir.
+
+---
+
 ## v12.0 — Retratos dos heróis (H8)
 
 > Renumerada de v11.0 para v12.0 após rebase sobre a `main` (que já recebeu o H2 em v11.0).

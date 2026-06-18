@@ -47,6 +47,18 @@ export function boxAutoOpenSeconds(kind: BoxKind): number | null {
 }
 
 /**
+ * Estimativa (B3, informativa) do tempo em segundos para o auto-abrir esvaziar
+ * `quantity` baús desta categoria no ritmo **base** (1 baú por cooldown, sem as
+ * runas do Extremo Norte que reduzem o cooldown). Retorna null quando a categoria
+ * não tem auto-abrir (Ato) ou não há baús.
+ */
+export function boxDrainSeconds(kind: BoxKind, quantity: number): number | null {
+  const cooldown = boxAutoOpenSeconds(kind)
+  if (cooldown === null || quantity <= 0) return null
+  return quantity * cooldown
+}
+
+/**
  * O jogo NÃO tem um teto fixo de baús. O problema real é o acúmulo: com o
  * auto-abrir lento/desligado (ou inventário/stash cheio) os baús param de ser
  * processados e drops podem ser perdidos. Por isso o alerta é sobre o total de
