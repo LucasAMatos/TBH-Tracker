@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
 import { KeyPanel } from './components/KeyPanel'
+import { RunsView } from './components/RunsView'
 import { StatusBar } from './components/StatusBar'
 import { TbhPedia } from './components/TbhPedia'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'tbhpedia'
+type Tab = 'dashboard' | 'runs' | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -63,6 +64,12 @@ export function App(): JSX.Element {
           Dashboard
         </button>
         <button
+          className={`tabs__btn ${tab === 'runs' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('runs')}
+        >
+          Corridas
+        </button>
+        <button
           className={`tabs__btn ${tab === 'tbhpedia' ? 'tabs__btn--active' : ''}`}
           onClick={() => setTab('tbhpedia')}
         >
@@ -73,6 +80,8 @@ export function App(): JSX.Element {
       <main className="app__main">
         {tab === 'tbhpedia' ? (
           <TbhPedia />
+        ) : tab === 'runs' ? (
+          <RunsView />
         ) : state.status === 'monitoring' && state.snapshot ? (
           <Dashboard snapshot={state.snapshot} />
         ) : (

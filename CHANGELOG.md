@@ -14,6 +14,26 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v3.0 — Farm analytics: detecção de corridas
+
+Início da Fase 2 (farm analytics).
+
+### Adicionado
+- **Detecção de corridas (F1, parcial):** clear detectado pela transição
+  `currentStageWave > 0 → 0`; duração medida pelo delta de `playTime` entre clears
+  consecutivos no mesmo estágio. Validado com amostragem do save ao vivo.
+- **Aba Corridas:** histórico persistente (estágio + duração + quando), resumo
+  (total, duração média, estágios farmados) e agregação por estágio. Botão para limpar.
+- Persistência local das corridas (`tbh-tracker-runs.json` em userData).
+
+### Notas / limitações
+- O jogo autossalva de forma esparsa/irregular, então a duração é **aproximada** (pode
+  agregar corridas muito curtas). Calibração e ouro/xp por corrida virão na F2.
+
+Backlog: F1 (parcial — estágio + tempo).
+
+---
+
 ## v2.0 — Aba TBHPedia
 
 ### Adicionado

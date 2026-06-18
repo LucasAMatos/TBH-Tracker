@@ -2,7 +2,7 @@
 
 Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md › Save`). Nada aqui depende de tocar no jogo. Prioridades: **P0** (fundação/MVP) · **P1** (valor de farm) · **P2** (qualidade de vida) · **P3** (extras).
 
-> **Status:** ✅ = entregue (versão indicada) · ⬜ = pendente. Atualizar este arquivo sempre que um item for entregue. Versionamento em `CHANGELOG.md` (`va.b`).
+> **Status:** ✅ = entregue · 🟡 = parcial · ⬜ = pendente (versão indicada quando aplicável). Atualizar este arquivo sempre que um item for entregue. Versionamento em `CHANGELOG.md` (`va.b`).
 
 ## Infra & leitura (P0)
 
@@ -29,7 +29,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **S4 (P2):** Sugerir próximo "push" com base no máx. concluído.
 
 ### Corridas & eficiência de farm (P1) — `PlayTime` + ouro + XP + `CurrentStageWave`
-- **F1 (P1):** Detectar fim de corrida (onda→0 = clear) e medir tempo/ouro/xp da janela.
+- **F1 (P1):** 🟡 v3.0 (parcial) — Detectar fim de corrida (onda→0 = clear) e medir tempo/ouro/xp da janela. *(Feito: estágio + tempo + histórico persistente. Pendente: ouro/xp por corrida.)*
 - **F2 (P1):** Ouro/h e XP/h **por estágio**, com filtros anti-ruído (clear curto/longo, troca de mapa, morte, venda).
 - **F3 (P1):** Histórico persistente por estágio (médias acumuladas).
 - **F4 (P1):** Recomendar melhor estágio para **ouro**, **XP** e **combo**.

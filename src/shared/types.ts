@@ -46,6 +46,15 @@ export interface TrackerState {
   snapshot: Snapshot | null
 }
 
+// Uma corrida (clear) detectada: estágio + tempo.
+export interface RunRecord {
+  id: string
+  stageRaw: string // ex.: "1201"
+  stageLabel: string // ex.: "Normal · Ato 2 · Fase 1"
+  durationSeconds: number // tempo entre clears consecutivos no mesmo estágio
+  endedAt: number // epoch ms da detecção do clear
+}
+
 // API exposta ao renderer via preload (window.tbh)
 export interface TbhApi {
   getState(): Promise<TrackerState>
@@ -56,6 +65,9 @@ export interface TbhApi {
   pickSaveFile(): Promise<TrackerState>
   refresh(): Promise<TrackerState>
   onState(cb: (state: TrackerState) => void): () => void
+  getRuns(): Promise<RunRecord[]>
+  clearRuns(): Promise<RunRecord[]>
+  onRun(cb: (run: RunRecord) => void): () => void
 }
 
 declare global {

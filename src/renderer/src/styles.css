@@ -136,6 +136,14 @@ body {
   font-size: 13px;
 }
 
+/* Runs */
+.runs__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 /* Tabs */
 .tabs {
   display: flex;

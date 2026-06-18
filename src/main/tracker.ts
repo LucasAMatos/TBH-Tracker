@@ -1,13 +1,16 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { RunDetector } from './analytics'
 import { decryptAndParseES3, Es3DecryptError } from './es3'
 import { locateSave } from './locator'
 import { parseSnapshot } from './parser'
+import * as runsStore from './runsStore'
 import * as store from './store'
 import { SaveWatcher } from './watcher'
-import type { TrackerState } from '@shared/types'
+import type { RunRecord, TrackerState } from '@shared/types'
 
 export class Tracker {
   private watcher: SaveWatcher | null = null
+  private readonly detector = new RunDetector()
   private state: TrackerState = {
     status: 'no-save',
     savePath: null,
@@ -16,7 +19,10 @@ export class Tracker {
     snapshot: null
   }
 
-  constructor(private readonly onUpdate: (state: TrackerState) => void) {}
+  constructor(
+    private readonly onUpdate: (state: TrackerState) => void,
+    private readonly onRun: (run: RunRecord) => void
+  ) {}
 
   getState(): TrackerState {
     return this.state
@@ -62,6 +68,12 @@ export class Tracker {
       const json = decryptAndParseES3(buffer, key)
       const snapshot = parseSnapshot(json, true)
       this.update({ status: 'monitoring', snapshot, lastError: null })
+
+      const run = this.detector.process(snapshot)
+      if (run) {
+        runsStore.addRun(run)
+        this.onRun(run)
+      }
     } catch (err) {
       const message =
         err instanceof Es3DecryptError

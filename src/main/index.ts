@@ -1,14 +1,19 @@
 import { join } from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import * as runsStore from './runsStore'
 import * as store from './store'
 import { Tracker } from './tracker'
-import type { TrackerState } from '@shared/types'
+import type { RunRecord, TrackerState } from '@shared/types'
 
 let mainWindow: BrowserWindow | null = null
 let tracker: Tracker | null = null
 
 function broadcastState(state: TrackerState): void {
   mainWindow?.webContents.send('tbh:state', state)
+}
+
+function broadcastRun(run: RunRecord): void {
+  mainWindow?.webContents.send('tbh:run', run)
 }
 
 function createWindow(): void {
@@ -67,11 +72,14 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('tbh:refresh', () => tracker?.refresh())
+
+  ipcMain.handle('tbh:getRuns', () => runsStore.getRuns())
+  ipcMain.handle('tbh:clearRuns', () => runsStore.clearRuns())
 }
 
 app.whenReady().then(() => {
   registerIpc()
-  tracker = new Tracker(broadcastState)
+  tracker = new Tracker(broadcastState, broadcastRun)
   createWindow()
   tracker.start()
 

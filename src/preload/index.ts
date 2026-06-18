@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { TrackerState } from '@shared/types'
+import type { RunRecord, TrackerState } from '@shared/types'
 
 const api = {
   getState: () => ipcRenderer.invoke('tbh:getState'),
@@ -14,6 +14,13 @@ const api = {
     const listener = (_e: unknown, state: TrackerState): void => cb(state)
     ipcRenderer.on('tbh:state', listener)
     return () => ipcRenderer.removeListener('tbh:state', listener)
+  },
+  getRuns: () => ipcRenderer.invoke('tbh:getRuns'),
+  clearRuns: () => ipcRenderer.invoke('tbh:clearRuns'),
+  onRun: (cb: (run: RunRecord) => void) => {
+    const listener = (_e: unknown, run: RunRecord): void => cb(run)
+    ipcRenderer.on('tbh:run', listener)
+    return () => ipcRenderer.removeListener('tbh:run', listener)
   }
 }
 
