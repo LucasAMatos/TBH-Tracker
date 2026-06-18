@@ -51,6 +51,25 @@ export interface GoldFlow {
   events: GoldEvent[] // eventos recentes (mais recente primeiro), limitados
 }
 
+// Um evento de progresso de estágio detectado entre duas leituras do save (S3).
+export type StageEventKind =
+  | 'stage-change' // o estágio atual (CurrentStageKey) mudou
+  | 'new-max' // o estágio máximo concluído (MaxCompletedStage) avançou
+
+export interface StageEvent {
+  at: number // epoch ms da leitura em que o estágio mudou
+  kind: StageEventKind
+  fromRaw: string | null // código do estágio anterior (null na 1ª troca observada)
+  toRaw: string // código do estágio resultante
+  toLabel: string // rótulo legível do estágio resultante
+}
+
+// Eventos de estágio da sessão atual (em memória, sem persistência — I6 é separado).
+export interface StageEvents {
+  sessionStartAt: number // 1ª leitura com estágio na sessão (epoch ms)
+  events: StageEvent[] // eventos recentes (mais recente primeiro), limitados
+}
+
 // Baús não abertos de uma categoria (soma de BoxData.BoxQuantity por BoxTypes).
 export interface BoxCount {
   kind: BoxKind // 'common' | 'stageBoss' | 'actBoss'
@@ -73,6 +92,7 @@ export interface Snapshot {
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
+  stageEvents?: StageEvents // eventos de estágio da sessão (preenchido pelo Tracker)
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 
@@ -82,6 +102,9 @@ export interface TrackerState {
   hasKey: boolean
   lastError: string | null
   snapshot: Snapshot | null
+  // Heartbeat (A2): sinais de atividade enquanto o app está aberto.
+  lastChangeAt: number | null // epoch ms da última mudança detectada no save
+  heartbeatAt: number | null // epoch ms do último "pulso" do tracker (mesmo sem mudança)
 }
 
 // API exposta ao renderer via preload (window.tbh)

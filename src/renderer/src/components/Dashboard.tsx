@@ -8,7 +8,7 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
-import type { BoxCount, GoldFlow, HeroSnapshot, Snapshot } from '@shared/types'
+import type { BoxCount, GoldFlow, HeroSnapshot, Snapshot, StageEvents } from '@shared/types'
 
 // A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
 const HERO_SLOTS = 3
@@ -238,6 +238,40 @@ function GoldFlowSection({ flow }: { flow: GoldFlow }): JSX.Element {
   )
 }
 
+function StageEventsSection({ stageEvents }: { stageEvents: StageEvents }): JSX.Element {
+  const events = stageEvents.events
+  return (
+    <section className="section">
+      <h3 className="section__title">Progresso de estágio</h3>
+      {events.length > 0 ? (
+        <ul className="goldlog">
+          {events.map((e) => (
+            <li className="goldlog__item" key={`${e.at}-${e.kind}-${e.toRaw}`}>
+              <span className="goldlog__time">{fmtClock(e.at)}</span>
+              <span className="stageevt__label">
+                <span
+                  className={`stageevt__badge stageevt__badge--${
+                    e.kind === 'new-max' ? 'max' : 'change'
+                  }`}
+                >
+                  {e.kind === 'new-max' ? 'novo recorde' : 'troca'}
+                </span>
+                {e.toLabel}
+              </span>
+              <span className="goldlog__total">{e.toRaw}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="card__hint">
+          Coletando… os eventos aparecem ao trocar de estágio ou bater um novo estágio máximo
+          (o jogo precisa estar rodando). Só registra a partir da 1ª leitura da sessão.
+        </p>
+      )}
+    </section>
+  )
+}
+
 function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
   return (
     <section className="section">
@@ -347,6 +381,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
       </div>
 
       {flow && <GoldFlowSection flow={flow} />}
+
+      {s.stageEvents && <StageEventsSection stageEvents={s.stageEvents} />}
 
       <BoxesSection
         boxes={s.boxes}
