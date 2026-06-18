@@ -1,7 +1,0 @@
-feat(herois): deteccao de level-ups (H2, v9.0)
-
-- HeroEventsTracker: compara HeroLevel entre leituras do save e emite eventos de level-up
-- 1a leitura de cada heroi fixa a linha de base (sem evento); zera ao trocar de save
-- Snapshot.heroEvents anexado pelo Tracker (mesmo padrao do fluxo de ouro)
-- Secao "Level-ups" no Dashboard: horario, heroi e nivel anterior->novo
-- Em memoria, sem persistencia (depende de I6)
