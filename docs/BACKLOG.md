@@ -4,15 +4,9 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 > **Status:** ⬜ = pendente · ⛔ = parado/bloqueado. Atualizar este arquivo sempre que um item for entregue (marcar `✅ vA.B`). Versionamento em `CHANGELOG.md` (`va.b`).
 >
-> **Arquivamento:** a cada 5 versões (`a` múltiplo de 5) os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último arquivamento: **v10.0**. *(Itens entregues em v11+ — H2, H8, B3 — ficam aqui até o próximo corte, v15.)*
+> **Arquivamento:** a cada 5 versões (`a` múltiplo de 5) os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último arquivamento: **v15.0** (v11–v15: H2, H8, B3, I6, D3, U8).
 >
 > **Outras visões:** `BACKLOG-ESFORCO.md` ranqueia os itens do mais fácil ao mais difícil de implementar (este arquivo segue sendo a fonte da verdade).
-
-## Infra & leitura (P0)
-
-| # | Status | Item | Observável / base | Notas |
-|---|--------|------|-------------------|-------|
-| I6 | ✅ v14.0 | Persistência local de histórico | — | Camada reutilizável (`src/main/history.ts`) que persiste o estado dos trackers (ouro, level-ups, eventos de estágio) por arquivo de save no `userData`; os eventos sobrevivem a reinícios. Base para F3/U5 e histórico por estágio. |
 
 ## Pontos observáveis → features
 
@@ -30,17 +24,11 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **F5 (P2):** Projeção para estágios ainda não medidos (modelo de tempo/retenção de XP). *Dependência pronta:* `stageData.ts` traz HP total, EXP/clear e ouro/clear base por fase (e a wiki documenta a penalidade de over-level) — base para extrapolar tempo/ganho a partir de poucas medições.
 
 ### Heróis (P1) — `HeroSaveDatas[]`, `ArrangedHeroKey`
-- **H2 (P1):** ✅ v11.0 — Detectar level-ups (eventos): compara `HeroLevel` entre snapshots e registra herói + nível anterior→novo + horário; seção **Level-ups** no Dashboard. *(Em memória, sem persistência — depende de I6 para histórico entre sessões.)*
 - **H7 (P2):** Herói **líder** em destaque no card de ativos (pendência herdada de H1) — identificar/marcar o líder da formação quando observável no save.
-- **H8 (P2):** ✅ v12.0 — **Retratos/ícones dos heróis** — imagens dos 6 heróis baixadas da TBH Wiki (`scripts/gen-heroes.cjs`) e exibidas nos cards de ativos (dashboard, H6), nos cards do roster e no detalhe (aba **Heróis**, H5/H9). Mesmo padrão dos ícones de runa (v4.0): assets em `src/renderer/src/assets/heroes/<heroKey>.png`, mapeados por `heroKey` via `heroPortraits.ts`. *(Hunter usa o asset interno "Abalist".)*
 
-### Baús (P2) — `BoxData.BoxQuantity`
-- **B3 (P2):** ✅ v13.0 — Estimar cooldowns de auto-abrir (comum 300s / boss 600s): o card **Baús por tipo** mostra, por categoria, o tempo estimado para o auto-abrir **esvaziar o acúmulo** (qtd × cooldown base) + um resumo do total (tipo mais lento; categorias auto-abrem em paralelo). Ato fica como "abrir manualmente". *(Informativo, base sem runas do Extremo Norte.)*
-
-### Itens / drops (P2) — `ItemSaveDatas[]`
-- **D1 (P2):** Detectar drops novos por corrida (por `UniqueId`).
-- **D2 (P3):** Classificar por raridade (catálogo) e destacar Legendary+ (vendável no Market).
-- **D3 (P2):** **Aba Inventário** — identificar os itens por **tipo** (slot/categoria via `ItemKey` → catálogo) e por **raridade** (10 níveis: Common → Cosmic), **contar** e montar uma **visualização** da distribuição (ex.: matriz tipo × raridade com contagens, e/ou barras por raridade), separando **inventário** e **stash** (`inventorySaveDatas[]` / `stashSaveDatas[]`) e destacando **Legendary+** (vendável). *Observável:* `itemSaveDatas[]` (`ItemKey`, `UniqueId`, raridade) + catálogo de itens/raridades. Reaproveita D2 (classificação por raridade).
+### Itens / drops (P2) — `itemSaveDatas[]`
+- **D1 (P2):** Detectar drops novos por corrida (por `UniqueId`). *Base pronta:* catálogo `items.ts`/`itemData.ts` (D3) classifica cada `ItemKey` por tipo/raridade; falta a fronteira de corrida (depende de F1, bloqueado).
+- **D2 (P3):** Classificar por raridade (catálogo) e destacar Legendary+ (vendável no Market) **fora da aba Inventário** — ex.: nos drops/dashboard. *Base pronta:* `classifyItem` + `GRADES` (catálogo de raridade) entregues no D3 (v15.0); falta aplicar no contexto de drops.
 
 ### Runas (P2) — `RuneSaveData[]`
 - **R2 (P2):** Gasto de ouro em runas para **calibrar ouro recuperado** (corridas com ouro negativo). *(Catálogo de custos já disponível em `runeTree.ts`; falta a detecção de upgrade + a calibração de ouro/h, que depende do agente de corridas.)*
@@ -57,13 +45,12 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 | # | Item | Notas |
 |---|------|-------|
 | U2 (P1) | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Depende de F1–F4 |
-| U8 (P2) | Aba **Inventário** (itens por tipo × raridade, contagem + visualização) | Implementa D3 na navegação por abas |
 | U9 (P2) | Aba **Atualizações** (patch notes/anúncios da Steam) | Implementa N1 na navegação por abas |
 | U4 (P2) | Eventos coloridos / log de atividade | Progress, gold, level-up, chest |
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
 | U6 (P3) | i18n PT/EN | Jogo já é multilíngue |
 
-> Itens entregues até a **v10.0** foram arquivados em `BACKLOG-HISTORICO.md`. Os ✅ que restam aqui (H2 v11.0, H8 v12.0, B3 v13.0) entram no histórico no próximo corte (v15.0).
+> Itens entregues até a **v15.0** foram arquivados em `BACKLOG-HISTORICO.md` (último corte: v11–v15). Os próximos ✅ ficam aqui até o corte da v20.0.
 
 ## Fora de escopo (regra de segurança)
 

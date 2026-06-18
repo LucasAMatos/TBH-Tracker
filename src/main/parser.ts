@@ -1,7 +1,16 @@
 import { BOX_TYPES, kindFromTypeValue, type BoxKind } from '@shared/boxes'
 import { heroName } from '@shared/heroes'
+import { classifyItem, GEAR_TYPES, GRADES } from '@shared/items'
 import { decodeStage } from '@shared/stage'
-import type { BoxCount, HeroSnapshot, RuneLevel, Snapshot } from '@shared/types'
+import type {
+  BoxCount,
+  HeroSnapshot,
+  InventoryRow,
+  InventorySummary,
+  ItemLocation,
+  RuneLevel,
+  Snapshot
+} from '@shared/types'
 
 type Json = unknown
 
@@ -30,6 +39,13 @@ function pick(obj: Json, names: string[]): Json {
     if (n in obj) return obj[n]
   }
   return undefined
+}
+
+/** Normaliza listas que podem vir como array ou objeto indexado. */
+function asArray(v: Json): Json[] {
+  if (Array.isArray(v)) return v
+  if (isObj(v)) return Object.values(v)
+  return []
 }
 
 /** Desembrulha o wrapper ES3 {__type, value}. */
@@ -159,6 +175,131 @@ function parseHeroes(player: Json, activeKeys: (number | string)[]): HeroSnapsho
     })
 }
 
+const ITEM_LOCATION_LIST: ItemLocation[] = [
+  'equipped',
+  'inventory',
+  'stash',
+  'trading',
+  'loose'
+]
+
+function emptyLocationCounts(gradeCount: number): Record<ItemLocation, number[]> {
+  const out = {} as Record<ItemLocation, number[]>
+  for (const loc of ITEM_LOCATION_LIST) out[loc] = new Array(gradeCount).fill(0)
+  return out
+}
+
+/**
+ * Mapeia cada UniqueId de item à sua localização: equipado (em algum herói), stash,
+ * inventário (mochila) ou Trade Ship. UniqueIds não encontrados ficam como 'loose'.
+ * Os contêineres guardam slots {ItemUniqueId, Index}; heróis guardam equippedItemIds[].
+ */
+function buildItemLocationMap(player: Json): Map<string, ItemLocation> {
+  const map = new Map<string, ItemLocation>()
+  const set = (uid: Json, loc: ItemLocation): void => {
+    if (uid === undefined || uid === null) return
+    const s = String(uid)
+    if (s === '' || s === '0' || s === '-1') return
+    if (!map.has(s)) map.set(s, loc)
+  }
+
+  for (const hero of asArray(pick(player, ['heroSaveDatas', 'HeroSaveDatas']))) {
+    const equipped = pick(hero, ['equippedItemIds', 'EquippedItemIds'])
+    if (Array.isArray(equipped)) for (const u of equipped) set(u, 'equipped')
+  }
+
+  const markRows = (list: Json, loc: ItemLocation): void => {
+    for (const row of asArray(list)) {
+      set(pick(row, ['ItemUniqueId', 'itemUniqueId', 'UniqueId', 'uniqueId']), loc)
+    }
+  }
+  markRows(pick(player, ['stashSaveDatas', 'StashSaveDatas']), 'stash')
+  markRows(pick(player, ['inventorySaveDatas', 'InventorySaveDatas']), 'inventory')
+  markRows(pick(player, ['tradingStashSaveDatas', 'TradingStashSaveDatas']), 'trading')
+
+  return map
+}
+
+/**
+ * Distribuição do inventário por tipo × raridade (D3). Junta cada instância de
+ * `itemSaveDatas` (ItemKey → catálogo: tipo/raridade) à sua localização e monta a
+ * matriz de gear por tipo e raridade, contando materiais/baús/desconhecidos à parte.
+ */
+function parseInventory(player: Json): InventorySummary | null {
+  const items = asArray(pick(player, ['itemSaveDatas', 'ItemSaveDatas']))
+  if (items.length === 0) return null
+
+  const gradeCount = GRADES.length
+  const locations = buildItemLocationMap(player)
+
+  const rowByType = new Map<string, InventoryRow>()
+  for (const meta of GEAR_TYPES) {
+    rowByType.set(meta.id, {
+      gearType: meta.id,
+      label: meta.namePt,
+      category: meta.category,
+      byLocation: emptyLocationCounts(gradeCount),
+      counts: new Array(gradeCount).fill(0),
+      total: 0
+    })
+  }
+
+  const locationTotals = {} as Record<ItemLocation, number>
+  for (const loc of ITEM_LOCATION_LIST) locationTotals[loc] = 0
+
+  let totalItems = 0
+  let gearCount = 0
+  let materialCount = 0
+  let boxCount = 0
+  let unknownCount = 0
+  let legendaryPlus = 0
+
+  for (const entry of items) {
+    if (!isObj(entry)) continue
+    totalItems++
+    const uid = pick(entry, ['UniqueId', 'uniqueId', 'Id', 'id'])
+    const loc = locations.get(String(uid)) ?? 'loose'
+    locationTotals[loc]++
+
+    const key = pick(entry, ['ItemKey', 'itemKey', 'Key', 'key'])
+    const info = key === undefined ? null : classifyItem(key as number | string)
+    if (!info) {
+      unknownCount++
+      continue
+    }
+    if (info.type === 'MATERIAL') {
+      materialCount++
+      continue
+    }
+    if (info.type === 'STAGEBOX') {
+      boxCount++
+      continue
+    }
+
+    gearCount++
+    if (info.marketable) legendaryPlus++
+    const tier = info.gradeTier
+    const row = info.gearType ? rowByType.get(info.gearType) : undefined
+    if (row && tier >= 0 && tier < gradeCount) {
+      row.byLocation[loc][tier]++
+      row.counts[tier]++
+      row.total++
+    }
+  }
+
+  return {
+    totalItems,
+    gearCount,
+    materialCount,
+    boxCount,
+    unknownCount,
+    legendaryPlus,
+    gradeCount,
+    rows: [...rowByType.values()].filter((r) => r.total > 0),
+    locationTotals
+  }
+}
+
 /** Constroi um snapshot tipado a partir do JSON ES3 ja descriptografado. */
 export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
   const player = extractPlayer(root)
@@ -187,6 +328,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
     runes: parseRunes(player),
+    inventory: parseInventory(player),
     raw: includeRaw ? player : undefined
   }
 }

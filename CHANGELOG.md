@@ -14,6 +14,33 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v15.0 — Aba Inventário: tipo × raridade (D3 / U8)
+
+### Adicionado
+- **Aba Inventário** (`src/renderer/src/components/Inventory.tsx`): lê `itemSaveDatas[]`,
+  classifica cada item por **tipo** (slot/categoria) e **raridade** (10 níveis: Common →
+  Cosmic) e monta a **matriz tipo × raridade** com contagens, mais **barras de distribuição
+  por raridade** e cards de resumo (equipamentos, **Legendary+**, materiais, baús).
+- **Filtro por localização**: as instâncias são associadas ao local (equipado, inventário,
+  stash, Trade Ship ou solto) via `inventorySaveDatas[]` / `stashSaveDatas[]` /
+  `tradingStashSaveDatas[]` / `equippedItemIds[]`; o usuário alterna o escopo (Tudo /
+  Inventário / Stash / …) e a matriz/barras recalculam.
+- **Destaque Legendary+**: colunas e células de raridade vendável no Market ficam realçadas.
+- **Catálogo de itens** (`src/shared/items.ts` + `src/shared/itemData.ts`, gerado por
+  `scripts/gen-items.cjs`): mapa `ItemKey → tipo/gear-type/raridade/nível` para 5.944 itens
+  (5.760 equipamentos, 125 materiais, 59 baús), com rótulos PT e helper `classifyItem`.
+
+### Notas
+- Raridade **não** escala por área (só o nível do item); apenas **Legendary+** é vendável.
+- ItemKeys fora do catálogo (datamine desatualizado) aparecem como "Desconhecidos".
+- Fonte do catálogo: datamine da comunidade (gamedata do `tbh-farm`) — ver `FONTES.md`.
+
+### Arquivamento de backlog (corte v15)
+- Itens entregues em **v11–v15** (H2, H8, B3, I6, D3, U8) movidos de `BACKLOG.md` para
+  `BACKLOG-HISTORICO.md`. O `BACKLOG.md` mantém apenas o que está a fazer/bloqueado.
+
+---
+
 ## v14.0 — Persistência local de histórico (I6)
 
 ### Adicionado
