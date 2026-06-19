@@ -279,6 +279,7 @@ export type WidgetId =
   | 'levelUps'
   | 'stageProgress'
   | 'boxes'
+  | 'inventoryRarity'
   | 'cubeMilestones'
   | 'activeHeroes'
   | 'rawJson'
@@ -291,6 +292,7 @@ export const WIDGET_IDS: readonly WidgetId[] = [
   'levelUps',
   'stageProgress',
   'boxes',
+  'inventoryRarity',
   'cubeMilestones',
   'activeHeroes',
   'rawJson'

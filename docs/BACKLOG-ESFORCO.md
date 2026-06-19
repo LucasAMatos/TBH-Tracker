@@ -28,7 +28,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
 | W0 | P2 | Épico W: levantamento das wikis + esquema canônico | Mapear cobertura/estrutura/ToS das 5 wikis; define o corpus. Ponto de partida do épico |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
-| D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | U4 | P2 | Eventos coloridos / log | Depende de G3/H2/S3 (detecção de eventos) |
 | U5 | P3 | Gráficos de sessão | Depende de histórico em memória |

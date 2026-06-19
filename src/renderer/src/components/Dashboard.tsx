@@ -9,6 +9,7 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
+import { GRADES } from '@shared/items'
 import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
 import {
   DEFAULT_DASHBOARD_LAYOUT,
@@ -17,6 +18,7 @@ import {
   type GoldFlow,
   type HeroEvents,
   type HeroSnapshot,
+  type InventorySummary,
   type RuneTargetPlan,
   type Snapshot,
   type StageEvents,
@@ -495,6 +497,58 @@ function ActiveHeroesBody({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.El
   )
 }
 
+// D2: resumo de raridade do inventário no Dashboard (fora da aba Inventário), com destaque
+// para os equipamentos Legendary+ (vendáveis no Market). Usa o catálogo de raridade (items.ts).
+function InventoryRarityBody({ inventory }: { inventory: InventorySummary }): JSX.Element {
+  // Soma por raridade (escopo "tudo") a partir das linhas da matriz tipo × raridade.
+  const byGrade = new Array(inventory.gradeCount).fill(0) as number[]
+  for (const row of inventory.rows) {
+    row.counts.forEach((c, tier) => (byGrade[tier] += c))
+  }
+  const gearTotal = byGrade.reduce((a, b) => a + b, 0)
+  // Só raridades presentes, da mais alta para a mais baixa (destaque às raras).
+  const present = GRADES.filter((g) => (byGrade[g.tier] ?? 0) > 0).sort((a, b) => b.tier - a.tier)
+
+  return (
+    <>
+      <div className={`rarityhi${inventory.legendaryPlus > 0 ? ' rarityhi--on' : ''}`}>
+        <span className="rarityhi__count">{fmtNum(inventory.legendaryPlus)}</span>
+        <span className="rarityhi__label">
+          Legendary+ <span className="rarityhi__sub">vendável no Market</span>
+        </span>
+        <span className="rarityhi__total">{fmtNum(gearTotal)} equipamentos</span>
+      </div>
+      {gearTotal > 0 ? (
+        <div className="raritystrip">
+          {present.map((g) => {
+            const count = byGrade[g.tier] ?? 0
+            const pct = Math.round((count / gearTotal) * 100)
+            return (
+              <div
+                className={`raritychip${g.marketable ? ' raritychip--mkt' : ''}`}
+                key={g.id}
+                title={`${g.namePt}: ${fmtNum(count)} (${pct}%)`}
+              >
+                <span className="raritychip__dot" style={{ background: g.color }} />
+                <span className="raritychip__name" style={{ color: g.color }}>
+                  {g.namePt}
+                </span>
+                <span className="raritychip__count">{fmtNum(count)}</span>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="card__hint">Sem equipamentos no save lido.</p>
+      )}
+      <p className="card__hint">
+        Detalhe completo (tipo × raridade, por local) na aba Inventário. Apenas Legendary+ é
+        vendável no Steam Market.
+      </p>
+    </>
+  )
+}
+
 // I7: o JSON bruto é lido sob demanda (IPC `getRawSave`) só quando este widget abre,
 // em vez de viajar no snapshot a cada atualização do save.
 function RawJsonBody(): JSX.Element {
@@ -774,6 +828,12 @@ export function Dashboard({
           headerExtra={<ThresholdEditor thresholds={boxThresholds} onSave={saveBoxThresholds} />}
         >
           <BoxesBody boxes={s.boxes} total={s.boxQuantity} level={boxLevel} thresholds={boxThresholds} />
+        </Widget>
+      )}
+
+      {s.inventory && s.inventory.gearCount > 0 && (
+        <Widget id="inventoryRarity" layout={layout} onToggleCollapse={toggleCollapse}>
+          <InventoryRarityBody inventory={s.inventory} />
         </Widget>
       )}
 

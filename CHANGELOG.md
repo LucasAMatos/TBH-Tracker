@@ -21,6 +21,18 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.5.0 — Raridade do inventário no Dashboard + destaque Legendary+ (D2)
+
+### Adicionado
+- **Widget "Raridade do inventário" (D2):** novo widget no Dashboard (fora da aba Inventário)
+  com **destaque do total Legendary+** (vendável no Market) e a **distribuição compacta por
+  raridade** em chips coloridos, reaproveitando o catálogo de raridade (`classifyItem`/`GRADES`).
+  Liga/desliga e recolhe como os demais (U10); ligado por padrão.
+
+### Notas / limitações
+- O destaque é sobre o **inventário atual** (snapshot). Destacar drops por **corrida individual**
+  continua dependente da fronteira de corrida (D1), inviável pelo formato do save.
+
 ## v1.4.0 — Suíte de testes (vitest) para a lógica pura (I8)
 
 ### Adicionado
