@@ -1,5 +1,5 @@
 ---
-description: Convenções do projeto TBH-Tracker (backlog + versionamento)
+description: Convenções do projeto TBH-Tracker (backlog, versionamento e fluxo Git)
 globs: TBH-Tracker/**
 alwaysApply: false
 ---
@@ -32,8 +32,15 @@ alwaysApply: false
 ## Git — branches e PR (obrigatório)
 - A branch `main` é **protegida**: push direto é proibido (inclui admin). Toda mudança
   entra via **Pull Request**.
-- Toda alteração é feita numa **feature branch** a partir da `main` atualizada
-  (ex.: `feature/<assunto>` ou `fix/<assunto>`).
+- **Ao iniciar QUALQUER item/feature solicitado**, antes de codar: sincronizar a `main`
+  local com o remoto e criar a branch **a partir dela** —
+  `git checkout main && git pull --ff-only`, depois `git checkout -b feature/<assunto>`
+  (ou `fix/<assunto>`). Sempre partir da `main` **atualizada**, nunca de outra branch.
+- **Não empilhar features:** cada PR sai direto da `main` e tem a `main` como base. Não
+  criar uma feature em cima de outra feature branch ainda **não mergeada** — PRs empilhados
+  podem ser mergeados na base errada e a feature de cima não chega na `main`. Se duas
+  features forem mesmo dependentes, entregar/mergear a de baixo **primeiro** e só então
+  partir da `main` atualizada para a próxima.
 - O agente **nunca** faz merge na `main`: abre o PR (`gh pr create`) e o **merge é feito
   por um humano**. Nunca usar `--admin`/bypass nem force-push na `main`.
 - **Sempre que um PR for mencionado** (na conversa ou em respostas), citá-lo como **link
