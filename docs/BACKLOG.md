@@ -32,7 +32,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 ### Runas (P2) — `RuneSaveData[]`
 - **R2 (P2):** Gasto de ouro em runas para **calibrar ouro recuperado** (corridas com ouro negativo). *(Catálogo de custos já disponível em `runeTree.ts`; falta a detecção de upgrade + a calibração de ouro/h, que depende do agente de corridas.)*
-- **R3 (P2):** **Runa-alvo** — marcar uma runa como alvo na aba **Runas** e calcular **quanto ouro falta** para comprá-la **considerando os pré-requisitos**: somar o custo de **todos os nós do caminho** até o alvo que ainda não foram comprados/desbloqueados (incluindo os níveis restantes do próprio alvo), e subtrair o **ouro atual**, com progresso (%). A runa-alvo aparece em um **card no dashboard** (nome/ícone, quanto falta, progresso). Persistir a seleção localmente (`tbh-tracker-config.json`). *Observável:* ouro atual (`CurrencySaveDatas` 100001) + `RuneSaveData[]` (níveis) + `runeTree.ts` (custo em ouro por nível + arestas/pré-requisitos). *Nota:* se houver mais de um caminho até o nó, usar o de **menor custo total**.
+- **R3 (P2):** ✅ **v16.0** — **Runa-alvo**: marcar uma runa como alvo na aba **Runas** e calcular **quanto ouro falta** para comprá-la **considerando os pré-requisitos** (caminho de menor custo até a raiz + níveis restantes do alvo, menos o ouro atual, com progresso %). Card no Dashboard (ícone/nome, custo, falta, barra, passos) + seleção persistida (`runeTargetKey` em `tbh-tracker-config.json`). Pré-req em soul stones entra no caminho mas não soma ouro.
 
 ### Sessão / atividade (P2) — `PlayTime`
 - **A1 (P2):** Tempo de sessão e detecção ativo vs. parado (inferido por mudança do save — **não** enumerar processo).

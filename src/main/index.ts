@@ -72,6 +72,9 @@ function registerIpc(): void {
   ipcMain.handle('tbh:setBoxThresholds', (_e, warn: number, high: number) =>
     store.setBoxThresholds(warn, high)
   )
+
+  ipcMain.handle('tbh:getRuneTarget', () => store.getRuneTarget())
+  ipcMain.handle('tbh:setRuneTarget', (_e, key: number | null) => store.setRuneTarget(key))
 }
 
 app.whenReady().then(() => {

@@ -1,4 +1,5 @@
 import type { BoxKind, BoxThresholds } from './boxes'
+import type { RuneCategory } from './runeTree'
 
 export type ConnectionStatus =
   | 'monitoring' // chave + save OK, lendo
@@ -20,6 +21,38 @@ export interface StageInfo {
 export interface RuneLevel {
   key: number // RuneKey (== key do catálogo runeTree)
   level: number
+}
+
+// Um passo do plano de compra até a runa-alvo (R3): subir um nó de fromLevel→toLevel.
+export interface RuneTargetStep {
+  key: number // RuneKey do nó
+  name: string
+  icon: string // nome do ícone (sem extensão)
+  category: RuneCategory
+  fromLevel: number // nível atual observado
+  toLevel: number // nível a alcançar (pré-req: 1; alvo: maxLevel)
+  goldCost: number // ouro para ir de fromLevel→toLevel (0 quando o custo não é ouro)
+  payableInGold: boolean // false quando o custo do passo não é em ouro (soul stones)
+  isTarget: boolean // true só no nó-alvo (os demais são pré-requisitos)
+  affordable: boolean // dá pra comprar agora: custo acumulado na sequência ≤ ouro atual
+}
+
+// Plano de ouro até a runa-alvo (R3): caminho de menor custo + progresso.
+export interface RuneTargetPlan {
+  targetKey: number
+  targetName: string
+  targetIcon: string
+  category: RuneCategory
+  currentLevel: number // nível atual do alvo
+  maxLevel: number // nível máximo do alvo
+  reachable: boolean // existe caminho de pré-requisitos até a raiz
+  alreadyComplete: boolean // o alvo já está no nível máximo
+  steps: RuneTargetStep[] // pré-requisitos (raiz→alvo) + o próprio alvo, em ordem
+  totalGoldCost: number // soma do ouro de todos os passos pendentes
+  goldHave: number | null // ouro atual observado (null se sem leitura)
+  goldMissing: number // max(0, totalGoldCost - goldHave)
+  progress: number // 0..1 (ouro atual / custo total; 1 se já dá pra comprar)
+  hasNonGold: boolean // algum passo custa soul stones (não-ouro)
 }
 
 export interface HeroSnapshot {
@@ -180,6 +213,8 @@ export interface TbhApi {
   onState(cb: (state: TrackerState) => void): () => void
   getBoxThresholds(): Promise<BoxThresholds>
   setBoxThresholds(warn: number, high: number): Promise<BoxThresholds>
+  getRuneTarget(): Promise<number | null>
+  setRuneTarget(key: number | null): Promise<number | null>
 }
 
 declare global {

@@ -17,7 +17,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
-| R3 | P2 | Runa-alvo + ouro faltante (com pré-requisitos) | Catálogo de custos/arestas já existe (v4.0); falta o cálculo de caminho |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | N1 | P2 | Aba Atualizações (Steam News) | HTTP fetch + render; 1ª feature de rede externa |

@@ -14,6 +14,31 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v16.0 — Runa-alvo: ouro faltante com pré-requisitos (R3)
+
+### Adicionado
+- **Runa-alvo (R3):** na aba **Runas**, o painel de detalhes ganha **"Definir como alvo"**
+  (e "Remover alvo"); o nó marcado fica com um anel pulsante no mapa. A seleção é
+  **persistida localmente** (`tbh-tracker-config.json`, chave `runeTargetKey`).
+- **Card "Runa-alvo" no Dashboard:** mostra ícone/nome/categoria da runa, **nível atual →
+  máximo**, **custo total em ouro**, **ouro atual**, **quanto falta** e uma **barra de
+  progresso (%)**, além da **lista de passos** do caminho (pré-requisitos a desbloquear +
+  o próprio alvo, com nível e custo de cada um). Cada passo é **marcado como "✓ dá pra
+  comprar"** quando o ouro atual cobre o **custo acumulado na sequência** até ele.
+- **Cálculo do caminho** (`planRuneTarget` em `src/shared/runes.ts`): soma o custo em ouro
+  dos **pré-requisitos pendentes** (desbloquear nível 1) pelo **caminho de menor custo** até
+  a raiz quando há mais de um, mais os **níveis restantes do próprio alvo** (até o máximo),
+  e subtrai o **ouro observado** (`CurrencySaveDatas` 100001). Usa as **arestas/custos** já
+  catalogados no `runeTree.ts` (v4.0).
+
+### Notas
+- Pré-requisitos que custam **soul stones** (não-ouro) entram no caminho mas **não somam
+  ouro** — sinalizados no card.
+- Helper de ícones de runa extraído para `src/renderer/src/data/runeIcons.ts` (reutilizado
+  pela aba Runas e pelo Dashboard).
+
+---
+
 ## v15.0 — Aba Inventário: tipo × raridade (D3 / U8)
 
 ### Adicionado

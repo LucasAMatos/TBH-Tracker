@@ -16,6 +16,8 @@ interface PersistShape {
   // limiares de alerta de acumulo de baus (calibraveis pelo usuario)
   boxBacklogWarn?: number
   boxBacklogHigh?: number
+  // runa-alvo selecionada na aba Runas (R3); RuneKey do catalogo ou ausente
+  runeTargetKey?: number | null
 }
 
 let cache: PersistShape | null = null
@@ -112,4 +114,17 @@ export function setBoxThresholds(warn: number, high: number): BoxThresholds {
   data.boxBacklogHigh = normalized.high
   save(data)
   return normalized
+}
+
+export function getRuneTarget(): number | null {
+  const key = load().runeTargetKey
+  return typeof key === 'number' ? key : null
+}
+
+export function setRuneTarget(key: number | null): number | null {
+  const data = load()
+  if (typeof key === 'number' && Number.isFinite(key)) data.runeTargetKey = key
+  else delete data.runeTargetKey
+  save(data)
+  return getRuneTarget()
 }
