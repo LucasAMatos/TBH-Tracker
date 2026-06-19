@@ -190,6 +190,24 @@ export interface Snapshot {
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 
+// Um anúncio/patch note vindo da Steam News API (N1).
+export interface NewsItem {
+  id: string // gid do anúncio na Steam
+  title: string
+  url: string // link para o anúncio completo
+  author: string | null
+  summary: string // conteúdo limpo (sem BBCode/HTML), truncado
+  date: number // epoch ms da publicação
+  feedLabel: string // canal de origem (ex.: "Community Announcements")
+}
+
+// Feed de atualizações do jogo (N1). items vazio + error preenchido em caso de falha.
+export interface NewsFeed {
+  fetchedAt: number // epoch ms da busca
+  items: NewsItem[]
+  error: string | null // mensagem amigável se a busca falhou
+}
+
 export interface TrackerState {
   status: ConnectionStatus
   savePath: string | null
@@ -215,6 +233,8 @@ export interface TbhApi {
   setBoxThresholds(warn: number, high: number): Promise<BoxThresholds>
   getRuneTarget(): Promise<number | null>
   setRuneTarget(key: number | null): Promise<number | null>
+  getNews(force?: boolean): Promise<NewsFeed>
+  openExternal(url: string): Promise<void>
 }
 
 declare global {

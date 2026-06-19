@@ -1,5 +1,6 @@
 import { join } from 'node:path'
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { fetchNews } from './news'
 import * as store from './store'
 import { Tracker } from './tracker'
 import type { TrackerState } from '@shared/types'
@@ -75,6 +76,13 @@ function registerIpc(): void {
 
   ipcMain.handle('tbh:getRuneTarget', () => store.getRuneTarget())
   ipcMain.handle('tbh:setRuneTarget', (_e, key: number | null) => store.setRuneTarget(key))
+
+  ipcMain.handle('tbh:getNews', (_e, force?: boolean) => fetchNews(force === true))
+  ipcMain.handle('tbh:openExternal', (_e, url: string) => {
+    // Só abre URLs http(s) no navegador padrão — nada de esquemas arbitrários.
+    if (typeof url === 'string' && /^https?:\/\//i.test(url)) return shell.openExternal(url)
+    return undefined
+  })
 }
 
 app.whenReady().then(() => {

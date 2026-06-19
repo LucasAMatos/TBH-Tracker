@@ -14,6 +14,25 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v17.0 — Aba Atualizações: Steam News (N1 / U9)
+
+### Adicionado
+- **Aba Atualizações (N1 + U9):** lista patch notes/anúncios oficiais do TBH puxados da
+  **Steam News API** (`ISteamNews/GetNewsForApp`, `appid=3678970` — devs Nugem/Tesseract).
+  Cada anúncio mostra **canal, data, título, resumo** (BBCode/HTML reduzidos a texto) e
+  abre o **anúncio completo** no navegador padrão (`shell.openExternal`, só URLs http(s)).
+  Botão **"Atualizar"** força nova busca.
+- **Busca no processo main** (`src/main/news.ts`): GET HTTPS via `node:https` com timeout,
+  **cache de 10 min** e limpeza do conteúdo; exposta por IPC `tbh:getNews` (+ `tbh:openExternal`).
+  Em caso de falha, mantém o último resultado e sinaliza o erro na UI.
+
+### Notas / segurança
+- **1ª feature de rede externa** — mantém a postura passiva: apenas requisição a um serviço
+  público da Steam; **não** interage com o jogo nem com o save.
+- Extra ainda pendente: destacar quando há versão mais nova que a observada.
+
+---
+
 ## v16.0 — Runa-alvo: ouro faltante com pré-requisitos (R3)
 
 ### Adicionado

@@ -1730,3 +1730,106 @@ body {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ── Aba Atualizações (N1 / U9) ──────────────────────────────────────── */
+.updates {
+  max-width: 880px;
+}
+
+.updates__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.updates__title {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.updates__foot {
+  margin-top: 14px;
+}
+
+.newslist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.newscard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.newscard__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.newscard__feed {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 176, 32, 0.16);
+  color: var(--accent);
+}
+
+.newscard__date {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.newscard__title {
+  align-self: flex-start;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.newscard__title:hover {
+  color: var(--accent);
+}
+
+.newscard__summary {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.newscard__link {
+  align-self: flex-start;
+  padding: 0;
+  margin-top: 2px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.newscard__link:hover {
+  text-decoration: underline;
+}

@@ -19,7 +19,9 @@ const api = {
   setBoxThresholds: (warn: number, high: number) =>
     ipcRenderer.invoke('tbh:setBoxThresholds', warn, high),
   getRuneTarget: () => ipcRenderer.invoke('tbh:getRuneTarget'),
-  setRuneTarget: (key: number | null) => ipcRenderer.invoke('tbh:setRuneTarget', key)
+  setRuneTarget: (key: number | null) => ipcRenderer.invoke('tbh:setRuneTarget', key),
+  getNews: (force?: boolean) => ipcRenderer.invoke('tbh:getNews', force),
+  openExternal: (url: string) => ipcRenderer.invoke('tbh:openExternal', url)
 }
 
 contextBridge.exposeInMainWorld('tbh', api)
