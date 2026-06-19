@@ -1334,3 +1334,227 @@ body {
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* ── Aba Inventário (D3) ─────────────────────────────────────────────── */
+.invstats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.invstat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.invstat__label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.invstat__value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.invstat__hint {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.invscopes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.chip--active {
+  color: #1a1206;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.chip__count {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.chip--active .chip__count {
+  opacity: 0.9;
+}
+
+/* Barras de distribuição por raridade */
+.raritybars {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.raritybar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.raritybar__track {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.raritybar__fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.2s ease;
+}
+
+.raritybar__count {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.raritybar__name {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Matriz tipo × raridade */
+.invmatrix__wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.invmatrix {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  min-width: 720px;
+}
+
+.invmatrix th,
+.invmatrix td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.invmatrix thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.invmatrix__corner,
+.invmatrix__rowhead {
+  text-align: left;
+  background: var(--bg-elev);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.invmatrix__rowhead {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.invmatrix__grade {
+  vertical-align: bottom;
+}
+
+.invmatrix__grade--mkt {
+  color: var(--text);
+}
+
+.invmatrix__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.invmatrix__cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.invmatrix__cell--empty {
+  color: var(--border);
+  font-weight: 400;
+}
+
+.invmatrix__cell--mkt {
+  outline: 1px solid rgba(255, 176, 32, 0.25);
+  outline-offset: -1px;
+}
+
+.invmatrix__total {
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.invmatrix__total--grand {
+  color: var(--accent);
+}
+
+.invmatrix__cat td {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding-top: 12px;
+}
+
+.invmatrix tfoot td,
+.invmatrix tfoot th {
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+}

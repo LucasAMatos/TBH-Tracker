@@ -92,6 +92,50 @@ export interface BoxCount {
   quantity: number
 }
 
+// Onde uma instância de item está guardada no save (D3).
+export type ItemLocation = 'equipped' | 'inventory' | 'stash' | 'trading' | 'loose'
+
+export const ITEM_LOCATIONS: ItemLocation[] = [
+  'equipped',
+  'inventory',
+  'stash',
+  'trading',
+  'loose'
+]
+
+export const ITEM_LOCATION_LABELS: Record<ItemLocation, string> = {
+  equipped: 'Equipado',
+  inventory: 'Inventário',
+  stash: 'Stash',
+  trading: 'Trade Ship',
+  loose: 'Solto'
+}
+
+// Uma linha da matriz tipo × raridade: um tipo de gear com as contagens por raridade,
+// quebradas por localização (para filtrar por inventário/stash/equipado na UI).
+export interface InventoryRow {
+  gearType: string // GearTypeId (ver shared/items.ts)
+  label: string // rótulo PT do tipo
+  category: string // GearCategory ('weapon' | 'offhand' | 'armor' | 'accessory')
+  byLocation: Record<ItemLocation, number[]> // [local][raridade] = quantidade
+  counts: number[] // soma por raridade (todas as localizações)
+  total: number // total de itens desse tipo
+}
+
+// Distribuição do inventário por tipo × raridade (D3). gradeCount = nº de raridades;
+// os arrays de contagem por raridade têm esse tamanho (índice = tier da raridade).
+export interface InventorySummary {
+  totalItems: number // todas as instâncias em itemSaveDatas
+  gearCount: number // itens de equipamento (gear)
+  materialCount: number // materiais
+  boxCount: number // baús de fase guardados como item
+  unknownCount: number // ItemKey fora do catálogo (datamine desatualizado)
+  legendaryPlus: number // gear de raridade Legendary+ (vendável)
+  gradeCount: number // nº de raridades (tamanho dos arrays por raridade)
+  rows: InventoryRow[] // matriz tipo × raridade (apenas gear)
+  locationTotals: Record<ItemLocation, number> // total de instâncias por localização
+}
+
 export interface Snapshot {
   capturedAt: number // epoch ms da leitura
   playTimeSeconds: number | null
@@ -106,6 +150,7 @@ export interface Snapshot {
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
+  inventory: InventorySummary | null // distribuição de itens por tipo × raridade (D3)
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)
   stageEvents?: StageEvents // eventos de estágio da sessão (preenchido pelo Tracker)

@@ -18,7 +18,7 @@ fãs/comunidade — **valores e chaves podem mudar com patches**.
 
 | Repo | Link | Usado para |
 |------|------|-----------|
-| `WcgStark/tbh-farm` | https://github.com/WcgStark/tbh-farm | Origem do catálogo de runas (`runeTree.ts`) e ícones; referência de leitura de save. |
+| `WcgStark/tbh-farm` | https://github.com/WcgStark/tbh-farm | Origem do catálogo de runas (`runeTree.ts`) e ícones; referência de leitura de save. **Catálogo de itens (D3):** `engine/gamedata.js` (`DB.items`) traz `ItemKey → {gt, grade, lvl, type}` para 5.944 itens — base de `scripts/gen-items.cjs` → `src/shared/itemData.ts`. |
 | `shigake/tbh-copilot` | https://github.com/shigake/tbh-copilot | Cripto do save (chave ES3 hardcoded validada); referência de parsing. |
 | `Rupelio/TBH-Optimizer` | https://github.com/Rupelio/TBH-Optimizer | Otimização de farm; referência de modelagem. |
 

@@ -18,7 +18,7 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 |---|-----------|------|-----------|
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | R3 | P2 | Runa-alvo + ouro faltante (com pré-requisitos) | Catálogo de custos/arestas já existe (v4.0); falta o cálculo de caminho |
-| D2 | P3 | Classificar por raridade + destacar Legendary+ | Fácil se a raridade vier no item; senão precisa catálogo |
+| D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | N1 | P2 | Aba Atualizações (Steam News) | HTTP fetch + render; 1ª feature de rede externa |
 | U9 | P2 | Aba Atualizações (UI) | Render do feed do N1 |
@@ -31,8 +31,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Por que é difícil |
 |---|-----------|------|-------------------|
-| D3 | P2 | Aba Inventário (tipo × raridade + visualização) | Mapear `ItemKey`→tipo/raridade (~5760 itens) + viz |
-| U8 | P2 | Aba Inventário (UI) | Depende de D3 |
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
 | F2 | P1 | Ouro/h e XP/h por estágio | Janela + filtros anti-ruído; base da Fase 2 |
 | F3 | P1 | Histórico persistente por estágio | Depende de F2 + storage |

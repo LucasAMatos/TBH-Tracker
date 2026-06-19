@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
 import { Heroes } from './components/Heroes'
+import { Inventory } from './components/Inventory'
 import { KeyPanel } from './components/KeyPanel'
 import { RuneTree } from './components/RuneTree'
 import { StatusBar } from './components/StatusBar'
 import { TbhPedia } from './components/TbhPedia'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'herois' | 'runes' | 'tbhpedia'
+type Tab = 'dashboard' | 'herois' | 'inventario' | 'runes' | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -73,6 +74,12 @@ export function App(): JSX.Element {
           Heróis
         </button>
         <button
+          className={`tabs__btn ${tab === 'inventario' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('inventario')}
+        >
+          Inventário
+        </button>
+        <button
           className={`tabs__btn ${tab === 'runes' ? 'tabs__btn--active' : ''}`}
           onClick={() => setTab('runes')}
         >
@@ -94,6 +101,8 @@ export function App(): JSX.Element {
             heroes={state.snapshot?.heroes ?? []}
             arrangedKeys={state.snapshot?.arrangedHeroKeys ?? []}
           />
+        ) : tab === 'inventario' ? (
+          <Inventory inventory={state.snapshot?.inventory ?? null} />
         ) : tab === 'runes' ? (
           <RuneTree levels={state.snapshot?.runes ?? []} />
         ) : state.status === 'monitoring' && state.snapshot ? (
