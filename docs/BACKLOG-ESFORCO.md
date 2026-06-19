@@ -10,14 +10,29 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
-> Sem itens pendentes nesta faixa no momento.
+| # | Prioridade | Item | Observação |
+|---|-----------|------|-----------|
+| S6 | P2 | Progresso por dificuldade/ato | `maxCompletedStage` × catálogo (F0) — só agregação |
+| S5 | P2 | Alerta de nível recomendado vs. seu nível | Catálogo F0 já tem `level`; `stageThreat`/`stageLevels` refinam |
+| I7 | P2 | JSON bruto sob demanda (enxugar IPC) | Dívida técnica: hoje envia o save inteiro a cada leitura |
+| E1 | P3 | Exportação de dados (CSV/JSON) | Fluxo de ouro / farm / inventário já em memória |
+| I10 | P3 | Persistir estado da janela | Tamanho/posição no config local |
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
 | U10 | P2 | Dashboard customizável (flags on/off + colapsáveis, layout persistido) | Plano fechado; reaproveita padrão de persistência (`store`/IPC) — refactor do `Dashboard.tsx` |
+| D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
 | D4 | P2 | Catálogo de bônus/atributos de itens | Fonte mapeada (`statStrings`/`statMods`/`affixRep`/`gear`/`gradeSlots` no datamine); novo `gen-stats.cjs` → `statData.ts`. Pré-req do U11 |
+| PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + `DB.pets`/`petStats`; novo `gen-pets.cjs` |
+| H12 | P2 | Árvore de atributos por herói (visualizador) | `attributeSaveDatas` × `DB.attributes`/`statMods`; reusa `RuneTree.tsx` |
+| A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
+| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
+| I8 | P2 | Suíte de testes (vitest) | Lógica pura testável: decode/rank/plan/trackers/classify |
+| I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
+| O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
+| I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
@@ -31,6 +46,8 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Por que é difícil |
 |---|-----------|------|-------------------|
+| H10 | P2 | Modelo de stats do personagem (derivar todos os status) | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 |
+| H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
 | F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v20.0) |
 | R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
