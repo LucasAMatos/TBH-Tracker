@@ -21,6 +21,26 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.6.0 — Catálogo de bônus/atributos de itens (D4)
+
+### Adicionado
+- **Catálogo de bônus de itens (D4):** novo gerador `scripts/gen-stats.cjs` → `src/shared/statData.ts`
+  a partir do datamine (`gamedata.js` do tbh-farm), com:
+  - **`STAT_STRINGS`** — 117 tipos de status com **nome e linha pt-BR** (template `+{0}`,
+    ex.: `"Armadura +{0}"`).
+  - **`STAT_MODS`** — 620 modificadores rolaveis por `chave:nível` (`FLAT`/`ADDITIVE` + min/max).
+  - **`AFFIX_REP`** — representação/orçamento de afixo por status (57).
+  - **`GRADE_SLOTS`** — nº de slots de afixo por raridade.
+- **Helper `src/shared/stats.ts`:** `STAT_LIST` (lista para seleção, ordenada por nome),
+  `formatStatLine` (ex.: `formatStatLine('Armor', 35)` → "Armadura +35"), `statName`/`statLine`,
+  `modsForStat`/`statRange` (faixas de valor) e `gradeSlotTotal`/`gradeSlotsFor`.
+- **Testes:** `test/stats.test.ts` (catálogo, formatação, faixas, slots) — suíte sobe para 64.
+
+### Notas
+- **Foundation, sem UI:** é a base do **U11** (itens na TBHPedia + filtro/seleção por status).
+- Em aberto (no U11): se `itemSaveDatas[]` guarda os afixos **rolados por instância** ou se
+  mostramos só os **bônus possíveis** por tipo/raridade. O `gear` base fica para o modelo H10.
+
 ## v1.5.0 — Raridade do inventário no Dashboard + destaque Legendary+ (D2)
 
 ### Adicionado
