@@ -115,3 +115,108 @@ export function stagesByDifficulty(): Record<number, StageDatum[]> {
   for (const list of Object.values(out)) list.sort((a, b) => a.key - b.key)
   return out
 }
+
+// Progresso de conclusao por ato dentro de uma dificuldade (S6).
+export interface ActProgress {
+  act: number // 1..3
+  completed: number // fases concluidas no ato
+  total: number // fases catalogadas no ato (normalmente 9)
+}
+
+// Progresso de conclusao de uma dificuldade (S6), com a quebra por ato.
+export interface DifficultyProgress {
+  difficulty: number // 1..4
+  difficultyName: string
+  completed: number // fases concluidas na dificuldade
+  total: number // fases catalogadas na dificuldade
+  fraction: number // completed/total (0..1)
+  acts: ActProgress[]
+}
+
+/**
+ * Progresso por dificuldade/ato (S6) cruzando `maxCompletedStage` com o catalogo F0.
+ * A chave DAPP cresce monotonicamente com a progressao (Dificuldade > Ato > Fase), entao
+ * uma fase do catalogo conta como concluida quando `key <= maxKey`. Cobre fases 1-9 (o
+ * catalogo nao tem boss de ato; um boss como `maxCompletedStage` ainda marca as fases do
+ * ato como concluidas por ser numericamente maior). Sempre retorna as 4 dificuldades.
+ */
+export function stageProgress(
+  maxValue: number | string | null | undefined
+): DifficultyProgress[] {
+  const maxKey = (() => {
+    const k = normalizeStageKey(maxValue)
+    return k ? Number(k) : 0
+  })()
+
+  const byDifficulty = stagesByDifficulty()
+  const out: DifficultyProgress[] = []
+  for (let difficulty = 1; difficulty <= 4; difficulty++) {
+    const stages = byDifficulty[difficulty] ?? []
+    const actMap = new Map<number, ActProgress>()
+    let completed = 0
+    for (const s of stages) {
+      const act = actMap.get(s.act) ?? { act: s.act, completed: 0, total: 0 }
+      act.total += 1
+      if (s.key <= maxKey) {
+        act.completed += 1
+        completed += 1
+      }
+      actMap.set(s.act, act)
+    }
+    const total = stages.length
+    out.push({
+      difficulty,
+      difficultyName: DIFFICULTY_NAMES[difficulty] ?? `?${difficulty}`,
+      completed,
+      total,
+      fraction: total > 0 ? completed / total : 0,
+      acts: [...actMap.values()].sort((a, b) => a.act - b.act)
+    })
+  }
+  return out
+}
+
+export type LevelAdviceStatus = 'under' | 'ok' | 'over' | 'unknown'
+
+// Comparacao do nivel dos herois ativos com o nivel recomendado do estagio (S5).
+export interface LevelAdvice {
+  stageRaw: string
+  recommendedLevel: number | null // nivel do catalogo para o estagio
+  avgActiveLevel: number | null // media dos niveis dos herois ativos
+  minActiveLevel: number | null
+  delta: number | null // avgActiveLevel - recommendedLevel
+  status: LevelAdviceStatus
+}
+
+// Margem (em niveis) para classificar sub/over-level.
+const UNDER_LEVEL_MARGIN = 3 // >= 3 niveis abaixo do recomendado
+const OVER_LEVEL_MARGIN = 5 // >= 5 niveis acima → XP penalizado (over-level)
+
+/**
+ * Aconselha sobre o nivel do estagio atual (S5): compara o **nivel recomendado** (catalogo F0)
+ * com a **media de nivel dos herois ativos**. Abaixo do recomendado = risco/lento; bem acima =
+ * penalidade de XP (over-level). `recommendedLevel`/status `unknown` quando o estagio nao esta
+ * no catalogo (ex.: boss de ato) ou nao ha herois ativos.
+ */
+export function levelAdvice(
+  stageRaw: string | null | undefined,
+  activeHeroLevels: number[]
+): LevelAdvice {
+  const raw = normalizeStageKey(stageRaw) ?? ''
+  const recommendedLevel = stageDataForRaw(stageRaw)?.level ?? null
+  const levels = activeHeroLevels.filter((n) => Number.isFinite(n) && n > 0)
+  const avgActiveLevel =
+    levels.length > 0 ? levels.reduce((a, b) => a + b, 0) / levels.length : null
+  const minActiveLevel = levels.length > 0 ? Math.min(...levels) : null
+
+  let status: LevelAdviceStatus = 'unknown'
+  let delta: number | null = null
+  if (recommendedLevel !== null && avgActiveLevel !== null) {
+    delta = avgActiveLevel - recommendedLevel
+    if (delta <= -UNDER_LEVEL_MARGIN) status = 'under'
+    else if (delta >= OVER_LEVEL_MARGIN) status = 'over'
+    else status = 'ok'
+  }
+
+  return { stageRaw: raw, recommendedLevel, avgActiveLevel, minActiveLevel, delta, status }
+}

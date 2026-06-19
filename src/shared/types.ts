@@ -316,6 +316,7 @@ export interface TbhApi {
   setSavePathOverride(path: string | null): Promise<TrackerState>
   pickSaveFile(): Promise<TrackerState>
   refresh(): Promise<TrackerState>
+  getRawSave(): Promise<unknown | null>
   onState(cb: (state: TrackerState) => void): () => void
   getBoxThresholds(): Promise<BoxThresholds>
   setBoxThresholds(warn: number, high: number): Promise<BoxThresholds>
@@ -323,6 +324,7 @@ export interface TbhApi {
   setRuneTarget(key: number | null): Promise<number | null>
   getDashboardLayout(): Promise<DashboardLayout>
   setDashboardLayout(layout: DashboardLayout): Promise<DashboardLayout>
+  saveTextFile(defaultName: string, content: string): Promise<string | null>
   getNews(force?: boolean): Promise<NewsFeed>
   openExternal(url: string): Promise<void>
   findKey(): Promise<KeyFindResult>

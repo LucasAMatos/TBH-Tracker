@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
 import {
   difficultyName,
+  levelAdvice,
   rankStages,
   stageDataForRaw,
+  stageProgress,
   type StageMetric
 } from '@shared/stage'
+import { buildFarmCsv, buildSessionJson, exportStamp } from '@shared/export'
 import type { StageDatum } from '@shared/stageData'
 import type { Snapshot, StageFarmEntry } from '@shared/types'
 
@@ -238,11 +241,131 @@ function Measurements({ snapshot }: { snapshot: Snapshot | null }): JSX.Element 
   )
 }
 
+/** S5 — alerta de nível recomendado do estágio atual vs. nível dos heróis ativos. */
+function LevelAdviceBanner({ snapshot }: { snapshot: Snapshot | null }): JSX.Element | null {
+  const currentRaw = snapshot?.stage?.raw ?? null
+  const activeLevels = (snapshot?.heroes ?? [])
+    .filter((h) => h.active)
+    .map((h) => h.level ?? 0)
+  const advice = levelAdvice(currentRaw, activeLevels)
+  if (advice.status === 'unknown' || advice.recommendedLevel === null) return null
+
+  const rec = advice.recommendedLevel
+  const avg = advice.avgActiveLevel !== null ? Math.round(advice.avgActiveLevel) : null
+  const gap = advice.delta !== null ? Math.abs(Math.round(advice.delta)) : null
+  const stageLabel = stageDataForRaw(currentRaw)?.label ?? currentRaw ?? '—'
+
+  const cls =
+    advice.status === 'under'
+      ? 'alert alert--warn'
+      : advice.status === 'over'
+        ? 'alert alert--info'
+        : 'alert alert--ok'
+
+  return (
+    <section className="section">
+      <div className={cls}>
+        {advice.status === 'under' && (
+          <>
+            Seus heróis ativos estão ~<strong>{gap}</strong> nível(is) <strong>abaixo</strong> do
+            recomendado ({rec}) para o estágio <strong>{stageLabel}</strong> — o clear tende a ficar
+            lento ou arriscado. Considere descer de estágio ou subir de nível.
+          </>
+        )}
+        {advice.status === 'over' && (
+          <>
+            Seus heróis ativos estão ~<strong>{gap}</strong> nível(is) <strong>acima</strong> do
+            recomendado ({rec}) para <strong>{stageLabel}</strong> — há <strong>penalidade de XP
+            por over-level</strong>. Considere subir de estágio para farmar XP melhor.
+          </>
+        )}
+        {advice.status === 'ok' && (
+          <>
+            Nível adequado para <strong>{stageLabel}</strong> (recomendado {rec}, seus ativos ~
+            {avg}).
+          </>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** S6 — progresso de conclusão por dificuldade/ato (a partir do estágio máximo). */
+function StageProgressSection({ maxRaw }: { maxRaw: string | null }): JSX.Element {
+  const progress = useMemo(() => stageProgress(maxRaw), [maxRaw])
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h3 className="section__title">Progresso por dificuldade</h3>
+        <span className="card__hint">Fases concluídas do catálogo (1–9 por ato, sem boss)</span>
+      </div>
+      <div className="progress">
+        {progress.map((d) => {
+          const pct = Math.round(d.fraction * 100)
+          return (
+            <div className="progress__row" key={d.difficulty}>
+              <div className="progress__head">
+                <span className="progress__name">{d.difficultyName}</span>
+                <span className="progress__count">
+                  {d.completed}/{d.total} ({pct}%)
+                </span>
+              </div>
+              <div className="progress__bar">
+                <div className="progress__fill" style={{ width: `${pct}%` }} />
+              </div>
+              <div className="progress__acts">
+                {d.acts.map((a) => (
+                  <span
+                    key={a.act}
+                    className={`progress__act${a.completed === a.total ? ' progress__act--done' : ''}`}
+                  >
+                    Ato {a.act}: {a.completed}/{a.total}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+/** E1 — exporta a sessão (JSON completo) ou o farm por estágio (CSV). */
+function ExportBar({ snapshot }: { snapshot: Snapshot | null }): JSX.Element {
+  const disabled = !snapshot
+
+  const exportJson = (): void => {
+    if (!snapshot) return
+    window.tbh.saveTextFile(`tbh-sessao-${exportStamp()}.json`, buildSessionJson(snapshot))
+  }
+  const exportCsv = (): void => {
+    if (!snapshot) return
+    window.tbh.saveTextFile(`tbh-farm-${exportStamp()}.csv`, buildFarmCsv(snapshot))
+  }
+
+  return (
+    <div className="farm-export">
+      <span className="card__hint">Exportar:</span>
+      <button className="btn btn--ghost btn--sm" onClick={exportJson} disabled={disabled}>
+        Sessão (JSON)
+      </button>
+      <button className="btn btn--ghost btn--sm" onClick={exportCsv} disabled={disabled}>
+        Farm (CSV)
+      </button>
+    </div>
+  )
+}
+
 export function Farm({ snapshot }: { snapshot: Snapshot | null }): JSX.Element {
   const currentRaw = snapshot?.stage?.raw ?? null
+  const maxRaw = snapshot?.maxCompletedStage?.raw ?? null
   return (
     <div className="farm">
+      <ExportBar snapshot={snapshot} />
+      <LevelAdviceBanner snapshot={snapshot} />
       <Measurements snapshot={snapshot} />
+      <StageProgressSection maxRaw={maxRaw} />
       <BestStages currentRaw={currentRaw} />
     </div>
   )

@@ -26,6 +26,17 @@ interface PersistShape {
   runeTargetKey?: number | null
   // layout do Dashboard (U10): widgets escondidos/recolhidos
   dashboardLayout?: DashboardLayout
+  // estado da janela (I10): tamanho/posicao/maximizado entre sessoes
+  windowState?: WindowState
+}
+
+// Estado persistido da janela (I10). x/y ausentes = centralizar.
+export interface WindowState {
+  width: number
+  height: number
+  x?: number
+  y?: number
+  maximized: boolean
 }
 
 let cache: PersistShape | null = null
@@ -170,4 +181,16 @@ export function setDashboardLayout(layout: DashboardLayout): DashboardLayout {
   data.dashboardLayout = normalized
   save(data)
   return normalized
+}
+
+export function getWindowState(): WindowState | null {
+  const w = load().windowState
+  if (!w || typeof w.width !== 'number' || typeof w.height !== 'number') return null
+  return w
+}
+
+export function setWindowState(state: WindowState): void {
+  const data = load()
+  data.windowState = state
+  save(data)
 }

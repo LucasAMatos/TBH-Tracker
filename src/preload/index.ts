@@ -10,6 +10,7 @@ const api = {
     ipcRenderer.invoke('tbh:setSavePathOverride', path),
   pickSaveFile: () => ipcRenderer.invoke('tbh:pickSaveFile'),
   refresh: () => ipcRenderer.invoke('tbh:refresh'),
+  getRawSave: () => ipcRenderer.invoke('tbh:getRawSave'),
   onState: (cb: (state: TrackerState) => void) => {
     const listener = (_e: unknown, state: TrackerState): void => cb(state)
     ipcRenderer.on('tbh:state', listener)
@@ -23,6 +24,8 @@ const api = {
   getDashboardLayout: () => ipcRenderer.invoke('tbh:getDashboardLayout'),
   setDashboardLayout: (layout: DashboardLayout) =>
     ipcRenderer.invoke('tbh:setDashboardLayout', layout),
+  saveTextFile: (defaultName: string, content: string) =>
+    ipcRenderer.invoke('tbh:saveTextFile', defaultName, content),
   getNews: (force?: boolean) => ipcRenderer.invoke('tbh:getNews', force),
   openExternal: (url: string) => ipcRenderer.invoke('tbh:openExternal', url),
   findKey: () => ipcRenderer.invoke('tbh:findKey')
