@@ -14,6 +14,30 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v18.0 — Catálogo de estágios: ouro/EXP/HP por fase (F0)
+
+### Adicionado
+- **Catálogo de estágios (F0):** `src/shared/stageData.ts` (auto-gerado) com **108
+  estágios** (4 dificuldades × 3 atos × fases 1-9) indexados pela **chave DAPP**, cada um
+  com **ouro/clear** (`expectedGold`), **EXP/clear** (`expectedEXP`), **HP total**,
+  **nº de inimigos** (`count`), ondas e as **densidades** `goldPerHP`/`expPerHP`
+  (proxy de ganho por tempo). Nomes em pt-BR.
+- **Gerador** `scripts/gen-stages.cjs`: datamine de `data/farm_stages.json` do `tbh-farm`
+  (mesmo padrão de `gen-runes.cjs`/`gen-items.cjs`), com correção de mojibake nos nomes.
+- **Helpers** em `src/shared/stage.ts`: `stageDataForRaw(raw)` (lookup por código DAPP),
+  `rankStages(metric, { difficulty, limit })` (ranqueia por eficiência — ouro/exp/combo via
+  densidade de HP) e `stagesByDifficulty()`; mais `difficultyName(n)`.
+
+### Notas
+- **Fundação da Fase 2** — desbloqueia F4 (recomendação de estágio, via `rankStages`),
+  F5 (projeção) e a aproximação de ouro/kill do G4 (`expectedGold / count`).
+- O catálogo **não inclui boss de ato** (fase 10): a fonte cobre só as fases 1-9 de cada
+  ato. `stageDataForRaw` retorna `null` para chaves fora do catálogo.
+- Dado estático da comunidade (datamine) — pode mudar com patches; regenerar pelo script.
+  Fonte registrada em `FONTES.md`.
+
+---
+
 ## v17.0 — Aba Atualizações: Steam News (N1 / U9)
 
 ### Adicionado

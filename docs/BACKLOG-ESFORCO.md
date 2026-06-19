@@ -29,9 +29,9 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | # | Prioridade | Item | Por que é difícil |
 |---|-----------|------|-------------------|
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
-| F2 | P1 | Ouro/h e XP/h por estágio | Janela + filtros anti-ruído; base da Fase 2 |
-| F3 | P1 | Histórico persistente por estágio | Depende de F2 + storage |
-| F4 | P1 | Recomendar melhor estágio | Depende de F2/F3 |
+| F2 | P1 | Ouro/h e XP/h por estágio | Plano definido (tracker `stageFarm.ts` reaproveita `goldFlow`/`stageEvents`); janela + filtros anti-ruído. **F0 (catálogo) já pronto (v18.0)** |
+| F3 | P1 | Histórico persistente por estágio | Depende de F2; **storage já pronto** (`history.ts`, I6 — só falta namespace `stageFarm`) |
+| F4 | P1 | Recomendar melhor estágio | **F0 pronto** (`rankStages`, v18.0); falta UI (U2) + opcionalmente medições F2/F3 |
 | F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP |
 | U2 | P1 | Aba de Farm | Depende de F1–F4 |
 | R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
