@@ -92,6 +92,26 @@ function parseGold(player: Json): number | null {
 }
 
 /**
+ * Total de kills cumulativo da conta, de `aggregateSaveDatas[]` (estatisticas
+ * {Type, SubKey, Value}, validado em save real): entrada com Type 0 e SubKey 0.
+ * Base do F1 (clears estimados = delta de kills / inimigos-por-clear do catalogo).
+ * Retorna null quando o save nao expoe a estrutura (patch novo etc.).
+ */
+function parseTotalKills(player: Json): number | null {
+  const list = pick(player, ['aggregateSaveDatas', 'AggregateSaveDatas'])
+  const arr = asArray(list)
+  for (const entry of arr) {
+    if (!isObj(entry)) continue
+    const type = toNumber(pick(entry, ['Type', 'type']))
+    const subKey = toNumber(pick(entry, ['SubKey', 'subKey']))
+    if (type === 0 && subKey === 0) {
+      return toNumber(pick(entry, ['Value', 'value']))
+    }
+  }
+  return null
+}
+
+/**
  * Baus por categoria. BoxData sao arrays PARALELOS (validado em save real):
  *   { BoxTypes:[...], BoxUniqueId:[...], BoxQuantity:[...] }
  * Cada indice i e um lote: tipo = BoxTypes[i], quantidade = BoxQuantity[i].
@@ -316,6 +336,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     capturedAt: Date.now(),
     playTimeSeconds: playTime !== null ? Math.floor(playTime) : null,
     gold: parseGold(player),
+    totalKills: parseTotalKills(player),
     stage: decodeStage(pick(common, ['currentStageKey', 'CurrentStageKey']) as number | string),
     currentWave: toNumber(pick(common, ['currentStageWave', 'CurrentStageWave'])),
     maxCompletedStage: decodeStage(

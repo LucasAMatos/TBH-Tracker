@@ -117,7 +117,8 @@ export class Tracker {
         snapshot.capturedAt,
         snapshot.stage?.raw ?? null,
         snapshot.gold,
-        totalExp
+        totalExp,
+        snapshot.totalKills
       )
       if (stageFarm) snapshot.stageFarm = stageFarm
       // Persiste o histórico desta leitura (I6, debounced por save).

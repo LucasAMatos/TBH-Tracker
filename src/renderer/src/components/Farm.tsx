@@ -21,6 +21,13 @@ function fmtRate(perHour: number | null): string {
   return `${fmtNum(perHour)}/h`
 }
 
+/** Clears/h com 1 casa quando < 10 (taxas baixas), inteiro caso contrário. */
+function fmtClearsRate(perHour: number | null): string {
+  if (perHour === null || perHour === undefined) return '—'
+  const v = perHour < 10 ? perHour.toFixed(1) : fmtNum(perHour)
+  return `${v}/h`
+}
+
 /** Duração humana aproximada (ex.: "45s", "12min", "2h 30min"). */
 function fmtDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`
@@ -186,7 +193,9 @@ function Measurements({ snapshot }: { snapshot: Snapshot | null }): JSX.Element 
               <th className="farmtable__num">Tempo</th>
               <th className="farmtable__num">Ouro/h</th>
               <th className="farmtable__num">XP/h</th>
-              <th className="farmtable__num">Ouro total</th>
+              <th className="farmtable__num">Clears/h</th>
+              <th className="farmtable__num">Tempo/clear</th>
+              <th className="farmtable__num">Clears (est.)</th>
             </tr>
           </thead>
           <tbody>
@@ -206,7 +215,11 @@ function Measurements({ snapshot }: { snapshot: Snapshot | null }): JSX.Element 
                   <td className="farmtable__num">{fmtDuration(e.seconds)}</td>
                   <td className="farmtable__num farmtable__num--gold">{fmtRate(e.goldPerHour)}</td>
                   <td className="farmtable__num farmtable__num--exp">{fmtRate(e.expPerHour)}</td>
-                  <td className="farmtable__num">{fmtNum(e.goldGained)}</td>
+                  <td className="farmtable__num">{fmtClearsRate(e.clearsPerHour)}</td>
+                  <td className="farmtable__num">
+                    {e.secondsPerClear !== null ? fmtDuration(e.secondsPerClear) : '—'}
+                  </td>
+                  <td className="farmtable__num">{e.clears !== null ? fmtNum(e.clears) : '—'}</td>
                 </tr>
               )
             })}
@@ -215,8 +228,11 @@ function Measurements({ snapshot }: { snapshot: Snapshot | null }): JSX.Element 
       </div>
       <p className="card__hint">
         Taxas medidas pelo delta entre leituras enquanto o estágio fica estável (intervalos com
-        troca de mapa, gasto de ouro ou jogo parado são descartados). É uma aproximação — o save
-        não registra clears nem tempo por corrida.
+        troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>Clears são
+        estimados</strong> = kills no estágio ÷ inimigos por clear do catálogo; o <strong>tempo por
+        clear</strong> é derivado dessa estimativa (o save não registra a fronteira/tempo de cada
+        corrida individual). Estágios fora do catálogo (ex.: boss de ato) não têm estimativa de
+        clears.
       </p>
     </section>
   )

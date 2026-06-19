@@ -125,10 +125,18 @@ export interface StageFarmEntry {
   stageRaw: string // código DAPP do estágio (4 dígitos)
   goldGained: number // soma dos deltas de ouro positivos atribuídos a este estágio
   expGained: number // soma dos deltas de XP positivos (Σ HeroExp) atribuídos
+  killsGained: number // soma dos deltas de kills positivos (aggregate Type 0) atribuídos
   seconds: number // tempo observado farmando este estágio (s)
   reads: number // nº de intervalos de leitura atribuídos (amostras)
   goldPerHour: number | null // goldGained/seconds*3600 (null se tempo insuficiente)
   expPerHour: number | null // expGained/seconds*3600 (null se tempo insuficiente)
+  // Eficiência de farm (F1): clears estimados = killsGained / inimigos-por-clear (catálogo F0).
+  // null quando o estágio não está no catálogo (ex.: boss de ato) ou faltam dados.
+  clears: number | null // clears estimados acumulados neste estágio
+  clearsPerHour: number | null // clears/seconds*3600 (null se tempo insuficiente)
+  secondsPerClear: number | null // tempo médio por clear (s) = seconds / clears
+  goldPerClear: number | null // ouro médio medido por clear
+  expPerClear: number | null // XP médio medido por clear
   lastAt: number // epoch ms da última leitura atribuída a este estágio
 }
 
@@ -194,6 +202,7 @@ export interface Snapshot {
   capturedAt: number // epoch ms da leitura
   playTimeSeconds: number | null
   gold: number | null
+  totalKills: number | null // total de kills cumulativo (aggregateSaveDatas Type 0/SubKey 0)
   stage: StageInfo | null
   currentWave: number | null
   maxCompletedStage: StageInfo | null
