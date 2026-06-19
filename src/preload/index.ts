@@ -17,7 +17,9 @@ const api = {
   },
   getBoxThresholds: () => ipcRenderer.invoke('tbh:getBoxThresholds'),
   setBoxThresholds: (warn: number, high: number) =>
-    ipcRenderer.invoke('tbh:setBoxThresholds', warn, high)
+    ipcRenderer.invoke('tbh:setBoxThresholds', warn, high),
+  getRuneTarget: () => ipcRenderer.invoke('tbh:getRuneTarget'),
+  setRuneTarget: (key: number | null) => ipcRenderer.invoke('tbh:setRuneTarget', key)
 }
 
 contextBridge.exposeInMainWorld('tbh', api)

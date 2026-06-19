@@ -1558,3 +1558,175 @@ body {
   border-top: 2px solid var(--border);
   border-bottom: none;
 }
+
+/* ── Runa-alvo (R3) ──────────────────────────────────────────────────── */
+.runetarget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.runetarget--done {
+  border-color: var(--ok);
+}
+
+.runetarget__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.runetarget__icon {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  flex: none;
+}
+
+.runetarget__id {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.runetarget__name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.runetarget__lvl {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.runetarget__msg {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.runetarget__msg--ok {
+  color: var(--ok);
+}
+
+.runetarget__nums {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.runetarget__nums > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.runetarget__val {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.runetarget__val--ok {
+  color: var(--ok);
+}
+
+.runetarget__bar {
+  width: 100%;
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.runetarget__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.runetarget__fill--ok {
+  background: var(--ok);
+}
+
+.runetarget__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.runetarget__step {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.runetarget__step--ready {
+  border-left-color: var(--ok);
+  background: rgba(63, 185, 80, 0.06);
+}
+
+.runetarget__stepicon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+}
+
+.runetarget__stepname {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.runetarget__steptag {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 176, 32, 0.18);
+  color: var(--accent);
+}
+
+.runetarget__steptag--ready {
+  background: rgba(63, 185, 80, 0.18);
+  color: var(--ok);
+}
+
+.runetarget__steplvl {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.runetarget__stepcost {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

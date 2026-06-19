@@ -29,6 +29,7 @@ export function App(): JSX.Element {
   const [state, setState] = useState<TrackerState>(EMPTY)
   const [version, setVersion] = useState('')
   const [tab, setTab] = useState<Tab>('dashboard')
+  const [runeTarget, setRuneTarget] = useState<number | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -38,12 +39,19 @@ export function App(): JSX.Element {
     window.tbh.getVersion().then((v) => {
       if (mounted && v) setVersion(formatVersion(v))
     })
+    window.tbh.getRuneTarget().then((k) => {
+      if (mounted) setRuneTarget(k ?? null)
+    })
     const off = window.tbh.onState((s) => setState(s))
     return () => {
       mounted = false
       off()
     }
   }, [])
+
+  const changeRuneTarget = (key: number | null): void => {
+    window.tbh.setRuneTarget(key).then((k) => setRuneTarget(k ?? null))
+  }
 
   return (
     <div className="app">
@@ -104,9 +112,13 @@ export function App(): JSX.Element {
         ) : tab === 'inventario' ? (
           <Inventory inventory={state.snapshot?.inventory ?? null} />
         ) : tab === 'runes' ? (
-          <RuneTree levels={state.snapshot?.runes ?? []} />
+          <RuneTree
+            levels={state.snapshot?.runes ?? []}
+            target={runeTarget}
+            onSetTarget={changeRuneTarget}
+          />
         ) : state.status === 'monitoring' && state.snapshot ? (
-          <Dashboard snapshot={state.snapshot} />
+          <Dashboard snapshot={state.snapshot} runeTarget={runeTarget} />
         ) : (
           <KeyPanel state={state} onChange={setState} />
         )}

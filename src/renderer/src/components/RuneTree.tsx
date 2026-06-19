@@ -9,18 +9,7 @@ import {
 } from '@shared/runes'
 import { RUNE_BOUNDS, RUNE_EDGES, RUNE_NODES, type RuneNode } from '@shared/runeTree'
 import type { RuneLevel } from '@shared/types'
-
-// Ícones das runas (baixados de taskbarhero.wiki). Resolvidos por Vite em dev e build.
-const iconModules = import.meta.glob('../assets/runes/*.png', {
-  eager: true,
-  query: '?url',
-  import: 'default'
-}) as Record<string, string>
-const ICONS: Record<string, string> = {}
-for (const [p, url] of Object.entries(iconModules)) {
-  const name = p.split('/').pop()?.replace('.png', '') ?? ''
-  ICONS[name] = url
-}
+import { runeIcon } from '../data/runeIcons'
 
 const PAD = 80
 const NODE_R = 26
@@ -45,17 +34,28 @@ function fmtGold(n: number): string {
   return String(n)
 }
 
-function DetailPanel({ node, level }: { node: RuneNode | null; level: number }): JSX.Element {
+function DetailPanel({
+  node,
+  level,
+  isTarget,
+  onSetTarget
+}: {
+  node: RuneNode | null
+  level: number
+  isTarget: boolean
+  onSetTarget: (key: number | null) => void
+}): JSX.Element {
   if (!node) {
     return <p className="card__hint">Clique em uma runa no mapa para ver detalhes.</p>
   }
   const meta = RUNE_CATEGORY_META[node.category]
   const next = nextLevelGoldCost(node, level)
   const invested = investedGold(node, level)
+  const icon = runeIcon(node.icon)
   return (
     <div className="rune-detail">
       <div className="rune-detail__head">
-        {ICONS[node.icon] && <img className="rune-detail__icon" src={ICONS[node.icon]} alt="" />}
+        {icon && <img className="rune-detail__icon" src={icon} alt="" />}
         <div>
           <div className="rune-detail__name">{node.name}</div>
           <span className="rune-badge" style={{ borderColor: meta.color, color: meta.color }}>
@@ -84,11 +84,30 @@ function DetailPanel({ node, level }: { node: RuneNode | null; level: number }):
           </span>
         </div>
       </div>
+      <button
+        className={`btn btn--sm ${isTarget ? 'btn--ghost' : 'btn--primary'}`}
+        onClick={() => onSetTarget(isTarget ? null : node.key)}
+      >
+        {isTarget ? 'Remover alvo' : 'Definir como alvo'}
+      </button>
+      {isTarget && (
+        <p className="card__hint">
+          Esta é a runa-alvo — veja quanto ouro falta no card do Dashboard.
+        </p>
+      )}
     </div>
   )
 }
 
-export function RuneTree({ levels }: { levels: RuneLevel[] }): JSX.Element {
+export function RuneTree({
+  levels,
+  target,
+  onSetTarget
+}: {
+  levels: RuneLevel[]
+  target: number | null
+  onSetTarget: (key: number | null) => void
+}): JSX.Element {
   const [view, setView] = useState<View>(FULL_VIEW)
   const [selected, setSelected] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement | null>(null)
@@ -197,7 +216,9 @@ export function RuneTree({ levels }: { levels: RuneLevel[] }): JSX.Element {
               const owned = lv > 0
               const maxed = owned && lv >= n.maxLevel
               const isSel = n.key === selected
+              const isTarget = n.key === target
               const color = runeColor(n)
+              const icon = runeIcon(n.icon)
               return (
                 <g
                   key={n.key}
@@ -205,6 +226,18 @@ export function RuneTree({ levels }: { levels: RuneLevel[] }): JSX.Element {
                   className="rune-node"
                   onClick={() => setSelected(n.key)}
                 >
+                  {isTarget && (
+                    <circle r={NODE_R + 10} fill="none" stroke="#ffb020" strokeWidth={3} strokeDasharray="6 5">
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0"
+                        to="360"
+                        dur="12s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  )}
                   <circle
                     r={NODE_R + 3}
                     fill="#0d1117"
@@ -212,9 +245,9 @@ export function RuneTree({ levels }: { levels: RuneLevel[] }): JSX.Element {
                     strokeWidth={isSel ? 5 : owned ? 4 : 2}
                     opacity={owned ? 1 : 0.55}
                   />
-                  {ICONS[n.icon] && (
+                  {icon && (
                     <image
-                      href={ICONS[n.icon]}
+                      href={icon}
                       x={-NODE_R}
                       y={-NODE_R}
                       width={NODE_R * 2}
@@ -235,7 +268,12 @@ export function RuneTree({ levels }: { levels: RuneLevel[] }): JSX.Element {
         </svg>
 
         <aside className="rune-view__side">
-          <DetailPanel node={selectedNode} level={selectedNode ? levelByKey.get(selectedNode.key) ?? 0 : 0} />
+          <DetailPanel
+            node={selectedNode}
+            level={selectedNode ? levelByKey.get(selectedNode.key) ?? 0 : 0}
+            isTarget={selectedNode != null && selectedNode.key === target}
+            onSetTarget={onSetTarget}
+          />
           <p className="card__hint rune-view__hint">
             Arraste para mover · roda do mouse para zoom. Catálogo: taskbarhero.wiki.
           </p>

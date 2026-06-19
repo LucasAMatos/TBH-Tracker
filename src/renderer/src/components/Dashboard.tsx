@@ -9,15 +9,18 @@ import {
   type BoxThresholds
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
+import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
 import type {
   BoxCount,
   GoldFlow,
   HeroEvents,
   HeroSnapshot,
+  RuneTargetPlan,
   Snapshot,
   StageEvents
 } from '@shared/types'
 import { heroPortrait } from '../data/heroPortraits'
+import { runeIcon } from '../data/runeIcons'
 
 // A formação do TBH tem 3 slots de herói ativo (arrangedHeroKey).
 const HERO_SLOTS = 3
@@ -345,6 +348,100 @@ function StageEventsSection({ stageEvents }: { stageEvents: StageEvents }): JSX.
   )
 }
 
+function RuneTargetSection({ plan }: { plan: RuneTargetPlan }): JSX.Element {
+  const meta = RUNE_CATEGORY_META[plan.category]
+  const icon = runeIcon(plan.targetIcon)
+  const pct = Math.round(plan.progress * 100)
+  const done = plan.alreadyComplete || (plan.goldHave !== null && plan.goldMissing <= 0)
+  const readyCount = plan.steps.filter((step) => step.affordable).length
+  return (
+    <section className="section">
+      <h3 className="section__title">Runa-alvo</h3>
+      <div className={`runetarget ${done ? 'runetarget--done' : ''}`}>
+        <div className="runetarget__head">
+          {icon && <img className="runetarget__icon" src={icon} alt="" />}
+          <div className="runetarget__id">
+            <div className="runetarget__name">{plan.targetName}</div>
+            <span className="rune-badge" style={{ borderColor: meta.color, color: meta.color }}>
+              {meta.label}
+            </span>
+            <span className="runetarget__lvl">
+              Nv {plan.currentLevel} / {plan.maxLevel}
+            </span>
+          </div>
+        </div>
+
+        {plan.alreadyComplete ? (
+          <p className="runetarget__msg runetarget__msg--ok">Runa-alvo já está no nível máximo. ✓</p>
+        ) : !plan.reachable ? (
+          <p className="runetarget__msg">
+            Não foi possível traçar o caminho de pré-requisitos desta runa.
+          </p>
+        ) : (
+          <>
+            <div className="runetarget__nums">
+              <div>
+                <span className="card__label">Custo total</span>
+                <span className="runetarget__val">{fmtNum(plan.totalGoldCost)}</span>
+              </div>
+              <div>
+                <span className="card__label">Ouro atual</span>
+                <span className="runetarget__val">{fmtNum(plan.goldHave)}</span>
+              </div>
+              <div>
+                <span className="card__label">{done ? 'Pode comprar' : 'Falta'}</span>
+                <span className={`runetarget__val ${done ? 'runetarget__val--ok' : ''}`}>
+                  {done ? '✓' : fmtNum(plan.goldMissing)}
+                </span>
+              </div>
+            </div>
+            <div className="runetarget__bar">
+              <div
+                className={`runetarget__fill ${done ? 'runetarget__fill--ok' : ''}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="card__hint">
+              {pct}% do ouro necessário · {plan.steps.length} passo(s) no caminho
+              {readyCount > 0 && ` · ${readyCount} já dá pra comprar em sequência`}
+              {plan.hasNonGold && ' · alguns pré-requisitos custam soul stones (não contados no ouro)'}
+            </p>
+            {plan.steps.length > 0 && (
+              <ul className="runetarget__steps">
+                {plan.steps.map((step) => (
+                  <li
+                    className={`runetarget__step ${step.affordable ? 'runetarget__step--ready' : ''}`}
+                    key={step.key}
+                  >
+                    {runeIcon(step.icon) && (
+                      <img className="runetarget__stepicon" src={runeIcon(step.icon)} alt="" />
+                    )}
+                    <span className="runetarget__stepname">
+                      {step.name}
+                      {step.isTarget && <span className="runetarget__steptag">alvo</span>}
+                      {step.affordable && (
+                        <span className="runetarget__steptag runetarget__steptag--ready">
+                          ✓ dá pra comprar
+                        </span>
+                      )}
+                    </span>
+                    <span className="runetarget__steplvl">
+                      Nv {step.fromLevel} → {step.toLevel}
+                    </span>
+                    <span className="runetarget__stepcost">
+                      {step.payableInGold ? `${fmtNum(step.goldCost)} ouro` : 'soul stones'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
   return (
     <section className="section">
@@ -374,10 +471,18 @@ function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX
   )
 }
 
-export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
+export function Dashboard({
+  snapshot,
+  runeTarget
+}: {
+  snapshot: Snapshot
+  runeTarget: number | null
+}): JSX.Element {
   const [showRaw, setShowRaw] = useState(false)
   const [boxThresholds, setBoxThresholds] = useState<BoxThresholds>(DEFAULT_BOX_THRESHOLDS)
   const s = snapshot
+  const runePlan =
+    runeTarget !== null ? planRuneTarget(runeTarget, s.runes, s.gold) : null
   const activeHeroes = s.heroes.filter((h) => h.active)
   // Slots da formação na ordem de arrangedHeroKey; preenche com null os slots vazios (-1).
   const heroSlots: (HeroSnapshot | null)[] = Array.from({ length: HERO_SLOTS }, (_, i) => {
@@ -455,6 +560,8 @@ export function Dashboard({ snapshot }: { snapshot: Snapshot }): JSX.Element {
         />
         <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
       </div>
+
+      {runePlan && <RuneTargetSection plan={runePlan} />}
 
       {flow && <GoldFlowSection flow={flow} />}
 
