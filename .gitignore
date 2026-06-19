@@ -8,6 +8,8 @@ dist/
 # Arquivos temporários do agente (mensagens de commit / corpo de PR)
 .commit-msg.txt
 .pr-body.md
+.git-commit-msg.tmp
+.pr-body.tmp
 
 # Nunca commitar a chave ES3 nem saves locais
 *.es3

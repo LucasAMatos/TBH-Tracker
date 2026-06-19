@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Attributes } from './components/Attributes'
 import { Dashboard } from './components/Dashboard'
 import { Farm } from './components/Farm'
 import { Heroes } from './components/Heroes'
@@ -10,7 +11,15 @@ import { TbhPedia } from './components/TbhPedia'
 import { Updates } from './components/Updates'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'farm' | 'herois' | 'inventario' | 'runes' | 'atualizacoes' | 'tbhpedia'
+type Tab =
+  | 'dashboard'
+  | 'farm'
+  | 'herois'
+  | 'atributos'
+  | 'inventario'
+  | 'runes'
+  | 'atualizacoes'
+  | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -90,6 +99,12 @@ export function App(): JSX.Element {
           Heróis
         </button>
         <button
+          className={`tabs__btn ${tab === 'atributos' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('atributos')}
+        >
+          Atributos
+        </button>
+        <button
           className={`tabs__btn ${tab === 'inventario' ? 'tabs__btn--active' : ''}`}
           onClick={() => setTab('inventario')}
         >
@@ -127,6 +142,8 @@ export function App(): JSX.Element {
           />
         ) : tab === 'farm' ? (
           <Farm snapshot={state.snapshot} />
+        ) : tab === 'atributos' ? (
+          <Attributes heroAttributes={state.snapshot?.heroAttributes ?? []} />
         ) : tab === 'inventario' ? (
           <Inventory inventory={state.snapshot?.inventory ?? null} />
         ) : tab === 'runes' ? (

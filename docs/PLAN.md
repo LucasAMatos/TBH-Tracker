@@ -64,6 +64,11 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 > tipos de status pt-BR, faixas de rolagem e slots por raridade. Foundation do **U11** (✅ v1.7.0 —
 > seção "Bônus de itens" na TBHPedia: busca + filtro por modificador + faixas) e insumo do futuro
 > modelo de stats (H10/H11).
+>
+> **Árvore de atributos** (✅ v1.9.0 / H12 — `gen-attributes.cjs` → `attributeData.ts` + `attributes.ts`):
+> aba **Atributos** com seletor de herói e a árvore (132 nós em grupos), níveis alocados do save
+> (`attributeSaveDatas`) e efeito por nó (passivos via `passives`, ativos via `skills`). Passo
+> natural antes do **H10** (modelo de stats).
 
 ## 5. Estrutura de docs
 

@@ -23,6 +23,13 @@ export interface RuneLevel {
   level: number
 }
 
+// Nível alocado de um nó da árvore de atributos do herói (H12). `key` == AttrNode.id
+// (e == attributeSaveDatas[].Key). Apenas nós com nível > 0.
+export interface HeroAttributeLevel {
+  key: number
+  level: number
+}
+
 // Um passo do plano de compra até a runa-alvo (R3): subir um nó de fromLevel→toLevel.
 export interface RuneTargetStep {
   key: number // RuneKey do nó
@@ -213,6 +220,7 @@ export interface Snapshot {
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
+  heroAttributes: HeroAttributeLevel[] // nós da árvore de atributos com nível > 0 (H12)
   inventory: InventorySummary | null // distribuição de itens por tipo × raridade (D3)
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)

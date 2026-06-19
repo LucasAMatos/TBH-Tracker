@@ -159,7 +159,7 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 | `itemSaveDatas[]` (`ItemKey,UniqueId,...`) | Itens/inventário | Drops novos por corrida |
 | `RuneSaveData[]` (`RuneKey,Level`) | Runas (197); `RuneKey` = key do catálogo `runeTree.ts` | ✅ R1 níveis/mapa; gasto de ouro (calibrar recuperação) pendente |
 | `PetSaveData[]` (`PetKey,IsUnlock`) | Pets (8) | Progresso de pets |
-| `attributeSaveDatas[]` (`Key,Level`) | Atributos da árvore | — |
+| `attributeSaveDatas[]` (`Key,Level`) | Atributos da árvore; catálogo `attributeData.ts` (`gen-attributes.cjs`) | ✅ H12 (v1.9.0): aba "Atributos" — árvore por herói (nós alocados + efeito) |
 | `inventorySaveDatas[]` / `stashSaveDatas[]` | Slots de inventário/stash | Capacidade |
 
 > Nota: o nome do campo de moeda tem typo no próprio jogo (`currenySaveDatas`). heroKey: 101 Knight · 201 Ranger · 301 Sorcerer · 401 Priest · 501 Hunter · 601 Slayer.

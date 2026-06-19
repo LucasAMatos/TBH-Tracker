@@ -21,6 +21,32 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.9.0 — Árvore de atributos por herói: aba Atributos (H12)
+
+> Nota: a v1.8.0 (Pets / PE1) está numa PR paralela; esta entrada assume que ela entra antes.
+
+### Adicionado
+- **Aba "Atributos" (H12):** visualizador da árvore de atributos de cada herói. Seletor de herói
+  (retrato + pontos alocados) e a árvore em **colunas por grupo**; cada nó mostra ícone, rótulo
+  pt-BR, tipo (**passiva/ativa**), **nível alocado/máx** e o efeito.
+- **Catálogo (`scripts/gen-attributes.cjs` → `src/shared/attributeData.ts`):** 132 nós e 8 grupos.
+  Passivos resolvem efeito via **`passives`** (`{st, mt, v}`) com rótulo pt-BR de `statStrings`;
+  ativos via **`skills`**/`skillLevels` (escala por nível). Baixa os ícones para
+  `assets/attributes/` (59/64; alguns passivos sem arte).
+- **Leitura do save:** o parser lê `attributeSaveDatas[]` (`Key`/`Level`) → `snapshot.heroAttributes`
+  (`HeroAttributeLevel[]`).
+- **Helper `src/shared/attributes.ts`:** `heroAttributeTree` (layout por grupo + merge com os níveis
+  alocados), `attrEffectAtLevel`/`attrPerLevel`, `attrTitle`, `attrHeroes`/`nodesForHero`.
+- **Testes:** `test/attributes.test.ts` (catálogo, layout, formatação de efeito).
+
+### Notas
+- O datamine de atributos **não traz coordenadas x/y** (diferente das runas), então o mapa é uma
+  **grade por grupo** em vez do pan/zoom do `RuneTree`.
+- Os valores exibidos são **por ponto** (datamine). O **stat final** do herói (base + nível + árvore
+  + equipamento + runas + pets) é o modelo de stats **H10** (ainda no backlog).
+
+---
+
 ## v1.7.0 — Bônus de itens na TBHPedia: busca + filtro por status (U11)
 
 ### Adicionado

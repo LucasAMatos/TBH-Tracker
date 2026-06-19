@@ -5,6 +5,7 @@ import { decodeStage } from '@shared/stage'
 import type {
   BoxCount,
   HeroSnapshot,
+  HeroAttributeLevel,
   InventoryRow,
   InventorySummary,
   ItemLocation,
@@ -154,6 +155,21 @@ function parseRunes(player: Json): RuneLevel[] {
   for (const entry of arr) {
     if (!isObj(entry)) continue
     const key = toNumber(pick(entry, ['RuneKey', 'runeKey', 'Key', 'key']))
+    const level = toNumber(pick(entry, ['Level', 'level']))
+    if (key === null || level === null || level <= 0) continue
+    out.push({ key, level })
+  }
+  return out
+}
+
+// Árvore de atributos por herói (H12): attributeSaveDatas[] = { Key, Level }. O catálogo
+// (nó/efeito/layout) vem de attributeData.ts; aqui só capturamos id do nó + nível alocado (>0).
+function parseHeroAttributes(player: Json): HeroAttributeLevel[] {
+  const list = pick(player, ['attributeSaveDatas', 'AttributeSaveDatas', 'attributeSaveData'])
+  const out: HeroAttributeLevel[] = []
+  for (const entry of asArray(list)) {
+    if (!isObj(entry)) continue
+    const key = toNumber(pick(entry, ['Key', 'key', 'AttributeKey', 'attributeKey']))
     const level = toNumber(pick(entry, ['Level', 'level']))
     if (key === null || level === null || level <= 0) continue
     out.push({ key, level })
@@ -349,6 +365,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
     runes: parseRunes(player),
+    heroAttributes: parseHeroAttributes(player),
     inventory: parseInventory(player),
     raw: includeRaw ? player : undefined
   }
