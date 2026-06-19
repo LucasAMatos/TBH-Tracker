@@ -21,6 +21,26 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.7.0 — Bônus de itens na TBHPedia: busca + filtro por status (U11)
+
+### Adicionado
+- **Seção "Bônus de itens" na TBHPedia (U11):** novo componente
+  `src/renderer/src/components/ItemBonusExplorer.tsx`, ligado por uma flag `custom: 'itemBonus'`
+  no modelo de seção (`PediaSection`). É a **lista de seleção dos bônus** que itens podem conceder:
+  - lista os 117 status do catálogo D4 com **nome pt-BR** e a **linha renderizada com a faixa**
+    (ex.: `Armadura +min–max`), o **tipo de modificador** (fixo/percentual) e o **tier** do afixo;
+  - **busca** por status + **filtro por tipo de modificador** (Todos / Fixo / Percentual) + contagem;
+  - resumo de **slots de afixo por raridade** (chips coloridos por grade).
+- Consome o catálogo D4 (`STAT_LIST`, `statLine`, `statRange`, `modsForStat`, `affixRep`,
+  `gradeSlotTotal`) — **sem dependência do save**.
+
+### Notas
+- Escopo entregue = **bônus possíveis** (catálogo). Mostrar os **afixos rolados por instância** dos
+  itens que o jogador possui depende de `itemSaveDatas[]` expor esses afixos no save (a verificar
+  contra save real — ver D4); enquanto isso, a referência fica pelo catálogo.
+
+---
+
 ## v1.6.0 — Catálogo de bônus/atributos de itens (D4)
 
 ### Adicionado
