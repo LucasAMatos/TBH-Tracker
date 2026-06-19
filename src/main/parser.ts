@@ -8,6 +8,7 @@ import type {
   InventoryRow,
   InventorySummary,
   ItemLocation,
+  PetSnapshot,
   RuneLevel,
   Snapshot
 } from '@shared/types'
@@ -157,6 +158,21 @@ function parseRunes(player: Json): RuneLevel[] {
     const level = toNumber(pick(entry, ['Level', 'level']))
     if (key === null || level === null || level <= 0) continue
     out.push({ key, level })
+  }
+  return out
+}
+
+// Pets do save (PE1): PetSaveData[] = { PetKey, IsUnlock }. O catálogo (nome/efeitos) vem
+// de petData.ts; aqui só capturamos a key e se está desbloqueado.
+function parsePets(player: Json): PetSnapshot[] {
+  const arr = asArray(pick(player, ['PetSaveData', 'petSaveData', 'PetSaveDatas']))
+  const out: PetSnapshot[] = []
+  for (const entry of arr) {
+    if (!isObj(entry)) continue
+    const key = toNumber(pick(entry, ['PetKey', 'petKey', 'Key', 'key']))
+    if (key === null) continue
+    const unlocked = pick(entry, ['IsUnlock', 'IsUnLock', 'isUnlock']) === true
+    out.push({ key, unlocked })
   }
   return out
 }
@@ -349,6 +365,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
     runes: parseRunes(player),
+    pets: parsePets(player),
     inventory: parseInventory(player),
     raw: includeRaw ? player : undefined
   }

@@ -64,6 +64,13 @@ export interface HeroSnapshot {
   active: boolean
 }
 
+// Estado de um pet no save (PE1): PetSaveData[].PetKey + IsUnlock. O resto (nome, efeitos)
+// vem do catálogo petData.ts.
+export interface PetSnapshot {
+  key: number // PetKey (== key do catálogo petData)
+  unlocked: boolean
+}
+
 // Um evento de mudança de ouro entre duas leituras consecutivas do save (G3).
 export interface GoldEvent {
   at: number // epoch ms da leitura em que o ouro mudou
@@ -213,6 +220,7 @@ export interface Snapshot {
   heroes: HeroSnapshot[]
   arrangedHeroKeys: (number | string)[]
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
+  pets: PetSnapshot[] // pets do save (desbloqueado/bloqueado) — PE1
   inventory: InventorySummary | null // distribuição de itens por tipo × raridade (D3)
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)
@@ -280,6 +288,7 @@ export type WidgetId =
   | 'stageProgress'
   | 'boxes'
   | 'inventoryRarity'
+  | 'pets'
   | 'cubeMilestones'
   | 'activeHeroes'
   | 'rawJson'
@@ -293,6 +302,7 @@ export const WIDGET_IDS: readonly WidgetId[] = [
   'stageProgress',
   'boxes',
   'inventoryRarity',
+  'pets',
   'cubeMilestones',
   'activeHeroes',
   'rawJson'

@@ -10,6 +10,8 @@ import {
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
 import { GRADES } from '@shared/items'
+import { aggregatePetBonuses, petEffectLines, petUnlockLabel } from '@shared/pets'
+import { PET_LIST } from '@shared/petData'
 import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
 import {
   DEFAULT_DASHBOARD_LAYOUT,
@@ -19,6 +21,7 @@ import {
   type HeroEvents,
   type HeroSnapshot,
   type InventorySummary,
+  type PetSnapshot,
   type RuneTargetPlan,
   type Snapshot,
   type StageEvents,
@@ -549,6 +552,59 @@ function InventoryRarityBody({ inventory }: { inventory: InventorySummary }): JS
   )
 }
 
+// PE1: progresso de pets (desbloqueado/bloqueado) + bônus ativos somados. Os pets são
+// sempre ativos e empilháveis; o catálogo (nome/efeitos) vem de petData.ts.
+function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
+  const unlockedSet = new Set(pets.filter((p) => p.unlocked).map((p) => p.key))
+  const total = PET_LIST.length
+  const bonuses = aggregatePetBonuses(unlockedSet)
+  // Lista os 8 pets do catálogo (ordem fixa), marcando o estado do save.
+  const rows = PET_LIST.map((def) => ({ def, unlocked: unlockedSet.has(def.key) }))
+
+  return (
+    <>
+      <div className={`petshi${unlockedSet.size > 0 ? ' petshi--on' : ''}`}>
+        <span className="petshi__count">
+          {unlockedSet.size}/{total}
+        </span>
+        <span className="petshi__label">pets desbloqueados</span>
+      </div>
+
+      <ul className="petslist">
+        {rows.map(({ def, unlocked }) => (
+          <li className={`petrow${unlocked ? ' petrow--on' : ''}`} key={def.key}>
+            <span className="petrow__state" title={unlocked ? 'Desbloqueado' : 'Bloqueado'}>
+              {unlocked ? '✓' : '🔒'}
+            </span>
+            <div className="petrow__main">
+              <span className="petrow__name">{def.name}</span>
+              <span className="petrow__effects">{petEffectLines(def).join(' · ')}</span>
+            </div>
+            <span className="petrow__unlock">{petUnlockLabel(def.unlock)}</span>
+          </li>
+        ))}
+      </ul>
+
+      {bonuses.length > 0 ? (
+        <div className="petsbonus">
+          <h4 className="petsbonus__title">Bônus ativos (somados)</h4>
+          <ul className="petsbonus__list">
+            {bonuses.map((b) => (
+              <li className="petsbonus__item" key={b.st}>
+                {b.line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="card__hint">
+          Nenhum pet desbloqueado ainda. Pets são sempre ativos e empilháveis; só kills online contam.
+        </p>
+      )}
+    </>
+  )
+}
+
 // I7: o JSON bruto é lido sob demanda (IPC `getRawSave`) só quando este widget abre,
 // em vez de viajar no snapshot a cada atualização do save.
 function RawJsonBody(): JSX.Element {
@@ -834,6 +890,12 @@ export function Dashboard({
       {s.inventory && s.inventory.gearCount > 0 && (
         <Widget id="inventoryRarity" layout={layout} onToggleCollapse={toggleCollapse}>
           <InventoryRarityBody inventory={s.inventory} />
+        </Widget>
+      )}
+
+      {s.pets && s.pets.length > 0 && (
+        <Widget id="pets" layout={layout} onToggleCollapse={toggleCollapse}>
+          <PetsBody pets={s.pets} />
         </Widget>
       )}
 

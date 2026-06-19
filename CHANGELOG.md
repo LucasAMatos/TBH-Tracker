@@ -21,6 +21,23 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.8.0 — Pets no Dashboard: desbloqueio + bônus ativos (PE1)
+
+### Adicionado
+- **Catálogo de pets (PE1):** novo gerador `scripts/gen-pets.cjs` → `src/shared/petData.ts`
+  (8 pets) com **nome pt-BR**, **condição de desbloqueio** (`KillMonster`/`DLC`) + `param1`, e os
+  **efeitos** (`{st, mt, v}`, com `st` referenciando o catálogo de status do D4).
+- **Leitura do save:** o parser agora lê `PetSaveData[]` (`PetKey`/`IsUnlock`) → `snapshot.pets`
+  (`PetSnapshot[]`).
+- **Helper `src/shared/pets.ts`:** `petEffectLines` (efeitos formatados via `formatStatLine` do D4),
+  `petUnlockLabel`, `petById` e `aggregatePetBonuses` (soma os bônus dos pets desbloqueados por status).
+- **Widget "Pets" no Dashboard (U10):** mostra **desbloqueados/total**, a lista dos 8 pets (estado
+  desbloqueado/bloqueado + efeitos + como obter) e os **bônus ativos somados**. Liga/desliga e
+  colapsável como os demais widgets.
+- **Testes:** `test/pets.test.ts` (catálogo, formatação, agregação) — suíte sobe para 71.
+
+---
+
 ## v1.7.0 — Bônus de itens na TBHPedia: busca + filtro por status (U11)
 
 ### Adicionado

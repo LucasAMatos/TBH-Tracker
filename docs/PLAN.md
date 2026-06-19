@@ -64,6 +64,10 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 > tipos de status pt-BR, faixas de rolagem e slots por raridade. Foundation do **U11** (✅ v1.7.0 —
 > seção "Bônus de itens" na TBHPedia: busca + filtro por modificador + faixas) e insumo do futuro
 > modelo de stats (H10/H11).
+>
+> **Pets** (✅ v1.8.0 / PE1 — `gen-pets.cjs` → `petData.ts` + `pets.ts`): catálogo dos 8 pets
+> (nome pt-BR, unlock, efeitos via D4), leitura de `PetSaveData[]` e widget "Pets" no Dashboard
+> com desbloqueados/total e bônus ativos somados.
 
 ## 5. Estrutura de docs
 
