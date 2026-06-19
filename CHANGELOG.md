@@ -21,6 +21,26 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.3.0 — Lote de melhorias fáceis: nível, progresso, export, janela e IPC enxuto (S5, S6, E1, I10, I7)
+
+### Adicionado
+- **Alerta de nível (S5):** a Aba Farm avisa quando os heróis ativos estão **abaixo** (clear lento/
+  arriscado) ou **acima** (penalidade de XP por over-level) do **nível recomendado** do estágio
+  atual, comparando o `level` do catálogo F0 com a média de nível dos ativos (`levelAdvice()`).
+- **Progresso por dificuldade/ato (S6):** nova seção "Progresso por dificuldade" na Aba Farm mostra
+  a **% de fases concluídas** por Normal/Nightmare/Hell/Torment e a quebra por ato, cruzando
+  `maxCompletedStage` com o catálogo (`stageProgress()`).
+- **Exportação de dados (E1):** botões na Aba Farm exportam a **sessão em JSON** (ouro, farm,
+  inventário e heróis) e o **farm em CSV**, via funções puras (`shared/export.ts`) + diálogo de
+  salvar (`tbh:saveTextFile`).
+- **Estado da janela persistido (I10):** tamanho, posição e estado maximizado são lembrados entre
+  sessões no config local.
+
+### Mudado
+- **JSON bruto sob demanda (I7, dívida técnica):** o snapshot **não carrega mais o save bruto** a
+  cada leitura. O visualizador de calibração (Dashboard) busca o `raw` **sob demanda** via IPC
+  dedicado (`tbh:getRawSave`), enxugando o tráfego de IPC e a memória do snapshot.
+
 ## v1.2.0 — Eficiência de farm por estágio: clears estimados (F1)
 
 ### Adicionado

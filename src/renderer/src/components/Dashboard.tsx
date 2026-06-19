@@ -495,13 +495,42 @@ function ActiveHeroesBody({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.El
   )
 }
 
-function RawJsonBody({ snapshot }: { snapshot: Snapshot }): JSX.Element {
+// I7: o JSON bruto é lido sob demanda (IPC `getRawSave`) só quando este widget abre,
+// em vez de viajar no snapshot a cada atualização do save.
+function RawJsonBody(): JSX.Element {
+  const [raw, setRaw] = useState<unknown | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [fetchedAt, setFetchedAt] = useState<number | null>(null)
+
+  const load = (): void => {
+    setLoading(true)
+    window.tbh.getRawSave().then((r) => {
+      setRaw(r ?? null)
+      setFetchedAt(Date.now())
+      setLoading(false)
+    })
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
   return (
     <>
-      <p className="card__hint">
-        Atualizado {new Date(snapshot.capturedAt).toLocaleTimeString('pt-BR')}
-      </p>
-      <pre className="raw">{JSON.stringify(snapshot.raw, null, 2)?.slice(0, 20000)}</pre>
+      <div className="raw__toolbar">
+        <button className="btn btn--ghost btn--sm" onClick={load} disabled={loading}>
+          {loading ? 'Carregando…' : 'Atualizar'}
+        </button>
+        <span className="card__hint">
+          Lido sob demanda do save (não trafega a cada atualização).
+          {fetchedAt && ` Lido ${new Date(fetchedAt).toLocaleTimeString('pt-BR')}.`}
+        </span>
+      </div>
+      {raw !== null ? (
+        <pre className="raw">{JSON.stringify(raw, null, 2)?.slice(0, 20000)}</pre>
+      ) : (
+        !loading && <p className="card__hint">Sem JSON disponível (sem save ou sem chave?).</p>
+      )}
     </>
   )
 }
@@ -761,7 +790,7 @@ export function Dashboard({
       )}
 
       <Widget id="rawJson" layout={layout} onToggleCollapse={toggleCollapse}>
-        <RawJsonBody snapshot={s} />
+        <RawJsonBody />
       </Widget>
     </div>
   )

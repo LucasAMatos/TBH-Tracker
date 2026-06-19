@@ -10,13 +10,8 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
-| # | Prioridade | Item | Observação |
-|---|-----------|------|-----------|
-| S6 | P2 | Progresso por dificuldade/ato | `maxCompletedStage` × catálogo (F0) — só agregação |
-| S5 | P2 | Alerta de nível recomendado vs. seu nível | Catálogo F0 já tem `level`; `stageThreat`/`stageLevels` refinam |
-| I7 | P2 | JSON bruto sob demanda (enxugar IPC) | Dívida técnica: hoje envia o save inteiro a cada leitura |
-| E1 | P3 | Exportação de dados (CSV/JSON) | Fluxo de ouro / farm / inventário já em memória |
-| I10 | P3 | Persistir estado da janela | Tamanho/posição no config local |
+> Nada pendente — todo o tier fácil foi entregue (S5, S6, I7, E1, I10 em **v1.3.0**;
+> ver `BACKLOG-HISTORICO.md`). O próximo item mais barato é o tier 🟡 abaixo.
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 

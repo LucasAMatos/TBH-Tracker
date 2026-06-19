@@ -97,7 +97,9 @@ export class Tracker {
     try {
       const buffer = readFileSync(savePath)
       const json = decryptAndParseES3(buffer, key)
-      const snapshot = parseSnapshot(json, true)
+      // I7: o snapshot NÃO carrega o JSON bruto (evita serializar o save inteiro a cada
+      // leitura). O visualizador de calibração busca o raw sob demanda via readRawSave().
+      const snapshot = parseSnapshot(json)
       const flow = this.goldFlow.record(snapshot.capturedAt, snapshot.gold)
       if (flow) snapshot.goldFlow = flow
       const heroEvents = this.heroEvents.record(snapshot.capturedAt, snapshot.heroes)
@@ -148,6 +150,25 @@ export class Tracker {
   refresh(): TrackerState {
     this.start()
     return this.state
+  }
+
+  /**
+   * Lê o save agora e devolve só o JSON bruto do player (I7) — sob demanda, para o
+   * visualizador de calibração. Não toca no estado/snapshot em curso. Retorna null se
+   * não houver save/chave ou em caso de erro de leitura.
+   */
+  readRawSave(): unknown | null {
+    const savePath = this.state.savePath
+    if (!savePath || !existsSync(savePath)) return null
+    const key = store.getKey()
+    if (!key) return null
+    try {
+      const buffer = readFileSync(savePath)
+      const json = decryptAndParseES3(buffer, key)
+      return parseSnapshot(json, true).raw ?? null
+    } catch {
+      return null
+    }
   }
 
   private update(patch: Partial<TrackerState>): void {

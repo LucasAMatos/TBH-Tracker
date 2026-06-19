@@ -2067,3 +2067,73 @@ body {
 .switch:not(.switch--on) .switch__label {
   color: var(--text-dim);
 }
+
+/* JSON bruto sob demanda (I7) */
+.raw__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Exportação (E1) */
+.farm-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+/* Progresso por dificuldade/ato (S6) */
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progress__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progress__name {
+  font-weight: 600;
+}
+
+.progress__count {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.progress__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+
+.progress__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 6px;
+}
+
+.progress__act {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.progress__act--done {
+  color: var(--ok);
+}

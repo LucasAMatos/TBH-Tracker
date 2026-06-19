@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { findEs3Key } from './keyFinder'
@@ -15,10 +15,26 @@ function broadcastState(state: TrackerState): void {
   mainWindow?.webContents.send('tbh:state', state)
 }
 
+// Salva o tamanho/posição "normais" (não os de maximizado) + flag de maximizado (I10).
+function persistWindowState(): void {
+  if (!mainWindow) return
+  const bounds = mainWindow.getNormalBounds()
+  store.setWindowState({
+    width: bounds.width,
+    height: bounds.height,
+    x: bounds.x,
+    y: bounds.y,
+    maximized: mainWindow.isMaximized()
+  })
+}
+
 function createWindow(): void {
+  const saved = store.getWindowState()
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 760,
+    width: saved?.width ?? 1100,
+    height: saved?.height ?? 760,
+    x: saved?.x,
+    y: saved?.y,
     minWidth: 860,
     minHeight: 600,
     backgroundColor: '#0d1117',
@@ -32,7 +48,11 @@ function createWindow(): void {
     }
   })
 
+  if (saved?.maximized) mainWindow.maximize()
+
   mainWindow.on('ready-to-show', () => mainWindow?.show())
+  // Persiste o estado ao fechar a janela (I10).
+  mainWindow.on('close', persistWindowState)
 
   // electron-vite injeta ELECTRON_RENDERER_URL em dev
   const devUrl = process.env['ELECTRON_RENDERER_URL']
@@ -71,6 +91,9 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('tbh:refresh', () => tracker?.refresh())
+
+  // JSON bruto do save sob demanda (I7): só lido quando o visualizador de calibração abre.
+  ipcMain.handle('tbh:getRawSave', () => tracker?.readRawSave() ?? null)
 
   ipcMain.handle('tbh:getBoxThresholds', () => store.getBoxThresholds())
   ipcMain.handle('tbh:setBoxThresholds', (_e, warn: number, high: number) =>
@@ -116,6 +139,22 @@ function registerIpc(): void {
     }
     // Nao devolve a chave ao renderer; ela vive so no processo main + store cifrada.
     return { status: result.status, gamePath: result.gamePath, message: result.message }
+  })
+
+  // Exportação de dados (E1): abre o diálogo de salvar e grava o conteúdo gerado no renderer.
+  ipcMain.handle('tbh:saveTextFile', async (_e, defaultName: string, content: string) => {
+    if (typeof content !== 'string') return null
+    const result = await dialog.showSaveDialog(mainWindow!, {
+      title: 'Exportar dados',
+      defaultPath: typeof defaultName === 'string' ? defaultName : 'export.txt'
+    })
+    if (result.canceled || !result.filePath) return null
+    try {
+      writeFileSync(result.filePath, content, 'utf8')
+      return result.filePath
+    } catch {
+      return null
+    }
   })
 
   ipcMain.handle('tbh:getNews', (_e, force?: boolean) => fetchNews(force === true))
