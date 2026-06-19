@@ -30,11 +30,17 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 - **Leitura do save:** o parser agora lê `PetSaveData[]` (`PetKey`/`IsUnlock`) → `snapshot.pets`
   (`PetSnapshot[]`).
 - **Helper `src/shared/pets.ts`:** `petEffectLines` (efeitos formatados via `formatStatLine` do D4),
-  `petUnlockLabel`, `petById` e `aggregatePetBonuses` (soma os bônus dos pets desbloqueados por status).
-- **Widget "Pets" no Dashboard (U10):** mostra **desbloqueados/total**, a lista dos 8 pets (estado
-  desbloqueado/bloqueado + efeitos + como obter) e os **bônus ativos somados**. Liga/desliga e
-  colapsável como os demais widgets.
-- **Testes:** `test/pets.test.ts` (catálogo, formatação, agregação) — suíte sobe para 71.
+  `petUnlockLabel` e `petById`.
+- **Widget "Pets" no Dashboard (U10):** mostra **desbloqueados/total**, o **bônus do pet ativo**
+  (equipado) e a lista dos 8 pets (estado bloqueado/desbloqueado/ativo + efeitos + como obter).
+  Liga/desliga e colapsável como os demais widgets.
+- **Testes:** `test/pets.test.ts` (catálogo, formatação) — suíte sobe para 69.
+
+### Notas
+- O bônus de pets **não é cumulativo**: apenas o pet **ativo/equipado** concede seu efeito (correção
+  da hipótese inicial de soma). O parser tenta detectar o pet ativo no save de forma tolerante
+  (flag de equipado por entrada e/ou chave de pet equipado) — o campo exato do save ainda está
+  sendo confirmado; sem ele, a lista ainda mostra o bônus de cada pet e a regra de "só o ativo".
 
 ---
 

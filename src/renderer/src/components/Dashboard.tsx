@@ -10,7 +10,7 @@ import {
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
 import { GRADES } from '@shared/items'
-import { aggregatePetBonuses, petEffectLines, petUnlockLabel } from '@shared/pets'
+import { petById, petEffectLines, petUnlockLabel } from '@shared/pets'
 import { PET_LIST } from '@shared/petData'
 import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
 import {
@@ -552,14 +552,19 @@ function InventoryRarityBody({ inventory }: { inventory: InventorySummary }): JS
   )
 }
 
-// PE1: progresso de pets (desbloqueado/bloqueado) + bônus ativos somados. Os pets são
-// sempre ativos e empilháveis; o catálogo (nome/efeitos) vem de petData.ts.
+// PE1: progresso de pets (desbloqueado/bloqueado) + bônus do pet ATIVO. O bônus não é
+// cumulativo: apenas o pet equipado concede seu efeito. Catálogo (nome/efeitos) em petData.ts.
 function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
   const unlockedSet = new Set(pets.filter((p) => p.unlocked).map((p) => p.key))
   const total = PET_LIST.length
-  const bonuses = aggregatePetBonuses(unlockedSet)
+  const activeKey = pets.find((p) => p.active && p.unlocked)?.key ?? null
+  const activePet = activeKey !== null ? petById(activeKey) : undefined
   // Lista os 8 pets do catálogo (ordem fixa), marcando o estado do save.
-  const rows = PET_LIST.map((def) => ({ def, unlocked: unlockedSet.has(def.key) }))
+  const rows = PET_LIST.map((def) => ({
+    def,
+    unlocked: unlockedSet.has(def.key),
+    active: def.key === activeKey
+  }))
 
   return (
     <>
@@ -570,11 +575,35 @@ function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
         <span className="petshi__label">pets desbloqueados</span>
       </div>
 
+      {activePet ? (
+        <div className="petsbonus">
+          <h4 className="petsbonus__title">Bônus ativo · {activePet.name}</h4>
+          <ul className="petsbonus__list">
+            {petEffectLines(activePet).map((line, i) => (
+              <li className="petsbonus__item" key={i}>
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="card__hint">
+          O bônus não é cumulativo: apenas o pet ativo (equipado) concede seu efeito
+          {unlockedSet.size > 0 ? ' — equipe um pet no jogo.' : '. Nenhum pet desbloqueado ainda.'}
+        </p>
+      )}
+
       <ul className="petslist">
-        {rows.map(({ def, unlocked }) => (
-          <li className={`petrow${unlocked ? ' petrow--on' : ''}`} key={def.key}>
-            <span className="petrow__state" title={unlocked ? 'Desbloqueado' : 'Bloqueado'}>
-              {unlocked ? '✓' : '🔒'}
+        {rows.map(({ def, unlocked, active }) => (
+          <li
+            className={`petrow${unlocked ? ' petrow--on' : ''}${active ? ' petrow--active' : ''}`}
+            key={def.key}
+          >
+            <span
+              className="petrow__state"
+              title={active ? 'Ativo (equipado)' : unlocked ? 'Desbloqueado' : 'Bloqueado'}
+            >
+              {active ? '★' : unlocked ? '✓' : '🔒'}
             </span>
             <div className="petrow__main">
               <span className="petrow__name">{def.name}</span>
@@ -584,23 +613,6 @@ function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
           </li>
         ))}
       </ul>
-
-      {bonuses.length > 0 ? (
-        <div className="petsbonus">
-          <h4 className="petsbonus__title">Bônus ativos (somados)</h4>
-          <ul className="petsbonus__list">
-            {bonuses.map((b) => (
-              <li className="petsbonus__item" key={b.st}>
-                {b.line}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="card__hint">
-          Nenhum pet desbloqueado ainda. Pets são sempre ativos e empilháveis; só kills online contam.
-        </p>
-      )}
     </>
   )
 }

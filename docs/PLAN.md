@@ -67,7 +67,7 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 >
 > **Pets** (✅ v1.8.0 / PE1 — `gen-pets.cjs` → `petData.ts` + `pets.ts`): catálogo dos 8 pets
 > (nome pt-BR, unlock, efeitos via D4), leitura de `PetSaveData[]` e widget "Pets" no Dashboard
-> com desbloqueados/total e bônus ativos somados.
+> com desbloqueados/total e o bônus do **pet ativo** (não cumulativo — só o equipado concede).
 
 ## 5. Estrutura de docs
 

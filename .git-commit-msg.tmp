@@ -1,0 +1,8 @@
+fix(pets): bonus do pet nao e cumulativo, apenas o ativo concede (PE1)
+
+Remove a agregacao/soma de bonus entre pets. O widget passa a mostrar o bonus
+do pet ATIVO (equipado). PetSnapshot ganha `active`; o parser detecta o pet ativo
+de forma tolerante (flag de equipado por entrada e/ou chave de pet equipado no
+player/common). Lista marca bloqueado/desbloqueado/ativo. Corrige a nota da
+TBHPedia ("nao empilhavel/cosmetico" estava incorreto). Remove aggregatePetBonuses
+e seus testes; suite 69.

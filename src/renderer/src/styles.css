@@ -2363,6 +2363,14 @@ body {
   background: var(--bg-elev);
 }
 
+.petrow--active {
+  outline: 1px solid var(--accent);
+}
+
+.petrow--active .petrow__name {
+  color: var(--accent);
+}
+
 .petrow__state {
   flex-shrink: 0;
   width: 18px;

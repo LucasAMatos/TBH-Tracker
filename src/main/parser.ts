@@ -162,17 +162,47 @@ function parseRunes(player: Json): RuneLevel[] {
   return out
 }
 
-// Pets do save (PE1): PetSaveData[] = { PetKey, IsUnlock }. O catálogo (nome/efeitos) vem
-// de petData.ts; aqui só capturamos a key e se está desbloqueado.
-function parsePets(player: Json): PetSnapshot[] {
+// Pets do save (PE1): PetSaveData[] = { PetKey, IsUnlock, ... }. O catálogo (nome/efeitos) vem
+// de petData.ts; aqui capturamos a key, se está desbloqueado e qual é o ATIVO/equipado.
+// O bônus não é cumulativo — só o pet ativo concede o efeito. A chave do ativo é procurada
+// de forma tolerante (flag por entrada e/ou campo de pet equipado no player/common), pois o
+// layout exato do save ainda está sendo confirmado.
+function parsePets(player: Json, common: Json): PetSnapshot[] {
   const arr = asArray(pick(player, ['PetSaveData', 'petSaveData', 'PetSaveDatas']))
+  const equippedKey = toNumber(
+    pick(player, [
+      'equippedPetKey',
+      'EquippedPetKey',
+      'arrangedPetKey',
+      'ArrangedPetKey',
+      'currentPetKey',
+      'CurrentPetKey',
+      'selectedPetKey',
+      'SelectedPetKey'
+    ]) ??
+      pick(common, [
+        'equippedPetKey',
+        'EquippedPetKey',
+        'arrangedPetKey',
+        'ArrangedPetKey',
+        'currentPetKey',
+        'CurrentPetKey',
+        'selectedPetKey',
+        'SelectedPetKey'
+      ])
+  )
+
   const out: PetSnapshot[] = []
   for (const entry of arr) {
     if (!isObj(entry)) continue
     const key = toNumber(pick(entry, ['PetKey', 'petKey', 'Key', 'key']))
     if (key === null) continue
     const unlocked = pick(entry, ['IsUnlock', 'IsUnLock', 'isUnlock']) === true
-    out.push({ key, unlocked })
+    const equipFlag =
+      pick(entry, ['IsEquip', 'isEquip', 'IsEquipped', 'isEquipped', 'Equipped', 'equipped', 'IsActive', 'isActive']) ===
+      true
+    const active = equipFlag || (equippedKey !== null && key === equippedKey)
+    out.push({ key, unlocked, active })
   }
   return out
 }
@@ -365,7 +395,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     heroes: parseHeroes(player, arrangedHeroKeys),
     arrangedHeroKeys,
     runes: parseRunes(player),
-    pets: parsePets(player),
+    pets: parsePets(player, common),
     inventory: parseInventory(player),
     raw: includeRaw ? player : undefined
   }

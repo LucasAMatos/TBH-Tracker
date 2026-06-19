@@ -65,10 +65,12 @@ export interface HeroSnapshot {
 }
 
 // Estado de um pet no save (PE1): PetSaveData[].PetKey + IsUnlock. O resto (nome, efeitos)
-// vem do catálogo petData.ts.
+// vem do catálogo petData.ts. `active` = pet equipado (o único que concede bônus); o bônus
+// NÃO é cumulativo entre pets.
 export interface PetSnapshot {
   key: number // PetKey (== key do catálogo petData)
   unlocked: boolean
+  active: boolean // pet ativo/equipado (concede o bônus); detectado do save quando disponível
 }
 
 // Um evento de mudança de ouro entre duas leituras consecutivas do save (G3).

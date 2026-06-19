@@ -149,7 +149,7 @@ export const TBHPEDIA: PediaSection[] = [
     id: 'pets',
     title: 'Pets',
     icon: '🐾',
-    intro: ['8 pets — sempre ativos e empilháveis; equipar é apenas cosmético.'],
+    intro: ['8 pets — o bônus NÃO é cumulativo: apenas o pet ativo (equipado) concede seu efeito.'],
     tables: [
       {
         headers: ['Pet', 'Bônus', 'Como obter', 'Origem'],
@@ -167,6 +167,7 @@ export const TBHPEDIA: PediaSection[] = [
     ],
     notes: [
       'Apenas kills online contam para desbloquear pets.',
+      'Só o pet ativo concede bônus — equipar troca o bônus ativo (não soma).',
       'Melhor pago: Dragon. Melhor grátis para ouro: Watcher.'
     ]
   },
