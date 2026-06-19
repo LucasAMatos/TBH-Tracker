@@ -1,6 +1,6 @@
 {
   "name": "tbh-tracker",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Tracker somente-leitura para TBH: Task Bar Hero. Le o save do jogo e ajuda a otimizar o farm, sem nunca tocar no jogo.",
   "author": "LucasAMatos",
   "license": "MIT",
@@ -11,7 +11,9 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
@@ -23,6 +25,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vitest": "^4.1.9"
   }
 }

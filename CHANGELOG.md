@@ -21,6 +21,25 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.4.0 — Suíte de testes (vitest) para a lógica pura (I8)
+
+### Adicionado
+- **Testes automatizados (I8):** **53 testes** (vitest) cobrindo a lógica pura sensível a patch,
+  em `test/` — rode com `npm test` (ou `npm run test:watch`):
+  - **Estágios:** `decodeStage`, `rankStages`, `stagesByDifficulty`, `stageProgress` (S6),
+    `levelAdvice` (S5).
+  - **Baús:** `classifyBoxBacklog`, `boxDrainSeconds`, `normalizeBoxThresholds`, `kindFromTypeValue`.
+  - **Itens:** `classifyItem` (incl. chave desconhecida).
+  - **Runas:** `planRuneTarget`, `summarizeRunes`.
+  - **Export:** `buildSessionJson`, `buildFarmCsv`, `exportStamp`.
+  - **Farm:** `StageFarmTracker` — atribuição de deltas, anti-ruído (troca de estágio, deltas
+    negativos, intervalos longos), clears estimados e `serialize`/`restore`.
+- **Config:** `vitest.config.ts` resolve os aliases `@shared`/`@renderer` e roda em ambiente Node.
+  Os testes ficam fora dos `include` dos `tsconfig`, então não afetam o `typecheck`.
+
+### Notas
+- Trava de regressão para quando regenerarmos catálogos (datamine) ou ajustarmos os trackers.
+
 ## v1.3.0 — Lote de melhorias fáceis: nível, progresso, export, janela e IPC enxuto (S5, S6, E1, I10, I7)
 
 ### Adicionado
