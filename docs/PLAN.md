@@ -56,6 +56,10 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 - **Fase 5 — Extras:** suporte Proton/Linux, ~~marcos do Cubo~~ (✅ v0.3.0 / C2), ~~níveis/mapa de runas~~ (✅ v0.4.0 / R1), calibração de gasto de runas, ~~exportação de dados~~ (✅ v1.3.0 / E1 — sessão JSON + farm CSV).
 - **Fase 6 — TBHPedia completa (Épico W):** ingerir **100% do conhecimento das 5 wikis** da comunidade (`FONTES.md`) e fazer a TBHPedia conter tudo, navegável e cruzado com o save/datamine. Faseado: **W0** (levantamento + esquema canônico) → **W1** (pipeline de ingestão) → **W2–W8** (ingestão por domínio: heróis, runas, itens/efeitos, estágios/monstros, pets, cubo/baús/mecânicas, guias) → **W9** (TBHPedia unificada na UI com busca global e atribuição). Leitura passiva de páginas públicas, preferindo dados estruturados/espelhos, com proveniência e respeito a ToS. Detalhe em `BACKLOG.md › Épico W`.
 
+> **Engenharia / qualidade:** suíte de testes da lógica pura (✅ v1.4.0 / I8 — vitest, `npm test`)
+> trava regressões ao regenerar catálogos e ajustar trackers. Próximos de infra no `BACKLOG.md ›
+> Aplicativo / engenharia` (I9 diagnóstico, N2 detecção de patch).
+
 ## 5. Estrutura de docs
 
 - `docs/TBHPEDIA.md` — base de conhecimento do jogo (dados).

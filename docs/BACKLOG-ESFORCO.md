@@ -23,7 +23,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | H12 | P2 | Árvore de atributos por herói (visualizador) | `attributeSaveDatas` × `DB.attributes`/`statMods`; reusa `RuneTree.tsx` |
 | A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
 | N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
-| I8 | P2 | Suíte de testes (vitest) | Lógica pura testável: decode/rank/plan/trackers/classify |
 | I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
 | O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
 | I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
