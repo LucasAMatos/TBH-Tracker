@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   boxAutoOpenSeconds,
   boxColor,
@@ -10,15 +10,19 @@ import {
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
 import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
-import type {
-  BoxCount,
-  GoldFlow,
-  HeroEvents,
-  HeroSnapshot,
-  RuneTargetPlan,
-  Snapshot,
-  StageEvents
+import {
+  DEFAULT_DASHBOARD_LAYOUT,
+  type BoxCount,
+  type DashboardLayout,
+  type GoldFlow,
+  type HeroEvents,
+  type HeroSnapshot,
+  type RuneTargetPlan,
+  type Snapshot,
+  type StageEvents,
+  type WidgetId
 } from '@shared/types'
+import { DASHBOARD_WIDGETS, WIDGET_TITLES } from '../data/dashboardWidgets'
 import { heroPortrait } from '../data/heroPortraits'
 import { runeIcon } from '../data/runeIcons'
 
@@ -157,20 +161,17 @@ function ThresholdEditor({
   )
 }
 
-function BoxesSection({
+function BoxesBody({
   boxes,
   total,
   level,
-  thresholds,
-  onSaveThresholds
+  thresholds
 }: {
   boxes: BoxCount[]
   total: number | null
   level: BoxBacklogLevel
   thresholds: BoxThresholds
-  onSaveThresholds: (warn: number, high: number) => void
-}): JSX.Element | null {
-  if (boxes.length === 0) return null
+}): JSX.Element {
   // Os tipos auto-abrem em paralelo, então o acúmulo todo zera no tipo mais lento (B3).
   const drains = boxes
     .map((b) => boxDrainSeconds(b.kind, b.quantity))
@@ -180,11 +181,7 @@ function BoxesSection({
     .filter((b) => boxAutoOpenSeconds(b.kind) === null)
     .reduce((sum, b) => sum + b.quantity, 0)
   return (
-    <section className="section">
-      <div className="section__head">
-        <h3 className="section__title">Baús por tipo</h3>
-        <ThresholdEditor thresholds={thresholds} onSave={onSaveThresholds} />
-      </div>
+    <>
       {level !== 'ok' && (
         <div className={`alert ${level === 'high' ? 'alert--err' : 'alert--warn'}`}>
           {level === 'high'
@@ -228,15 +225,14 @@ function BoxesSection({
         Avisa a partir de {thresholds.warn} e alerta a partir de {thresholds.high} baús (não há
         teto fixo no jogo).
       </p>
-    </section>
+    </>
   )
 }
 
-function GoldFlowSection({ flow }: { flow: GoldFlow }): JSX.Element {
+function GoldFlowBody({ flow }: { flow: GoldFlow }): JSX.Element {
   const hasEvents = flow.events.length > 0
   return (
-    <section className="section">
-      <h3 className="section__title">Fluxo de ouro</h3>
+    <>
       <div className="goldflow__rates">
         <div className="goldflow__rate">
           <span className="card__label">Ouro/h (janela {flow.windowSeconds}s)</span>
@@ -283,169 +279,197 @@ function GoldFlowSection({ flow }: { flow: GoldFlow }): JSX.Element {
           estar rodando). Gasto (ex.: runas) aparece como valor negativo.
         </p>
       )}
-    </section>
+    </>
   )
 }
 
-function LevelUpsSection({ heroEvents }: { heroEvents: HeroEvents }): JSX.Element {
+function LevelUpsBody({ heroEvents }: { heroEvents: HeroEvents }): JSX.Element {
   const events = heroEvents.levelUps
-  return (
-    <section className="section">
-      <h3 className="section__title">Level-ups</h3>
-      {events.length > 0 ? (
-        <ul className="goldlog">
-          {events.map((e) => (
-            <li className="goldlog__item" key={`${e.at}-${e.heroKey}-${e.toLevel}`}>
-              <span className="goldlog__time">{fmtClock(e.at)}</span>
-              <span className="levelup__hero">{e.heroName}</span>
-              <span className="levelup__delta">
-                Nv {e.fromLevel} → {e.toLevel}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="card__hint">
-          Coletando… os level-ups aparecem conforme os heróis sobem de nível (o jogo precisa
-          estar rodando). Só registra a partir da 1ª leitura da sessão.
-        </p>
-      )}
-    </section>
+  return events.length > 0 ? (
+    <ul className="goldlog">
+      {events.map((e) => (
+        <li className="goldlog__item" key={`${e.at}-${e.heroKey}-${e.toLevel}`}>
+          <span className="goldlog__time">{fmtClock(e.at)}</span>
+          <span className="levelup__hero">{e.heroName}</span>
+          <span className="levelup__delta">
+            Nv {e.fromLevel} → {e.toLevel}
+          </span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="card__hint">
+      Coletando… os level-ups aparecem conforme os heróis sobem de nível (o jogo precisa estar
+      rodando). Só registra a partir da 1ª leitura da sessão.
+    </p>
   )
 }
 
-function StageEventsSection({ stageEvents }: { stageEvents: StageEvents }): JSX.Element {
+function StageEventsBody({ stageEvents }: { stageEvents: StageEvents }): JSX.Element {
   const events = stageEvents.events
-  return (
-    <section className="section">
-      <h3 className="section__title">Progresso de estágio</h3>
-      {events.length > 0 ? (
-        <ul className="goldlog">
-          {events.map((e) => (
-            <li className="goldlog__item" key={`${e.at}-${e.kind}-${e.toRaw}`}>
-              <span className="goldlog__time">{fmtClock(e.at)}</span>
-              <span className="stageevt__label">
-                <span
-                  className={`stageevt__badge stageevt__badge--${
-                    e.kind === 'new-max' ? 'max' : 'change'
-                  }`}
-                >
-                  {e.kind === 'new-max' ? 'novo recorde' : 'troca'}
-                </span>
-                {e.toLabel}
-              </span>
-              <span className="goldlog__total">{e.toRaw}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="card__hint">
-          Coletando… os eventos aparecem ao trocar de estágio ou bater um novo estágio máximo
-          (o jogo precisa estar rodando). Só registra a partir da 1ª leitura da sessão.
-        </p>
-      )}
-    </section>
+  return events.length > 0 ? (
+    <ul className="goldlog">
+      {events.map((e) => (
+        <li className="goldlog__item" key={`${e.at}-${e.kind}-${e.toRaw}`}>
+          <span className="goldlog__time">{fmtClock(e.at)}</span>
+          <span className="stageevt__label">
+            <span
+              className={`stageevt__badge stageevt__badge--${
+                e.kind === 'new-max' ? 'max' : 'change'
+              }`}
+            >
+              {e.kind === 'new-max' ? 'novo recorde' : 'troca'}
+            </span>
+            {e.toLabel}
+          </span>
+          <span className="goldlog__total">{e.toRaw}</span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="card__hint">
+      Coletando… os eventos aparecem ao trocar de estágio ou bater um novo estágio máximo (o jogo
+      precisa estar rodando). Só registra a partir da 1ª leitura da sessão.
+    </p>
   )
 }
 
-function RuneTargetSection({ plan }: { plan: RuneTargetPlan }): JSX.Element {
+function RuneTargetBody({ plan }: { plan: RuneTargetPlan }): JSX.Element {
   const meta = RUNE_CATEGORY_META[plan.category]
   const icon = runeIcon(plan.targetIcon)
   const pct = Math.round(plan.progress * 100)
   const done = plan.alreadyComplete || (plan.goldHave !== null && plan.goldMissing <= 0)
   const readyCount = plan.steps.filter((step) => step.affordable).length
   return (
-    <section className="section">
-      <h3 className="section__title">Runa-alvo</h3>
-      <div className={`runetarget ${done ? 'runetarget--done' : ''}`}>
-        <div className="runetarget__head">
-          {icon && <img className="runetarget__icon" src={icon} alt="" />}
-          <div className="runetarget__id">
-            <div className="runetarget__name">{plan.targetName}</div>
-            <span className="rune-badge" style={{ borderColor: meta.color, color: meta.color }}>
-              {meta.label}
-            </span>
-            <span className="runetarget__lvl">
-              Nv {plan.currentLevel} / {plan.maxLevel}
-            </span>
-          </div>
+    <div className={`runetarget ${done ? 'runetarget--done' : ''}`}>
+      <div className="runetarget__head">
+        {icon && <img className="runetarget__icon" src={icon} alt="" />}
+        <div className="runetarget__id">
+          <div className="runetarget__name">{plan.targetName}</div>
+          <span className="rune-badge" style={{ borderColor: meta.color, color: meta.color }}>
+            {meta.label}
+          </span>
+          <span className="runetarget__lvl">
+            Nv {plan.currentLevel} / {plan.maxLevel}
+          </span>
         </div>
-
-        {plan.alreadyComplete ? (
-          <p className="runetarget__msg runetarget__msg--ok">Runa-alvo já está no nível máximo. ✓</p>
-        ) : !plan.reachable ? (
-          <p className="runetarget__msg">
-            Não foi possível traçar o caminho de pré-requisitos desta runa.
-          </p>
-        ) : (
-          <>
-            <div className="runetarget__nums">
-              <div>
-                <span className="card__label">Custo total</span>
-                <span className="runetarget__val">{fmtNum(plan.totalGoldCost)}</span>
-              </div>
-              <div>
-                <span className="card__label">Ouro atual</span>
-                <span className="runetarget__val">{fmtNum(plan.goldHave)}</span>
-              </div>
-              <div>
-                <span className="card__label">{done ? 'Pode comprar' : 'Falta'}</span>
-                <span className={`runetarget__val ${done ? 'runetarget__val--ok' : ''}`}>
-                  {done ? '✓' : fmtNum(plan.goldMissing)}
-                </span>
-              </div>
-            </div>
-            <div className="runetarget__bar">
-              <div
-                className={`runetarget__fill ${done ? 'runetarget__fill--ok' : ''}`}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <p className="card__hint">
-              {pct}% do ouro necessário · {plan.steps.length} passo(s) no caminho
-              {readyCount > 0 && ` · ${readyCount} já dá pra comprar em sequência`}
-              {plan.hasNonGold && ' · alguns pré-requisitos custam soul stones (não contados no ouro)'}
-            </p>
-            {plan.steps.length > 0 && (
-              <ul className="runetarget__steps">
-                {plan.steps.map((step) => (
-                  <li
-                    className={`runetarget__step ${step.affordable ? 'runetarget__step--ready' : ''}`}
-                    key={step.key}
-                  >
-                    {runeIcon(step.icon) && (
-                      <img className="runetarget__stepicon" src={runeIcon(step.icon)} alt="" />
-                    )}
-                    <span className="runetarget__stepname">
-                      {step.name}
-                      {step.isTarget && <span className="runetarget__steptag">alvo</span>}
-                      {step.affordable && (
-                        <span className="runetarget__steptag runetarget__steptag--ready">
-                          ✓ dá pra comprar
-                        </span>
-                      )}
-                    </span>
-                    <span className="runetarget__steplvl">
-                      Nv {step.fromLevel} → {step.toLevel}
-                    </span>
-                    <span className="runetarget__stepcost">
-                      {step.payableInGold ? `${fmtNum(step.goldCost)} ouro` : 'soul stones'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
       </div>
-    </section>
+
+      {plan.alreadyComplete ? (
+        <p className="runetarget__msg runetarget__msg--ok">Runa-alvo já está no nível máximo. ✓</p>
+      ) : !plan.reachable ? (
+        <p className="runetarget__msg">
+          Não foi possível traçar o caminho de pré-requisitos desta runa.
+        </p>
+      ) : (
+        <>
+          <div className="runetarget__nums">
+            <div>
+              <span className="card__label">Custo total</span>
+              <span className="runetarget__val">{fmtNum(plan.totalGoldCost)}</span>
+            </div>
+            <div>
+              <span className="card__label">Ouro atual</span>
+              <span className="runetarget__val">{fmtNum(plan.goldHave)}</span>
+            </div>
+            <div>
+              <span className="card__label">{done ? 'Pode comprar' : 'Falta'}</span>
+              <span className={`runetarget__val ${done ? 'runetarget__val--ok' : ''}`}>
+                {done ? '✓' : fmtNum(plan.goldMissing)}
+              </span>
+            </div>
+          </div>
+          <div className="runetarget__bar">
+            <div
+              className={`runetarget__fill ${done ? 'runetarget__fill--ok' : ''}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="card__hint">
+            {pct}% do ouro necessário · {plan.steps.length} passo(s) no caminho
+            {readyCount > 0 && ` · ${readyCount} já dá pra comprar em sequência`}
+            {plan.hasNonGold && ' · alguns pré-requisitos custam soul stones (não contados no ouro)'}
+          </p>
+          {plan.steps.length > 0 && (
+            <ul className="runetarget__steps">
+              {plan.steps.map((step) => (
+                <li
+                  className={`runetarget__step ${step.affordable ? 'runetarget__step--ready' : ''}`}
+                  key={step.key}
+                >
+                  {runeIcon(step.icon) && (
+                    <img className="runetarget__stepicon" src={runeIcon(step.icon)} alt="" />
+                  )}
+                  <span className="runetarget__stepname">
+                    {step.name}
+                    {step.isTarget && <span className="runetarget__steptag">alvo</span>}
+                    {step.affordable && (
+                      <span className="runetarget__steptag runetarget__steptag--ready">
+                        ✓ dá pra comprar
+                      </span>
+                    )}
+                  </span>
+                  <span className="runetarget__steplvl">
+                    Nv {step.fromLevel} → {step.toLevel}
+                  </span>
+                  <span className="runetarget__stepcost">
+                    {step.payableInGold ? `${fmtNum(step.goldCost)} ouro` : 'soul stones'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
   )
 }
 
-function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
+function CubeMilestonesBody({
+  cubeLevel,
+  nextCube
+}: {
+  cubeLevel: number
+  nextCube: { level: number; name: string } | null
+}): JSX.Element {
   return (
-    <section className="section">
-      <h3 className="section__title">Heróis ativos</h3>
+    <>
+      {nextCube ? (
+        <div className="alert alert--info">
+          Cubo <strong>Nv {cubeLevel}</strong> — faltam{' '}
+          <strong>{nextCube.level - cubeLevel}</strong> nível(is) para{' '}
+          <strong>
+            Nv {nextCube.level} · {nextCube.name}
+          </strong>
+        </div>
+      ) : (
+        <div className="alert alert--ok">Todos os marcos do Cubo desbloqueados.</div>
+      )}
+      <ul className="milestones">
+        {CUBE_MILESTONES.map((m) => {
+          const reached = isMilestoneReached(m, cubeLevel)
+          const isNext = nextCube?.level === m.level
+          const cls =
+            'milestone' +
+            (reached ? ' milestone--reached' : '') +
+            (isNext ? ' milestone--next' : '')
+          return (
+            <li key={m.level} className={cls}>
+              <span className="milestone__mark">{reached ? '✓' : isNext ? '→' : '•'}</span>
+              <span className="milestone__lvl">Nv {m.level}</span>
+              <span className="milestone__name">{m.name}</span>
+              <span className="milestone__desc">{m.description}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </>
+  )
+}
+
+function ActiveHeroesBody({ slots }: { slots: (HeroSnapshot | null)[] }): JSX.Element {
+  return (
+    <>
       <div className="heroslots">
         {slots.map((h, i) =>
           h ? (
@@ -467,8 +491,104 @@ function ActiveHeroesSection({ slots }: { slots: (HeroSnapshot | null)[] }): JSX
         )}
       </div>
       <p className="card__hint">Roster completo (todos os 6 heróis) vai para a aba Heróis (H5).</p>
+    </>
+  )
+}
+
+function RawJsonBody({ snapshot }: { snapshot: Snapshot }): JSX.Element {
+  return (
+    <>
+      <p className="card__hint">
+        Atualizado {new Date(snapshot.capturedAt).toLocaleTimeString('pt-BR')}
+      </p>
+      <pre className="raw">{JSON.stringify(snapshot.raw, null, 2)?.slice(0, 20000)}</pre>
+    </>
+  )
+}
+
+/** Wrapper de seção do Dashboard: visibilidade (on/off) + cabeçalho colapsável (U10). */
+function Widget({
+  id,
+  layout,
+  onToggleCollapse,
+  headerExtra,
+  children
+}: {
+  id: WidgetId
+  layout: DashboardLayout
+  onToggleCollapse: (id: WidgetId) => void
+  headerExtra?: ReactNode
+  children: ReactNode
+}): JSX.Element | null {
+  if (layout.hidden.includes(id)) return null
+  const collapsed = layout.collapsed.includes(id)
+  return (
+    <section className="section widget">
+      <div className="widget__head">
+        <button
+          className="widget__toggle"
+          onClick={() => onToggleCollapse(id)}
+          aria-expanded={!collapsed}
+        >
+          <span className={`widget__chevron ${collapsed ? 'widget__chevron--collapsed' : ''}`}>
+            ▾
+          </span>
+          <h3 className="section__title">{WIDGET_TITLES[id]}</h3>
+        </button>
+        {headerExtra && <div className="widget__actions">{headerExtra}</div>}
+      </div>
+      {!collapsed && <div className="widget__body">{children}</div>}
     </section>
   )
+}
+
+function CustomizePanel({
+  layout,
+  onToggleHidden,
+  onRestore
+}: {
+  layout: DashboardLayout
+  onToggleHidden: (id: WidgetId) => void
+  onRestore: () => void
+}): JSX.Element {
+  return (
+    <section className="section customize">
+      <div className="customize__head">
+        <h3 className="section__title">Personalizar Dashboard</h3>
+        <button className="btn btn--ghost btn--sm" onClick={onRestore}>
+          Restaurar padrão
+        </button>
+      </div>
+      <div className="customize__list">
+        {DASHBOARD_WIDGETS.map((w) => {
+          const on = !layout.hidden.includes(w.id)
+          return (
+            <label className={`switch ${on ? 'switch--on' : ''}`} key={w.id}>
+              <input
+                className="switch__input"
+                type="checkbox"
+                checked={on}
+                onChange={() => onToggleHidden(w.id)}
+              />
+              <span className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+              <span className="switch__label">{w.title}</span>
+            </label>
+          )
+        })}
+      </div>
+      <p className="card__hint">
+        Desligar um widget só o esconde do Dashboard. Widgets que dependem de dados (ex.: Runa-alvo,
+        Cubo) só aparecem quando há o que mostrar.
+      </p>
+    </section>
+  )
+}
+
+/** Adiciona/remove um id de uma lista (toggle imutável). */
+function toggleIn(list: WidgetId[], id: WidgetId): WidgetId[] {
+  return list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
 }
 
 export function Dashboard({
@@ -478,11 +598,11 @@ export function Dashboard({
   snapshot: Snapshot
   runeTarget: number | null
 }): JSX.Element {
-  const [showRaw, setShowRaw] = useState(false)
   const [boxThresholds, setBoxThresholds] = useState<BoxThresholds>(DEFAULT_BOX_THRESHOLDS)
+  const [layout, setLayout] = useState<DashboardLayout>(DEFAULT_DASHBOARD_LAYOUT)
+  const [customizing, setCustomizing] = useState(false)
   const s = snapshot
-  const runePlan =
-    runeTarget !== null ? planRuneTarget(runeTarget, s.runes, s.gold) : null
+  const runePlan = runeTarget !== null ? planRuneTarget(runeTarget, s.runes, s.gold) : null
   const activeHeroes = s.heroes.filter((h) => h.active)
   // Slots da formação na ordem de arrangedHeroKey; preenche com null os slots vazios (-1).
   const heroSlots: (HeroSnapshot | null)[] = Array.from({ length: HERO_SLOTS }, (_, i) => {
@@ -500,6 +620,9 @@ export function Dashboard({
     window.tbh.getBoxThresholds().then((t) => {
       if (mounted && t) setBoxThresholds(t)
     })
+    window.tbh.getDashboardLayout().then((l) => {
+      if (mounted && l) setLayout(l)
+    })
     return () => {
       mounted = false
     }
@@ -511,120 +634,135 @@ export function Dashboard({
     })
   }
 
+  // Persiste o layout no config do main e reflete a versão normalizada de volta.
+  const persistLayout = (next: DashboardLayout): void => {
+    setLayout(next)
+    window.tbh.setDashboardLayout(next).then((saved) => {
+      if (saved) setLayout(saved)
+    })
+  }
+
+  const toggleHidden = (id: WidgetId): void =>
+    persistLayout({ ...layout, hidden: toggleIn(layout.hidden, id) })
+  const toggleCollapse = (id: WidgetId): void =>
+    persistLayout({ ...layout, collapsed: toggleIn(layout.collapsed, id) })
+  const restoreDefault = (): void => persistLayout(DEFAULT_DASHBOARD_LAYOUT)
+
   return (
     <div className="dashboard">
-      <div className="grid">
-        <Card
-          label="Ouro"
-          value={fmtNum(s.gold)}
-          hint={goldRate !== null ? fmtRate(goldRate) : undefined}
-        />
-        <Card
-          label="Estagio atual"
-          value={s.stage ? s.stage.raw : '—'}
-          hint={s.stage ? s.stage.label : undefined}
-        />
-        <Card
-          label="Onda"
-          value={s.currentWave !== null ? String(s.currentWave) : '—'}
-          hint={s.currentWave === 0 ? 'clear' : undefined}
-        />
-        <Card
-          label="Estagio maximo"
-          value={s.maxCompletedStage ? s.maxCompletedStage.raw : '—'}
-          hint={s.maxCompletedStage ? s.maxCompletedStage.label : undefined}
-        />
-        <Card
-          label="Cubo"
-          value={s.cubeLevel !== null ? `Nv ${s.cubeLevel}` : '—'}
-          hint={
-            s.cubeLevel === null
-              ? undefined
-              : nextCube
-                ? `Próx: Nv ${nextCube.level} · ${nextCube.name}`
-                : 'tudo desbloqueado'
-          }
-        />
-        <Card
-          label="Baús"
-          value={fmtNum(s.boxQuantity)}
-          hint={
-            boxLevel === 'high' ? 'transbordando' : boxLevel === 'warn' ? 'acumulando' : undefined
-          }
-          tone={BACKLOG_TONE[boxLevel]}
-        />
-        <Card
-          label="Herois ativos"
-          value={`${activeHeroes.length} / ${HERO_SLOTS}`}
-          hint={s.heroes.length ? `${s.heroes.length} no roster` : undefined}
-        />
-        <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
+      <div className="dashboard__toolbar">
+        <button
+          className={`btn btn--ghost btn--sm ${customizing ? 'btn--active' : ''}`}
+          onClick={() => setCustomizing((v) => !v)}
+        >
+          {customizing ? 'Fechar' : 'Personalizar'}
+        </button>
       </div>
 
-      {runePlan && <RuneTargetSection plan={runePlan} />}
-
-      {flow && <GoldFlowSection flow={flow} />}
-
-      {s.heroEvents && <LevelUpsSection heroEvents={s.heroEvents} />}
-
-      {s.stageEvents && <StageEventsSection stageEvents={s.stageEvents} />}
-
-      <BoxesSection
-        boxes={s.boxes}
-        total={s.boxQuantity}
-        level={boxLevel}
-        thresholds={boxThresholds}
-        onSaveThresholds={saveBoxThresholds}
-      />
-
-      {s.cubeLevel !== null && (
-        <section className="section">
-          <h3 className="section__title">Marcos do Cubo</h3>
-          {nextCube ? (
-            <div className="alert alert--info">
-              Cubo <strong>Nv {s.cubeLevel}</strong> — faltam{' '}
-              <strong>{nextCube.level - s.cubeLevel}</strong> nível(is) para{' '}
-              <strong>
-                Nv {nextCube.level} · {nextCube.name}
-              </strong>
-            </div>
-          ) : (
-            <div className="alert alert--ok">Todos os marcos do Cubo desbloqueados.</div>
-          )}
-          <ul className="milestones">
-            {CUBE_MILESTONES.map((m) => {
-              const reached = isMilestoneReached(m, s.cubeLevel)
-              const isNext = nextCube?.level === m.level
-              const cls =
-                'milestone' +
-                (reached ? ' milestone--reached' : '') +
-                (isNext ? ' milestone--next' : '')
-              return (
-                <li key={m.level} className={cls}>
-                  <span className="milestone__mark">{reached ? '✓' : isNext ? '→' : '•'}</span>
-                  <span className="milestone__lvl">Nv {m.level}</span>
-                  <span className="milestone__name">{m.name}</span>
-                  <span className="milestone__desc">{m.description}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
+      {customizing && (
+        <CustomizePanel layout={layout} onToggleHidden={toggleHidden} onRestore={restoreDefault} />
       )}
 
-      {s.heroes.length > 0 && <ActiveHeroesSection slots={heroSlots} />}
+      <Widget id="cards" layout={layout} onToggleCollapse={toggleCollapse}>
+        <div className="grid">
+          <Card
+            label="Ouro"
+            value={fmtNum(s.gold)}
+            hint={goldRate !== null ? fmtRate(goldRate) : undefined}
+          />
+          <Card
+            label="Estagio atual"
+            value={s.stage ? s.stage.raw : '—'}
+            hint={s.stage ? s.stage.label : undefined}
+          />
+          <Card
+            label="Onda"
+            value={s.currentWave !== null ? String(s.currentWave) : '—'}
+            hint={s.currentWave === 0 ? 'clear' : undefined}
+          />
+          <Card
+            label="Estagio maximo"
+            value={s.maxCompletedStage ? s.maxCompletedStage.raw : '—'}
+            hint={s.maxCompletedStage ? s.maxCompletedStage.label : undefined}
+          />
+          <Card
+            label="Cubo"
+            value={s.cubeLevel !== null ? `Nv ${s.cubeLevel}` : '—'}
+            hint={
+              s.cubeLevel === null
+                ? undefined
+                : nextCube
+                  ? `Próx: Nv ${nextCube.level} · ${nextCube.name}`
+                  : 'tudo desbloqueado'
+            }
+          />
+          <Card
+            label="Baús"
+            value={fmtNum(s.boxQuantity)}
+            hint={
+              boxLevel === 'high' ? 'transbordando' : boxLevel === 'warn' ? 'acumulando' : undefined
+            }
+            tone={BACKLOG_TONE[boxLevel]}
+          />
+          <Card
+            label="Herois ativos"
+            value={`${activeHeroes.length} / ${HERO_SLOTS}`}
+            hint={s.heroes.length ? `${s.heroes.length} no roster` : undefined}
+          />
+          <Card label="Tempo de jogo" value={fmtPlayTime(s.playTimeSeconds)} />
+        </div>
+      </Widget>
 
-      <section className="section">
-        <button className="btn btn--ghost" onClick={() => setShowRaw((v) => !v)}>
-          {showRaw ? 'Ocultar' : 'Ver'} JSON bruto (calibracao)
-        </button>
-        <p className="card__hint">
-          Atualizado {new Date(s.capturedAt).toLocaleTimeString('pt-BR')}
-        </p>
-        {showRaw && (
-          <pre className="raw">{JSON.stringify(s.raw, null, 2)?.slice(0, 20000)}</pre>
-        )}
-      </section>
+      {runePlan && (
+        <Widget id="runeTarget" layout={layout} onToggleCollapse={toggleCollapse}>
+          <RuneTargetBody plan={runePlan} />
+        </Widget>
+      )}
+
+      {flow && (
+        <Widget id="goldFlow" layout={layout} onToggleCollapse={toggleCollapse}>
+          <GoldFlowBody flow={flow} />
+        </Widget>
+      )}
+
+      {s.heroEvents && (
+        <Widget id="levelUps" layout={layout} onToggleCollapse={toggleCollapse}>
+          <LevelUpsBody heroEvents={s.heroEvents} />
+        </Widget>
+      )}
+
+      {s.stageEvents && (
+        <Widget id="stageProgress" layout={layout} onToggleCollapse={toggleCollapse}>
+          <StageEventsBody stageEvents={s.stageEvents} />
+        </Widget>
+      )}
+
+      {s.boxes.length > 0 && (
+        <Widget
+          id="boxes"
+          layout={layout}
+          onToggleCollapse={toggleCollapse}
+          headerExtra={<ThresholdEditor thresholds={boxThresholds} onSave={saveBoxThresholds} />}
+        >
+          <BoxesBody boxes={s.boxes} total={s.boxQuantity} level={boxLevel} thresholds={boxThresholds} />
+        </Widget>
+      )}
+
+      {s.cubeLevel !== null && (
+        <Widget id="cubeMilestones" layout={layout} onToggleCollapse={toggleCollapse}>
+          <CubeMilestonesBody cubeLevel={s.cubeLevel} nextCube={nextCube} />
+        </Widget>
+      )}
+
+      {s.heroes.length > 0 && (
+        <Widget id="activeHeroes" layout={layout} onToggleCollapse={toggleCollapse}>
+          <ActiveHeroesBody slots={heroSlots} />
+        </Widget>
+      )}
+
+      <Widget id="rawJson" layout={layout} onToggleCollapse={toggleCollapse}>
+        <RawJsonBody snapshot={s} />
+      </Widget>
     </div>
   )
 }

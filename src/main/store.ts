@@ -6,6 +6,12 @@ import {
   normalizeBoxThresholds,
   type BoxThresholds
 } from '@shared/boxes'
+import {
+  DEFAULT_DASHBOARD_LAYOUT,
+  WIDGET_IDS,
+  type DashboardLayout,
+  type WidgetId
+} from '@shared/types'
 
 interface PersistShape {
   // chave ES3 cifrada em base64 (via safeStorage do SO); nunca em texto puro
@@ -18,6 +24,8 @@ interface PersistShape {
   boxBacklogHigh?: number
   // runa-alvo selecionada na aba Runas (R3); RuneKey do catalogo ou ausente
   runeTargetKey?: number | null
+  // layout do Dashboard (U10): widgets escondidos/recolhidos
+  dashboardLayout?: DashboardLayout
 }
 
 let cache: PersistShape | null = null
@@ -127,4 +135,39 @@ export function setRuneTarget(key: number | null): number | null {
   else delete data.runeTargetKey
   save(data)
   return getRuneTarget()
+}
+
+// Mantém só ids de widget conhecidos, sem duplicatas — tolera config antigo/corrompido.
+function normalizeWidgetIds(ids: unknown): WidgetId[] {
+  if (!Array.isArray(ids)) return []
+  const valid = new Set<WidgetId>(WIDGET_IDS)
+  const seen = new Set<WidgetId>()
+  const out: WidgetId[] = []
+  for (const id of ids) {
+    if (valid.has(id as WidgetId) && !seen.has(id as WidgetId)) {
+      seen.add(id as WidgetId)
+      out.push(id as WidgetId)
+    }
+  }
+  return out
+}
+
+function normalizeDashboardLayout(layout: DashboardLayout | undefined): DashboardLayout {
+  if (!layout) return { ...DEFAULT_DASHBOARD_LAYOUT }
+  return {
+    hidden: normalizeWidgetIds(layout.hidden),
+    collapsed: normalizeWidgetIds(layout.collapsed)
+  }
+}
+
+export function getDashboardLayout(): DashboardLayout {
+  return normalizeDashboardLayout(load().dashboardLayout)
+}
+
+export function setDashboardLayout(layout: DashboardLayout): DashboardLayout {
+  const normalized = normalizeDashboardLayout(layout)
+  const data = load()
+  data.dashboardLayout = normalized
+  save(data)
+  return normalized
 }

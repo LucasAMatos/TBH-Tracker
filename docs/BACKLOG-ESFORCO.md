@@ -22,7 +22,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
-| U10 | P2 | Dashboard customizável (flags on/off + colapsáveis, layout persistido) | Plano fechado; reaproveita padrão de persistência (`store`/IPC) — refactor do `Dashboard.tsx` |
 | D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
 | D4 | P2 | Catálogo de bônus/atributos de itens | Fonte mapeada (`statStrings`/`statMods`/`affixRep`/`gear`/`gradeSlots` no datamine); novo `gen-stats.cjs` → `statData.ts`. Pré-req do U11 |
 | PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + `DB.pets`/`petStats`; novo `gen-pets.cjs` |

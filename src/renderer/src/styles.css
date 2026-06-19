@@ -1922,3 +1922,148 @@ body {
 .farmtable__row--current td {
   background: rgba(255, 176, 32, 0.08);
 }
+
+/* Dashboard customizável (U10) */
+.dashboard__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.btn--active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Cabeçalho de widget: título clicável que recolhe/expande o corpo. */
+.widget__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.widget__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.widget__toggle:hover .section__title {
+  color: var(--accent);
+}
+
+.widget__toggle .section__title {
+  margin: 0;
+}
+
+.widget__chevron {
+  display: inline-block;
+  color: var(--text-dim);
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+
+.widget__chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+.widget__actions {
+  flex-shrink: 0;
+}
+
+/* Painel "Personalizar": lista de switches por widget. */
+.customize {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.customize__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.customize__head .section__title {
+  margin: 0;
+}
+
+.customize__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 8px;
+}
+
+/* Switch (toggle) ligar/desligar widget */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.switch--on .switch__track {
+  background: rgba(255, 176, 32, 0.25);
+  border-color: var(--accent);
+}
+
+.switch--on .switch__thumb {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+
+.switch__input:focus-visible + .switch__track {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.switch__label {
+  color: var(--text);
+}
+
+.switch:not(.switch--on) .switch__label {
+  color: var(--text-dim);
+}

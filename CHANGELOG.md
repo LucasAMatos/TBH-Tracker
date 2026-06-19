@@ -21,6 +21,34 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.1.0 — Dashboard customizável: liga/desliga e recolhe widgets (U10)
+
+### Adicionado
+- **Painel "Personalizar" no Dashboard (U10):** botão no topo abre um painel com um **switch por
+  widget** para ligar/desligar cada seção, mais **"Restaurar padrão"**. O layout é **persistido**
+  (sobrevive a reinícios).
+- **Seções colapsáveis:** cada widget agora tem um **cabeçalho clicável** que recolhe/expande o
+  corpo (estado aberto/fechado também persistido).
+- **Registro canônico de widgets** (`src/renderer/src/data/dashboardWidgets.ts`): os 9 blocos do
+  Dashboard (Resumo, Runa-alvo, Fluxo de ouro, Level-ups, Progresso de estágio, Baús, Marcos do
+  Cubo, Heróis ativos, JSON bruto).
+
+### Alterado
+- O **JSON bruto** passa a vir **desligado por padrão** (some da poluição inicial); ligue-o pelo
+  painel quando precisar calibrar.
+- Comportamento padrão = **igual ao de hoje** (tudo ligado/expandido, exceto o JSON bruto).
+  Widgets condicionais (ex.: Runa-alvo só com alvo definido) continuam dependendo dos dados — o
+  toggle só controla o que **pode** aparecer.
+
+### Implementação
+- Persistência no padrão de `boxThresholds`/`runeTarget`: campo `dashboardLayout`
+  (`{ hidden, collapsed }`) em `tbh-tracker-config.json` via `store.ts`
+  (`get/setDashboardLayout`, com **normalização** que descarta ids desconhecidos) → IPC
+  `tbh:getDashboardLayout`/`tbh:setDashboardLayout` → `preload`. Tipos `DashboardLayout`/`WidgetId`
+  + `DEFAULT_DASHBOARD_LAYOUT` em `shared/types.ts`.
+
+---
+
 ## v1.0.0 — Marco: adoção de SemVer (consolidação do ciclo v0)
 
 Primeiro **release maior**. **Sem mudança de funcionalidade**: consolida tudo que foi entregue no
