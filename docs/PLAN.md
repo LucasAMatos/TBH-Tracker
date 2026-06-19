@@ -59,6 +59,10 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 > **Engenharia / qualidade:** suíte de testes da lógica pura (✅ v1.4.0 / I8 — vitest, `npm test`)
 > trava regressões ao regenerar catálogos e ajustar trackers. Próximos de infra no `BACKLOG.md ›
 > Aplicativo / engenharia` (I9 diagnóstico, N2 detecção de patch).
+>
+> **Catálogo de bônus de itens** (✅ v1.6.0 / D4 — `gen-stats.cjs` → `statData.ts` + `stats.ts`):
+> tipos de status pt-BR, faixas de rolagem e slots por raridade. Foundation do **U11** (itens na
+> TBHPedia + filtro/seleção por status) e insumo do futuro modelo de stats (H10/H11).
 
 ## 5. Estrutura de docs
 
