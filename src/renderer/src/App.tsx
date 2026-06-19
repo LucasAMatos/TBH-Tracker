@@ -6,9 +6,10 @@ import { KeyPanel } from './components/KeyPanel'
 import { RuneTree } from './components/RuneTree'
 import { StatusBar } from './components/StatusBar'
 import { TbhPedia } from './components/TbhPedia'
+import { Updates } from './components/Updates'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'herois' | 'inventario' | 'runes' | 'tbhpedia'
+type Tab = 'dashboard' | 'herois' | 'inventario' | 'runes' | 'atualizacoes' | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -94,6 +95,12 @@ export function App(): JSX.Element {
           Runas
         </button>
         <button
+          className={`tabs__btn ${tab === 'atualizacoes' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('atualizacoes')}
+        >
+          Atualizações
+        </button>
+        <button
           className={`tabs__btn ${tab === 'tbhpedia' ? 'tabs__btn--active' : ''}`}
           onClick={() => setTab('tbhpedia')}
         >
@@ -104,6 +111,8 @@ export function App(): JSX.Element {
       <main className="app__main">
         {tab === 'tbhpedia' ? (
           <TbhPedia />
+        ) : tab === 'atualizacoes' ? (
+          <Updates />
         ) : tab === 'herois' ? (
           <Heroes
             heroes={state.snapshot?.heroes ?? []}

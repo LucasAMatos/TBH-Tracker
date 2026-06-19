@@ -19,8 +19,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
-| N1 | P2 | Aba Atualizações (Steam News) | HTTP fetch + render; 1ª feature de rede externa |
-| U9 | P2 | Aba Atualizações (UI) | Render do feed do N1 |
 | U4 | P2 | Eventos coloridos / log | Depende de G3/H2/S3 (detecção de eventos) |
 | U5 | P3 | Gráficos de sessão | Depende de histórico em memória |
 | U6 | P3 | i18n PT/EN | Trabalho amplo, porém mecânico |

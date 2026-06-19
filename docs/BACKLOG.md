@@ -38,14 +38,14 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **A1 (P2):** Tempo de sessão e detecção ativo vs. parado (inferido por mudança do save — **não** enumerar processo).
 
 ### Atualizações do jogo (P2) — fonte oficial (externo ao save)
-- **N1 (P2):** **Aba Atualizações** — puxar patch notes / anúncios da **fonte oficial da empresa** (canal Steam do TBH, App ID 3678970 — devs Nugem Studio / Tesseract Studio) e listar título, data, resumo e link para o anúncio completo. *Fonte:* Steam News API (`ISteamNews/GetNewsForApp`, `appid=3678970`) ou RSS de anúncios da Steam (ver `FONTES.md`). *Segurança:* apenas requisição HTTP a serviço público da Steam — **não** interage com o jogo nem com o save; respeitar a postura passiva. *Extra possível:* destacar quando há versão mais nova que a observada (chave/`GameAssembly` muda com patches).
+- **N1 (P2):** ✅ **v17.0** — **Aba Atualizações** (com U9): busca patch notes/anúncios oficiais na **Steam News API** (`ISteamNews/GetNewsForApp`, `appid=3678970`) e lista título, data, resumo (BBCode/HTML limpos) e link para o anúncio completo (abre no navegador via `shell.openExternal`). Busca no processo main (`src/main/news.ts`) com cache de 10 min e botão "Atualizar". *Segurança:* só GET HTTPS a serviço público da Steam — não interage com o jogo nem com o save. *Extra ainda pendente:* destacar quando há versão mais nova que a observada (chave/`GameAssembly` muda com patches).
 
 ## UI / TBHPedia (P1/P3)
 
 | # | Item | Notas |
 |---|------|-------|
 | U2 (P1) | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Depende de F1–F4 |
-| U9 (P2) | Aba **Atualizações** (patch notes/anúncios da Steam) | Implementa N1 na navegação por abas |
+| U9 (P2) ✅ v17.0 | Aba **Atualizações** (patch notes/anúncios da Steam) | Entregue junto do N1 (`Updates.tsx` + aba na navegação) |
 | U4 (P2) | Eventos coloridos / log de atividade | Progress, gold, level-up, chest |
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
 | U6 (P3) | i18n PT/EN | Jogo já é multilíngue |
