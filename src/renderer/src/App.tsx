@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
+import { Farm } from './components/Farm'
 import { Heroes } from './components/Heroes'
 import { Inventory } from './components/Inventory'
 import { KeyPanel } from './components/KeyPanel'
@@ -9,7 +10,7 @@ import { TbhPedia } from './components/TbhPedia'
 import { Updates } from './components/Updates'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'herois' | 'inventario' | 'runes' | 'atualizacoes' | 'tbhpedia'
+type Tab = 'dashboard' | 'farm' | 'herois' | 'inventario' | 'runes' | 'atualizacoes' | 'tbhpedia'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -77,6 +78,12 @@ export function App(): JSX.Element {
           Dashboard
         </button>
         <button
+          className={`tabs__btn ${tab === 'farm' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('farm')}
+        >
+          Farm
+        </button>
+        <button
           className={`tabs__btn ${tab === 'herois' ? 'tabs__btn--active' : ''}`}
           onClick={() => setTab('herois')}
         >
@@ -118,6 +125,8 @@ export function App(): JSX.Element {
             heroes={state.snapshot?.heroes ?? []}
             arrangedKeys={state.snapshot?.arrangedHeroKeys ?? []}
           />
+        ) : tab === 'farm' ? (
+          <Farm snapshot={state.snapshot} />
         ) : tab === 'inventario' ? (
           <Inventory inventory={state.snapshot?.inventory ?? null} />
         ) : tab === 'runes' ? (

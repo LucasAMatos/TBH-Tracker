@@ -14,6 +14,33 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v20.0 — Aba de Farm: ouro/h e xp/h por estágio + melhores estágios (U2, F2, F3, F4)
+
+### Adicionado
+- **Aba Farm (U2):** nova aba que reúne as medições de farm e a recomendação de estágios.
+  - **Medições da sessão (F2/F3):** tabela de **ouro/h** e **XP/h por estágio**, com tempo
+    observado e ouro total, **persistida por save** entre sessões. O estágio atual é destacado.
+  - **Melhores estágios (F4):** ranking de eficiência (via `rankStages`, do F0) com seletor de
+    **métrica** (Ouro / XP / Combo) e filtro de **dificuldade**; mostra ouro/clear, XP/clear e as
+    densidades por HP, destacando onde o jogador está. Funciona mesmo sem save (catálogo puro).
+- **Tracker `src/main/stageFarm.ts` (F2):** mede ouro/h e XP/h **por estágio** pelo **delta entre
+  leituras** (no padrão do `goldFlow.ts`, mas *bucketed* por estágio). A cada leitura, atribui o
+  delta de ouro e de XP (Σ `HeroExp`) — e o tempo do intervalo — ao **estágio corrente**.
+  *Anti-ruído:* descarta intervalos com **troca de estágio**, **deltas negativos** (gasto/venda,
+  reset de XP em level-up contam como 0) e **intervalos longos** (jogo fechado/parado).
+- **Persistência (F3):** novo namespace `stageFarm` em `src/main/history.ts`; o tracker
+  `serialize()`/`restore()` retoma as medições do save monitorado ao reabrir (igual a
+  `goldFlow`/`stageEvents`). Dados anexados ao snapshot (`Snapshot.stageFarm`).
+
+### Notas / limitações
+- É uma **aproximação por snapshot** — o save não registra clears nem tempo por corrida (F1
+  segue bloqueado). As taxas medidas servem para comparar estágios; ganhos absolutos variam com
+  runas/nível/composição.
+- `HeroExp` é XP do nível atual (reseta em level-up); por isso o XP/h ignora deltas negativos e
+  pode subestimar logo após um level-up.
+
+---
+
 ## v19.0 — Descoberta automática da chave ES3 (onboarding)
 
 ### Adicionado
