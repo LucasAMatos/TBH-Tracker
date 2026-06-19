@@ -10,17 +10,36 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
-> Sem itens pendentes nesta faixa no momento.
+| # | Prioridade | Item | Observação |
+|---|-----------|------|-----------|
+| S6 | P2 | Progresso por dificuldade/ato | `maxCompletedStage` × catálogo (F0) — só agregação |
+| S5 | P2 | Alerta de nível recomendado vs. seu nível | Catálogo F0 já tem `level`; `stageThreat`/`stageLevels` refinam |
+| I7 | P2 | JSON bruto sob demanda (enxugar IPC) | Dívida técnica: hoje envia o save inteiro a cada leitura |
+| E1 | P3 | Exportação de dados (CSV/JSON) | Fluxo de ouro / farm / inventário já em memória |
+| I10 | P3 | Persistir estado da janela | Tamanho/posição no config local |
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
+| U10 | P2 | Dashboard customizável (flags on/off + colapsáveis, layout persistido) | Plano fechado; reaproveita padrão de persistência (`store`/IPC) — refactor do `Dashboard.tsx` |
+| D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
+| D4 | P2 | Catálogo de bônus/atributos de itens | Fonte mapeada (`statStrings`/`statMods`/`affixRep`/`gear`/`gradeSlots` no datamine); novo `gen-stats.cjs` → `statData.ts`. Pré-req do U11 |
+| PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + `DB.pets`/`petStats`; novo `gen-pets.cjs` |
+| H12 | P2 | Árvore de atributos por herói (visualizador) | `attributeSaveDatas` × `DB.attributes`/`statMods`; reusa `RuneTree.tsx` |
+| A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
+| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
+| I8 | P2 | Suíte de testes (vitest) | Lógica pura testável: decode/rank/plan/trackers/classify |
+| I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
+| O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
+| I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
+| W0 | P2 | Épico W: levantamento das wikis + esquema canônico | Mapear cobertura/estrutura/ToS das 5 wikis; define o corpus. Ponto de partida do épico |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | U4 | P2 | Eventos coloridos / log | Depende de G3/H2/S3 (detecção de eventos) |
 | U5 | P3 | Gráficos de sessão | Depende de histórico em memória |
+| U11 | P2 | Itens na TBHPedia + filtro por status (bônus) + lista de seleção | Depende de D4; modelagem de afixos pode puxar pro 🔴 |
 | U6 | P3 | i18n PT/EN | Trabalho amplo, porém mecânico |
 | G4 | P2 | Calculadora de ouro por kill | Bônus de runa pronto; falta o ouro base por kill (catálogo de monstros) |
 
@@ -28,13 +47,17 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Por que é difícil |
 |---|-----------|------|-------------------|
+| H10 | P2 | Modelo de stats do personagem (derivar todos os status) | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 |
+| H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
-| F2 | P1 | Ouro/h e XP/h por estágio | Plano definido (tracker `stageFarm.ts` reaproveita `goldFlow`/`stageEvents`); janela + filtros anti-ruído. **F0 (catálogo) já pronto (v18.0)** |
-| F3 | P1 | Histórico persistente por estágio | Depende de F2; **storage já pronto** (`history.ts`, I6 — só falta namespace `stageFarm`) |
-| F4 | P1 | Recomendar melhor estágio | **F0 pronto** (`rankStages`, v18.0); falta UI (U2) + opcionalmente medições F2/F3 |
-| F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP |
-| U2 | P1 | Aba de Farm | Depende de F1–F4 |
+| F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v0.20.0) |
 | R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
 | F1 | P1 | ⛔ Detectar fim de corrida | **Bloqueado** — save não persiste tempo/clears por corrida |
+| W1 | P2 | Épico W: pipeline de ingestão das wikis | Parsing heterogêneo (RSC/HTML/espelho) + normalização; fundação do épico |
+| W9 | P2 | Épico W: TBHPedia unificada na UI | Busca global + cross-links + atribuição sobre todo o corpus |
+
+> **Épico W (ingerir as 5 wikis na TBHPedia)** — épico grande e faseado; detalhe em `BACKLOG.md`.
+> Fundação: **W0** (levantamento + esquema canônico, 🟡) e **W1** (pipeline, 🔴). Ingestão por
+> domínio **W2–W8** (🟡 cada, incremental). Unificação na UI **W9** (🟡–🔴).
 
 > Itens entregues (✅) não aparecem aqui; ver `BACKLOG-HISTORICO.md`.

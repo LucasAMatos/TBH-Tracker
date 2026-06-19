@@ -13,7 +13,7 @@ const FILE = 'tbh-tracker-history.json'
 const WRITE_DEBOUNCE_MS = 2000
 const SCHEMA_VERSION = 1
 
-export type HistoryNamespace = 'goldFlow' | 'heroEvents' | 'stageEvents'
+export type HistoryNamespace = 'goldFlow' | 'heroEvents' | 'stageEvents' | 'stageFarm'
 
 type SaveBucket = Partial<Record<HistoryNamespace, unknown>>
 

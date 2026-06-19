@@ -6,6 +6,7 @@ import { flushHistory, loadHistory, saveHistory } from './history'
 import { locateSave } from './locator'
 import { parseSnapshot } from './parser'
 import { StageEventsTracker, type StageEventsState } from './stageEvents'
+import { StageFarmTracker, type StageFarmState } from './stageFarm'
 import * as store from './store'
 import { SaveWatcher } from './watcher'
 import type { TrackerState } from '@shared/types'
@@ -19,6 +20,7 @@ export class Tracker {
   private goldFlow = new GoldFlowTracker()
   private heroEvents = new HeroEventsTracker()
   private stageEvents = new StageEventsTracker()
+  private stageFarm = new StageFarmTracker()
   private heartbeatTimer: NodeJS.Timeout | null = null
   private trackedPath: string | null = null
   private state: TrackerState = {
@@ -46,6 +48,7 @@ export class Tracker {
       this.goldFlow.restore(loadHistory<GoldFlowState>(savePath, 'goldFlow'))
       this.heroEvents.restore(loadHistory<HeroEventsState>(savePath, 'heroEvents'))
       this.stageEvents.restore(loadHistory<StageEventsState>(savePath, 'stageEvents'))
+      this.stageFarm.restore(loadHistory<StageFarmState>(savePath, 'stageFarm'))
       this.trackedPath = savePath
     }
     this.state.savePath = savePath
@@ -105,10 +108,23 @@ export class Tracker {
         snapshot.maxCompletedStage
       )
       if (stageEvents) snapshot.stageEvents = stageEvents
+      // XP da conta = soma de HeroExp (proxy; reseta em level-up, mas deltas negativos
+      // são ignorados pelo tracker — ver stageFarm.ts).
+      const totalExp = snapshot.heroes.length
+        ? snapshot.heroes.reduce((sum, h) => sum + (h.exp ?? 0), 0)
+        : null
+      const stageFarm = this.stageFarm.record(
+        snapshot.capturedAt,
+        snapshot.stage?.raw ?? null,
+        snapshot.gold,
+        totalExp
+      )
+      if (stageFarm) snapshot.stageFarm = stageFarm
       // Persiste o histórico desta leitura (I6, debounced por save).
       saveHistory(savePath, 'goldFlow', this.goldFlow.serialize())
       saveHistory(savePath, 'heroEvents', this.heroEvents.serialize())
       saveHistory(savePath, 'stageEvents', this.stageEvents.serialize())
+      saveHistory(savePath, 'stageFarm', this.stageFarm.serialize())
       const now = Date.now()
       this.update({
         status: 'monitoring',

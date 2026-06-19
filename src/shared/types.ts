@@ -118,6 +118,27 @@ export interface StageEvents {
   events: StageEvent[] // eventos recentes (mais recente primeiro), limitados
 }
 
+// Medição de farm acumulada para um estágio (F2): ouro/XP ganhos e tempo observado
+// enquanto o estágio esteve ativo entre leituras consecutivas do save. As taxas são
+// derivadas (ganho / tempo). Aproximação por delta de snapshot — ver stageFarm.ts.
+export interface StageFarmEntry {
+  stageRaw: string // código DAPP do estágio (4 dígitos)
+  goldGained: number // soma dos deltas de ouro positivos atribuídos a este estágio
+  expGained: number // soma dos deltas de XP positivos (Σ HeroExp) atribuídos
+  seconds: number // tempo observado farmando este estágio (s)
+  reads: number // nº de intervalos de leitura atribuídos (amostras)
+  goldPerHour: number | null // goldGained/seconds*3600 (null se tempo insuficiente)
+  expPerHour: number | null // expGained/seconds*3600 (null se tempo insuficiente)
+  lastAt: number // epoch ms da última leitura atribuída a este estágio
+}
+
+// Medições de farm por estágio da sessão (F2), persistidas entre sessões (F3).
+export interface StageFarm {
+  entries: StageFarmEntry[] // por estágio, ordenado por tempo observado (desc)
+  totalSeconds: number // tempo total atribuído (soma de entries[].seconds)
+  currentStageRaw: string | null // estágio da última leitura (destaque na UI)
+}
+
 // Baús não abertos de uma categoria (soma de BoxData.BoxQuantity por BoxTypes).
 export interface BoxCount {
   kind: BoxKind // 'common' | 'stageBoss' | 'actBoss'
@@ -187,6 +208,7 @@ export interface Snapshot {
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)
   stageEvents?: StageEvents // eventos de estágio da sessão (preenchido pelo Tracker)
+  stageFarm?: StageFarm // ouro/h e XP/h por estágio da sessão (F2, preenchido pelo Tracker)
   raw?: unknown // JSON bruto do save (modo debug/calibracao)
 }
 

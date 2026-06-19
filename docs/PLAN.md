@@ -6,7 +6,7 @@ Tracker **somente leitura** para **TBH: Task Bar Hero**. Lê o save do jogo, int
 
 O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não dar nenhum motivo técnico de detecção, o tracker:
 
-1. **Só lê arquivos em disco** — o save (`SaveFile_Live.es3`, relendo só quando muda) e, **opcionalmente e com aviso/consentimento explícito**, os arquivos de **instalação do jogo** (ex.: `resources.assets`) para **descobrir a chave ES3 automaticamente** (v19.0). Tudo é leitura passiva de arquivo; nada é executado nem alterado.
+1. **Só lê arquivos em disco** — o save (`SaveFile_Live.es3`, relendo só quando muda) e, **opcionalmente e com aviso/consentimento explícito**, os arquivos de **instalação do jogo** (ex.: `resources.assets`) para **descobrir a chave ES3 automaticamente** (v0.19.0). Tudo é leitura passiva de arquivo; nada é executado nem alterado.
 2. **Nunca** lê/escreve a memória do jogo, anexa a processos, injeta DLL ou automatiza input.
 3. **Nunca** modifica o save, os arquivos do jogo, nem força qualquer comportamento no jogo.
 4. É **externo e passivo** — mesmo padrão das ferramentas open-source da comunidade (tbh-farm, tbh-copilot, TBH-Optimizer).
@@ -50,10 +50,11 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 
 - **Fase 0 — Fundação:** pesquisa + TBHPedia + plano + backlog. ✅ (este documento)
 - **Fase 1 — MVP leitura:** ✅ *concluída.* localizar/descriptografar/parsear o save; Dashboard com ouro, estágio (DAPP decodificado), onda, heróis (com nome), cubo, baús, máx. estágio; status (monitorando / sem chave / sem save). Parser calibrado contra save real (estrutura `PlayerSaveData.value` duplamente codificada — ver TBHPEDIA › Save).
-- **Fase 2 — Farm analytics:** detecção de corridas, ouro/h e xp/h por estágio, histórico persistente, recomendação de melhor estágio (ouro / xp / combo). 🚧 *Fundação entregue:* **F0 (v18.0)** — catálogo de estágios `stageData.ts` (ouro/EXP/HP/inimigos por fase) + helpers `rankStages`/`stageDataForRaw`. Próximos: F2 (tracker `stageFarm.ts`) → F3 (persistência) → F4/U2 (recomendação + aba).
-- **Fase 3 — Aba TBHPedia:** ✅ v2.0 (entregue antes da Fase 2). referência navegável dentro do app (heróis, estágios, cubo, runas, pets, raridades, baús).
-- **Fase 4 — Qualidade de vida:** 🚧 alertas (✅ baús acumulando — B2 v5.0, por tipo; pendente: level-up, novo estágio), gráficos de sessão, i18n PT/EN.
-- **Fase 5 — Extras:** suporte Proton/Linux, ~~marcos do Cubo~~ (✅ v3.0 / C2), ~~níveis/mapa de runas~~ (✅ v4.0 / R1), calibração de gasto de runas, exportação de dados.
+- **Fase 2 — Farm analytics:** ✅ *núcleo entregue (v0.20.0).* ouro/h e xp/h por estágio (**F2**, `stageFarm.ts`), histórico persistente (**F3**), recomendação de melhor estágio ouro/xp/combo (**F4**, `rankStages`) e **Aba de Farm** (**U2**), sobre a fundação **F0 (v0.18.0)** (catálogo `stageData.ts`). *Pendentes:* **F1** (detecção de fim de corrida) segue **bloqueado** pelo save; **F5** (projeção de estágios não medidos) e o refino da recomendação com medições reais ficam para depois.
+- **Fase 3 — Aba TBHPedia:** ✅ v0.2.0 (entregue antes da Fase 2). referência navegável dentro do app (heróis, estágios, cubo, runas, pets, raridades, baús).
+- **Fase 4 — Qualidade de vida:** 🚧 alertas (✅ baús acumulando — B2 v0.5.0, por tipo; pendente: level-up, novo estágio), gráficos de sessão, i18n PT/EN.
+- **Fase 5 — Extras:** suporte Proton/Linux, ~~marcos do Cubo~~ (✅ v0.3.0 / C2), ~~níveis/mapa de runas~~ (✅ v0.4.0 / R1), calibração de gasto de runas, exportação de dados.
+- **Fase 6 — TBHPedia completa (Épico W):** ingerir **100% do conhecimento das 5 wikis** da comunidade (`FONTES.md`) e fazer a TBHPedia conter tudo, navegável e cruzado com o save/datamine. Faseado: **W0** (levantamento + esquema canônico) → **W1** (pipeline de ingestão) → **W2–W8** (ingestão por domínio: heróis, runas, itens/efeitos, estágios/monstros, pets, cubo/baús/mecânicas, guias) → **W9** (TBHPedia unificada na UI com busca global e atribuição). Leitura passiva de páginas públicas, preferindo dados estruturados/espelhos, com proveniência e respeito a ToS. Detalhe em `BACKLOG.md › Épico W`.
 
 ## 5. Estrutura de docs
 

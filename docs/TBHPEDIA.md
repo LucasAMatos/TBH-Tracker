@@ -85,7 +85,7 @@ Hub de crafting; desbloqueia no nível 4. Trade Ship (envio para inventário Ste
 
 Prioridade comum: slots de herói → offline → automação Extremo Norte → ouro/XP → Despertar. Nós finais 1–3M; zona de ouro começa ~20M; última stash 50M.
 
-**Catálogo (v4.0/R1):** os 197 nós estão mapeados em `src/shared/runeTree.ts` (posição `x,y`, nome/efeito pt-BR, ícone, `maxLevel`, valor e **custo em ouro por nível**), gerados de `taskbarhero.wiki` (via tbh-farm). O `RuneKey` do save bate **1:1** com a `key` do catálogo (join direto). A aba **Runas** do app renderiza a árvore como mapa interativo (zoom/pan) com os seus níveis atuais. Categorias oficiais (de `taskbarherowiki.com`, sobrepostas por `key`): Baús, Herói, Ouro, EXP, Ranhuras, Offline, Cubo, Combate.
+**Catálogo (v0.4.0/R1):** os 197 nós estão mapeados em `src/shared/runeTree.ts` (posição `x,y`, nome/efeito pt-BR, ícone, `maxLevel`, valor e **custo em ouro por nível**), gerados de `taskbarhero.wiki` (via tbh-farm). O `RuneKey` do save bate **1:1** com a `key` do catálogo (join direto). A aba **Runas** do app renderiza a árvore como mapa interativo (zoom/pan) com os seus níveis atuais. Categorias oficiais (de `taskbarherowiki.com`, sobrepostas por `key`): Baús, Herói, Ouro, EXP, Ranhuras, Offline, Cubo, Combate.
 
 ## Pets (8 — sempre ativos e empilháveis; equipar é cosmético)
 

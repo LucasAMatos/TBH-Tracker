@@ -1,6 +1,6 @@
 {
   "name": "tbh-tracker",
-  "version": "19.0.0",
+  "version": "1.0.0",
   "description": "Tracker somente-leitura para TBH: Task Bar Hero. Le o save do jogo e ajuda a otimizar o farm, sem nunca tocar no jogo.",
   "author": "LucasAMatos",
   "license": "MIT",
