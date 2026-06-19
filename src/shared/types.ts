@@ -219,6 +219,27 @@ export interface TrackerState {
   heartbeatAt: number | null // epoch ms do último "pulso" do tracker (mesmo sem mudança)
 }
 
+// Resultado da descoberta automática da chave ES3 nos arquivos do jogo.
+//  found      = chave localizada e validada (já aplicada/persistida)
+//  no-save    = não há save para validar a chave (abra o jogo uma vez)
+//  no-game    = instalação do jogo (resources.assets) não localizada
+//  not-found  = arquivos lidos, mas a chave não foi encontrada (layout mudou?)
+//  cancelled  = usuário recusou no aviso
+//  error      = falha de leitura
+export type KeyFindStatus =
+  | 'found'
+  | 'no-save'
+  | 'no-game'
+  | 'not-found'
+  | 'cancelled'
+  | 'error'
+
+export interface KeyFindResult {
+  status: KeyFindStatus
+  gamePath?: string | null // arquivo do jogo inspecionado (resources.assets)
+  message?: string // detalhe amigável (erros)
+}
+
 // API exposta ao renderer via preload (window.tbh)
 export interface TbhApi {
   getState(): Promise<TrackerState>
@@ -235,6 +256,7 @@ export interface TbhApi {
   setRuneTarget(key: number | null): Promise<number | null>
   getNews(force?: boolean): Promise<NewsFeed>
   openExternal(url: string): Promise<void>
+  findKey(): Promise<KeyFindResult>
 }
 
 declare global {
