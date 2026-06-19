@@ -262,6 +262,42 @@ export interface KeyFindResult {
   message?: string // detalhe amigável (erros)
 }
 
+// Layout do Dashboard (U10): widgets ligáveis/desligáveis e colapsáveis, persistido no config.
+export type WidgetId =
+  | 'cards'
+  | 'runeTarget'
+  | 'goldFlow'
+  | 'levelUps'
+  | 'stageProgress'
+  | 'boxes'
+  | 'cubeMilestones'
+  | 'activeHeroes'
+  | 'rawJson'
+
+// Ordem canônica (= ordem fixa de render no Dashboard). Fonte da verdade para normalização.
+export const WIDGET_IDS: readonly WidgetId[] = [
+  'cards',
+  'runeTarget',
+  'goldFlow',
+  'levelUps',
+  'stageProgress',
+  'boxes',
+  'cubeMilestones',
+  'activeHeroes',
+  'rawJson'
+]
+
+export interface DashboardLayout {
+  hidden: WidgetId[] // widgets desligados (não aparecem)
+  collapsed: WidgetId[] // widgets recolhidos (cabeçalho visível, corpo oculto)
+}
+
+// Padrão = visual de hoje: tudo ligado/expandido, exceto o JSON bruto (desligado).
+export const DEFAULT_DASHBOARD_LAYOUT: DashboardLayout = {
+  hidden: ['rawJson'],
+  collapsed: []
+}
+
 // API exposta ao renderer via preload (window.tbh)
 export interface TbhApi {
   getState(): Promise<TrackerState>
@@ -276,6 +312,8 @@ export interface TbhApi {
   setBoxThresholds(warn: number, high: number): Promise<BoxThresholds>
   getRuneTarget(): Promise<number | null>
   setRuneTarget(key: number | null): Promise<number | null>
+  getDashboardLayout(): Promise<DashboardLayout>
+  setDashboardLayout(layout: DashboardLayout): Promise<DashboardLayout>
   getNews(force?: boolean): Promise<NewsFeed>
   openExternal(url: string): Promise<void>
   findKey(): Promise<KeyFindResult>

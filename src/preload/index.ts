@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { TrackerState } from '@shared/types'
+import type { DashboardLayout, TrackerState } from '@shared/types'
 
 const api = {
   getState: () => ipcRenderer.invoke('tbh:getState'),
@@ -20,6 +20,9 @@ const api = {
     ipcRenderer.invoke('tbh:setBoxThresholds', warn, high),
   getRuneTarget: () => ipcRenderer.invoke('tbh:getRuneTarget'),
   setRuneTarget: (key: number | null) => ipcRenderer.invoke('tbh:setRuneTarget', key),
+  getDashboardLayout: () => ipcRenderer.invoke('tbh:getDashboardLayout'),
+  setDashboardLayout: (layout: DashboardLayout) =>
+    ipcRenderer.invoke('tbh:setDashboardLayout', layout),
   getNews: (force?: boolean) => ipcRenderer.invoke('tbh:getNews', force),
   openExternal: (url: string) => ipcRenderer.invoke('tbh:openExternal', url),
   findKey: () => ipcRenderer.invoke('tbh:findKey')

@@ -72,7 +72,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 | # | Item | Notas |
 |---|------|-------|
-| U10 (P2) | **Dashboard customizável** — flags para ligar/desligar widgets + seções colapsáveis, com layout persistido | Plano fechado (ver abaixo) |
+| U10 (P2) ✅ v1.1.0 | **Dashboard customizável** — flags para ligar/desligar widgets + seções colapsáveis, com layout persistido | Entregue: painel "Personalizar" + cabeçalhos colapsáveis; `dashboardWidgets.ts` + `DashboardLayout` persistido (`store`/IPC). JSON bruto desligado por padrão. |
 | U11 (P2) | **Itens na TBHPedia** com **filtro por status (bônus)** + **lista de seleção de bônus** (ex.: "+35 de armadura") | Depende de D4 (catálogo de bônus) |
 | U2 (P1) ✅ v0.20.0 | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Entregue: `Farm.tsx` + aba; medições F2/F3 + recomendação F4. (F1 segue bloqueado, mas a aba não depende dele) |
 | U9 (P2) ✅ v0.17.0 | Aba **Atualizações** (patch notes/anúncios da Steam) | Entregue junto do N1 (`Updates.tsx` + aba na navegação) |
@@ -80,7 +80,11 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
 | U6 (P3) | i18n PT/EN | Jogo já é multilíngue |
 
-### U10 (P2) — Dashboard customizável (plano detalhado)
+### U10 (P2) ✅ v1.1.0 — Dashboard customizável (entregue)
+> **Entregue na v1.1.0** conforme o plano abaixo: painel "Personalizar" com switch por widget +
+> "Restaurar padrão", seções colapsáveis, layout persistido (`dashboardLayout` no config) e JSON
+> bruto desligado por padrão.
+
 O Dashboard hoje empilha **9 blocos sempre visíveis e em ordem fixa** (grid de cards → Runa-alvo →
 Fluxo de ouro → Level-ups → Progresso de estágio → Baús → Marcos do Cubo → Heróis ativos → JSON
 bruto), sem como esconder nada — daí a poluição. Objetivo: dar **flags para ligar/desligar** as

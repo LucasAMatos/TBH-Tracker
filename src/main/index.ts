@@ -6,7 +6,7 @@ import { locateSave } from './locator'
 import { fetchNews } from './news'
 import * as store from './store'
 import { Tracker } from './tracker'
-import type { KeyFindResult, TrackerState } from '@shared/types'
+import type { DashboardLayout, KeyFindResult, TrackerState } from '@shared/types'
 
 let mainWindow: BrowserWindow | null = null
 let tracker: Tracker | null = null
@@ -79,6 +79,11 @@ function registerIpc(): void {
 
   ipcMain.handle('tbh:getRuneTarget', () => store.getRuneTarget())
   ipcMain.handle('tbh:setRuneTarget', (_e, key: number | null) => store.setRuneTarget(key))
+
+  ipcMain.handle('tbh:getDashboardLayout', () => store.getDashboardLayout())
+  ipcMain.handle('tbh:setDashboardLayout', (_e, layout: DashboardLayout) =>
+    store.setDashboardLayout(layout)
+  )
 
   // Descoberta automatica da chave ES3 nos arquivos do jogo (leitura passiva em disco).
   // Mostra um aviso/consentimento ANTES de ler qualquer arquivo do jogo.
