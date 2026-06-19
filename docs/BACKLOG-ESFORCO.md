@@ -33,6 +33,7 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
 | O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
 | I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
+| W0 | P2 | Épico W: levantamento das wikis + esquema canônico | Mapear cobertura/estrutura/ToS das 5 wikis; define o corpus. Ponto de partida do épico |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |
 | D2 | P3 | Classificar por raridade + destacar Legendary+ (fora do Inventário) | Catálogo de raridade (`items.ts`) já existe (D3, v15); falta aplicar nos drops/dashboard |
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
@@ -49,8 +50,14 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | H10 | P2 | Modelo de stats do personagem (derivar todos os status) | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 |
 | H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
 | D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
-| F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v20.0) |
+| F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v0.20.0) |
 | R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
 | F1 | P1 | ⛔ Detectar fim de corrida | **Bloqueado** — save não persiste tempo/clears por corrida |
+| W1 | P2 | Épico W: pipeline de ingestão das wikis | Parsing heterogêneo (RSC/HTML/espelho) + normalização; fundação do épico |
+| W9 | P2 | Épico W: TBHPedia unificada na UI | Busca global + cross-links + atribuição sobre todo o corpus |
+
+> **Épico W (ingerir as 5 wikis na TBHPedia)** — épico grande e faseado; detalhe em `BACKLOG.md`.
+> Fundação: **W0** (levantamento + esquema canônico, 🟡) e **W1** (pipeline, 🔴). Ingestão por
+> domínio **W2–W8** (🟡 cada, incremental). Unificação na UI **W9** (🟡–🔴).
 
 > Itens entregues (✅) não aparecem aqui; ver `BACKLOG-HISTORICO.md`.

@@ -2,19 +2,41 @@
 
 ## Esquema de versão
 
-Versão no formato **`va.b`** (por enquanto):
+**SemVer `MAJOR.MINOR.PATCH`** (a partir da v1.0.0):
 
-- **`a`** — incrementa a cada **nova implementação** (feature/funcionalidade nova). Ao subir `a`, `b` zera.
-- **`b`** — incrementa a cada **fix** (correção de bug/ajuste).
+- **MAJOR** — marco/release significativo (decisão manual).
+- **MINOR** — incrementa a cada **nova implementação** (feature). Ao subir MINOR, PATCH zera.
+- **PATCH** — incrementa a cada **fix** (correção/ajuste).
 
-Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
+Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v1.1.1`.
 
-> No `package.json` a versão é gravada como `a.b.0` (semver válido); o app exibe `va.b`.
-> Cada versão deve ter uma tag git (`vA.B`).
+> **Transição (19/06/2026):** todo o desenvolvimento anterior foi o **ciclo v0**. O antigo formato
+> `va.b` equivale a **`v0.a.b`** (ex.: o antigo `v20.0` = `v0.20.0`; um fix `v7.1` = `v0.7.1`) —
+> a numeração de MINOR/PATCH que já usávamos é mantida, só sob o MAJOR `0`. A partir de agora
+> consolidamos tudo em **v1.0.0** (primeiro release maior) e seguimos SemVer. As entradas abaixo
+> (de `v20.0` para baixo) são o histórico do ciclo v0, mantidas como estão.
+>
+> No `package.json` a versão é o SemVer completo (`major.minor.patch`); o app exibe `vMAJOR.MINOR.PATCH`.
+> Cada versão tem uma tag git (`vX.Y.Z`).
 
 ---
 
-## v20.0 — Aba de Farm: ouro/h e xp/h por estágio + melhores estágios (U2, F2, F3, F4)
+## v1.0.0 — Marco: adoção de SemVer (consolidação do ciclo v0)
+
+Primeiro **release maior**. **Sem mudança de funcionalidade**: consolida tudo que foi entregue no
+ciclo **v0** (o antigo `v1.0`–`v20.0`, abaixo) e adota o versionamento **SemVer
+`MAJOR.MINOR.PATCH`**. Daqui em diante, novas features sobem o **MINOR** e correções o **PATCH**;
+o **MAJOR** muda em marcos.
+
+### Alterado
+- `package.json` agora em `1.0.0`; o app passa a exibir `v1.0.0` (major.minor.patch — o patch antes
+  ficava oculto).
+- Esquema de versão reescrito (ver topo): o histórico anterior passa a ser o ciclo `v0.x`
+  (`va.b` ≡ `v0.a.b`).
+
+---
+
+## v0.20.0 — Aba de Farm: ouro/h e xp/h por estágio + melhores estágios (U2, F2, F3, F4)
 
 ### Adicionado
 - **Aba Farm (U2):** nova aba que reúne as medições de farm e a recomendação de estágios.
@@ -41,7 +63,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v19.0 — Descoberta automática da chave ES3 (onboarding)
+## v0.19.0 — Descoberta automática da chave ES3 (onboarding)
 
 ### Adicionado
 - **Localizar chave automaticamente:** novo botão no painel de configuração que descobre a
@@ -70,7 +92,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v18.0 — Catálogo de estágios: ouro/EXP/HP por fase (F0)
+## v0.18.0 — Catálogo de estágios: ouro/EXP/HP por fase (F0)
 
 ### Adicionado
 - **Catálogo de estágios (F0):** `src/shared/stageData.ts` (auto-gerado) com **108
@@ -94,7 +116,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v17.0 — Aba Atualizações: Steam News (N1 / U9)
+## v0.17.0 — Aba Atualizações: Steam News (N1 / U9)
 
 ### Adicionado
 - **Aba Atualizações (N1 + U9):** lista patch notes/anúncios oficiais do TBH puxados da
@@ -113,7 +135,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v16.0 — Runa-alvo: ouro faltante com pré-requisitos (R3)
+## v0.16.0 — Runa-alvo: ouro faltante com pré-requisitos (R3)
 
 ### Adicionado
 - **Runa-alvo (R3):** na aba **Runas**, o painel de detalhes ganha **"Definir como alvo"**
@@ -138,7 +160,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v15.0 — Aba Inventário: tipo × raridade (D3 / U8)
+## v0.15.0 — Aba Inventário: tipo × raridade (D3 / U8)
 
 ### Adicionado
 - **Aba Inventário** (`src/renderer/src/components/Inventory.tsx`): lê `itemSaveDatas[]`,
@@ -165,7 +187,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v14.0 — Persistência local de histórico (I6)
+## v0.14.0 — Persistência local de histórico (I6)
 
 ### Adicionado
 - **Camada de persistência reutilizável** `src/main/history.ts`: grava o estado dos
@@ -186,7 +208,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v13.0 — Estimativa de esvaziamento de baús (B3)
+## v0.13.0 — Estimativa de esvaziamento de baús (B3)
 
 ### Adicionado
 - **Cooldowns de auto-abrir (B3):** o card **Baús por tipo** passa a estimar, por
@@ -202,7 +224,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v12.0 — Retratos dos heróis (H8)
+## v0.12.0 — Retratos dos heróis (H8)
 
 > Renumerada de v11.0 para v12.0 após rebase sobre a `main` (que já recebeu o H2 em v11.0).
 
@@ -220,7 +242,7 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
-## v11.0 — Detecção de level-ups de heróis (H2)
+## v0.11.0 — Detecção de level-ups de heróis (H2)
 
 > Renumerada de v9.0 para v11.0 após rebase sobre a `main` (que já tinha v8.0–v10.0).
 
@@ -244,7 +266,7 @@ Backlog entregue: H2.
 
 ---
 
-## v10.0 — Progresso de estágio + heartbeat de status (S3, A2)
+## v0.10.0 — Progresso de estágio + heartbeat de status (S3, A2)
 
 ### Adicionado
 - **Progresso de estágio (S3):** o app compara o **estágio atual** (`CurrentStageKey`) e o
@@ -273,7 +295,7 @@ Backlog entregue: S3, A2.
 
 ---
 
-## v8.0 — Análise detalhada do herói: stats com ranking + árvore de habilidades (H9)
+## v0.8.0 — Análise detalhada do herói: stats com ranking + árvore de habilidades (H9)
 
 ### Adicionado
 - **Drill-down do herói na aba Heróis (H9):** clicar em um herói abre uma tela de
@@ -298,7 +320,7 @@ Backlog entregue: H9.
 
 ---
 
-## v7.0 — Fluxo de ouro: delta por evento + ouro/h (G3, G2 parcial)
+## v0.7.0 — Fluxo de ouro: delta por evento + ouro/h (G3, G2 parcial)
 
 ### Adicionado
 - **Delta de ouro por evento (G3):** a cada leitura do save em que o ouro muda, o
@@ -322,7 +344,7 @@ Backlog entregue: G3 (e base do G2).
 
 ---
 
-## v6.0 — Heróis: dashboard só com ativos + aba Heróis (H5, H6, U7)
+## v0.6.0 — Heróis: dashboard só com ativos + aba Heróis (H5, H6, U7)
 
 ### Adicionado
 - Nova aba **Heróis** (U7) com o **roster completo dos 6** (H5): cada herói num card
@@ -355,7 +377,7 @@ Backlog entregue: H5, H6, U7.
 
 ---
 
-## v5.0 — Baús por tipo + alerta de acúmulo (B2)
+## v0.5.0 — Baús por tipo + alerta de acúmulo (B2)
 
 Item de qualidade de vida (B2), sem tocar no agente de detecção de corridas
 (que segue arquivado). Esta feature havia sido implementada antes (PR #4), mas
@@ -390,7 +412,7 @@ Backlog entregue: B2.
 
 ---
 
-## v4.0 — Árvore de Runas (R1)
+## v0.4.0 — Árvore de Runas (R1)
 
 ### Adicionado
 - Nova aba **Runas** com o **mapa da árvore de runas** (197 nós) com **zoom** (roda
@@ -413,7 +435,7 @@ Backlog entregue: R1. (Base para R2 — custos de runa já catalogados.)
 
 ---
 
-## v3.0 — Alertas de marcos do Cubo (C2)
+## v0.3.0 — Alertas de marcos do Cubo (C2)
 
 ### Adicionado
 - **Marcos do Hero-dric Cube** no Dashboard: card do Cubo mostra o próximo
@@ -427,7 +449,7 @@ Backlog entregue: C2.
 
 ---
 
-## v2.0 — Aba TBHPedia
+## v0.2.0 — Aba TBHPedia
 
 ### Adicionado
 - Navegação por abas no app (Dashboard | TBHPedia).
@@ -440,7 +462,7 @@ Backlog entregue: U3.
 
 ---
 
-## v1.0 — Fase 1: MVP de leitura
+## v0.1.0 — Fase 1: MVP de leitura
 
 Primeira versão funcional. Tracker somente-leitura do save do TBH.
 

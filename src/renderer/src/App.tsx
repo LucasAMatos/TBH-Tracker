@@ -23,8 +23,8 @@ const EMPTY: TrackerState = {
 }
 
 function formatVersion(raw: string): string {
-  const [major = '0', minor = '0'] = raw.split('.')
-  return `v${major}.${minor}`
+  const [major = '1', minor = '0', patch = '0'] = raw.split('.')
+  return `v${major}.${minor}.${patch}`
 }
 
 export function App(): JSX.Element {

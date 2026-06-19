@@ -4,14 +4,14 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 > **Status:** ⬜ = pendente · ⛔ = parado/bloqueado. Atualizar este arquivo sempre que um item for entregue (marcar `✅ vA.B`). Versionamento em `CHANGELOG.md` (`va.b`).
 >
-> **Arquivamento:** a cada 5 versões (`a` múltiplo de 5) os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último arquivamento: **v15.0** (v11–v15: H2, H8, B3, I6, D3, U8).
+> **Arquivamento:** a cada 5 versões (`a` múltiplo de 5) os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último arquivamento: **v0.15.0** (v0.11–v0.15: H2, H8, B3, I6, D3, U8).
 >
 > **Outras visões:** `BACKLOG-ESFORCO.md` ranqueia os itens do mais fácil ao mais difícil de implementar (este arquivo segue sendo a fonte da verdade).
 
 ## Pontos observáveis → features
 
 ### Ouro (P1) — `CurrencySaveDatas` (key 100001)
-- **G4 (P2):** **Calculadora de ouro por kill** — estima o ganho de ouro por abate aplicando os **bônus de ouro das runas** (categoria Ouro do catálogo) sobre o ouro base, com resultados **separados para monstro comum e boss**. *Observável:* `RuneSaveData[]` (níveis) + `runeTree.ts` (runas de ouro: efeito/valor por nível). *Dependência a criar:* ouro base por kill (comum vs boss) — **não há catálogo de estágios/monstros no projeto hoje** (só `stage.ts` com `decodeStage`); derivar por datamine (wiki "Monstros 61" ou gamedata do `tbh-farm`, no padrão dos `scripts/gen-*.cjs`) ou permitir entrada manual, registrando a origem do valor base. *Aproximação pronta (F0, v18.0):* `stageDataForRaw(raw)` dá `expectedGold` e `count` por fase → média de ouro por kill ≈ `expectedGold / count` (não separa comum vs boss).
+- **G4 (P2):** **Calculadora de ouro por kill** — estima o ganho de ouro por abate aplicando os **bônus de ouro das runas** (categoria Ouro do catálogo) sobre o ouro base, com resultados **separados para monstro comum e boss**. *Observável:* `RuneSaveData[]` (níveis) + `runeTree.ts` (runas de ouro: efeito/valor por nível). *Dependência a criar:* ouro base por kill (comum vs boss) — **não há catálogo de estágios/monstros no projeto hoje** (só `stage.ts` com `decodeStage`); derivar por datamine (wiki "Monstros 61" ou gamedata do `tbh-farm`, no padrão dos `scripts/gen-*.cjs`) ou permitir entrada manual, registrando a origem do valor base. *Aproximação pronta (F0, v0.18.0):* `stageDataForRaw(raw)` dá `expectedGold` e `count` por fase → média de ouro por kill ≈ `expectedGold / count` (não separa comum vs boss).
 
 ### Estágio & progresso (P1/P2) — `CurrentStageKey`, `CurrentStageWave`, `MaxCompletedStage`
 - **S4 (P2):** Sugerir próximo "push" com base no máx. concluído.
@@ -19,12 +19,12 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 - **S6 (P2):** **Progresso por dificuldade/ato** — % de conclusão de Normal/Nightmare/Hell/Torment (e por ato) a partir de `maxCompletedStage` cruzado com o catálogo de estágios, em vez de só mostrar o código máximo cru. *Esforço:* 🟢.
 
 ### Corridas & eficiência de farm (P1) — `PlayTime` + ouro + XP + `CurrentStageWave`
-- **F0 (P1):** ✅ **v18.0** — **Catálogo de estágios** `src/shared/stageData.ts` (108 estágios: 4 dificuldades × 3 atos × fases 1-9; **sem boss de ato**), por chave DAPP, com **EXP/clear**, **ouro/clear**, **HP total**, **nº de inimigos**, ondas e **densidades** `goldPerHP`/`expPerHP`. Gerado por `scripts/gen-stages.cjs` (datamine de `data/farm_stages.json` do `tbh-farm`, no padrão de `gen-runes`/`gen-items`; nomes pt-BR com correção de mojibake). Helpers em `stage.ts`: `stageDataForRaw(raw)`, `rankStages(metric, {difficulty, limit})` (eficiência por densidade de HP — ouro/exp/combo) e `stagesByDifficulty()`. **Fundação da Fase 2** — desbloqueia F4, F5 e a aproximação de ouro/kill do G4.
+- **F0 (P1):** ✅ **v0.18.0** — **Catálogo de estágios** `src/shared/stageData.ts` (108 estágios: 4 dificuldades × 3 atos × fases 1-9; **sem boss de ato**), por chave DAPP, com **EXP/clear**, **ouro/clear**, **HP total**, **nº de inimigos**, ondas e **densidades** `goldPerHP`/`expPerHP`. Gerado por `scripts/gen-stages.cjs` (datamine de `data/farm_stages.json` do `tbh-farm`, no padrão de `gen-runes`/`gen-items`; nomes pt-BR com correção de mojibake). Helpers em `stage.ts`: `stageDataForRaw(raw)`, `rankStages(metric, {difficulty, limit})` (eficiência por densidade de HP — ouro/exp/combo) e `stagesByDifficulty()`. **Fundação da Fase 2** — desbloqueia F4, F5 e a aproximação de ouro/kill do G4.
 - **F1 (P1):** ⛔ **PARADO (investigado)** — Detectar fim de corrida e medir tempo/ouro/xp da janela. *Bloqueio:* o save **não tem contador de clears** e **não persiste o tempo por corrida** (ver `TBHPEDIA.md › Detecção de corridas`). Reabrir quando partirmos para detecção por **salto de ouro** + leitura mais frequente, ou pivotar para ouro/h e kills/h (exatos). Branch arquivado: `feature/run-detection` (PR #3 fechado).
-- **F2 (P1):** ✅ **v20.0** — **Ouro/h e XP/h por estágio** via delta entre leituras. Tracker `src/main/stageFarm.ts` (padrão do `goldFlow.ts`, *bucketed* por estágio): atribui delta de ouro + delta de XP (Σ `HeroExp`) + tempo ao estágio corrente. Anti-ruído: descarta troca de estágio, deltas negativos (gasto/venda/reset de XP) e intervalos longos (jogo parado). Anexado em `Snapshot.stageFarm`. *Plano técnico original (reaproveita a infra atual):* novo tracker `src/main/stageFarm.ts` no padrão de `goldFlow.ts`/`stageEvents.ts`, alimentado pelo `Tracker.readSave()` a cada leitura. A cada leitura, atribui o **delta de ouro** (e o **delta de XP** = soma de `snapshot.heroes[].exp`) ao **estágio corrente** (`snapshot.stage.raw`), mantendo amostras + taxas (janela móvel + média) **por chave de estágio** — mesma lógica do `GoldFlowTracker`, só que *bucketed*. *Anti-ruído:* descartar a amostra quando o estágio mudou entre leituras (cruzar com `stageEvents`), ignorar **deltas negativos de ouro** (gasto em runa/venda) e exigir span mínimo (como o `MIN_WINDOW_SPAN`). *Exatidão (opcional):* o save tem contadores **cumulativos** em `aggregateSaveDatas[]` (`Type 2` = ouro ganho — `SubKey 0` total, `SubKey 1/2/3` por **ato**; `Type 0` = kills por **monstro**, `SubKey 0` total — ver `TBHPEDIA.md › aggregateSaveDatas[]`). Eles **não são por fase individual** (granularidade total/ato/monstro), mas dão ouro/kills **exatos** para métricas globais e por ato — útil para validar/calibrar as taxas por estágio derivadas do delta de snapshot. *Saída:* anexar `Snapshot.stageFarm` (taxas por estágio) ao snapshot e exibir na Aba de Farm (U2).
-- **F3 (P1):** ✅ **v20.0** — Histórico persistente por estágio. `StageFarmTracker` ganhou `serialize()`/`restore()` e o namespace `stageFarm` em `src/main/history.ts`; as medições retomam por save ao reabrir (igual a `goldFlow`/`stageEvents`).
-- **F4 (P1):** ✅ **v20.0** — Recomendar melhor estágio para **ouro**, **XP** e **combo** via `rankStages` (F0), exibido na **Aba de Farm** (U2) com seletor de métrica + filtro de dificuldade e destaque do estágio atual. *Refino opcional futuro:* combinar com as **medições reais** (F2/F3) em vez de só a densidade do catálogo.
-- **F5 (P2):** Projeção para estágios ainda não medidos (modelo de tempo/retenção de XP). *Base pronta:* **F0 (v18.0)** traz HP total, EXP/clear e ouro/clear base por fase; com a penalidade de over-level (wiki) dá para extrapolar tempo/ganho a partir de poucas medições (F2).
+- **F2 (P1):** ✅ **v0.20.0** — **Ouro/h e XP/h por estágio** via delta entre leituras. Tracker `src/main/stageFarm.ts` (padrão do `goldFlow.ts`, *bucketed* por estágio): atribui delta de ouro + delta de XP (Σ `HeroExp`) + tempo ao estágio corrente. Anti-ruído: descarta troca de estágio, deltas negativos (gasto/venda/reset de XP) e intervalos longos (jogo parado). Anexado em `Snapshot.stageFarm`. *Plano técnico original (reaproveita a infra atual):* novo tracker `src/main/stageFarm.ts` no padrão de `goldFlow.ts`/`stageEvents.ts`, alimentado pelo `Tracker.readSave()` a cada leitura. A cada leitura, atribui o **delta de ouro** (e o **delta de XP** = soma de `snapshot.heroes[].exp`) ao **estágio corrente** (`snapshot.stage.raw`), mantendo amostras + taxas (janela móvel + média) **por chave de estágio** — mesma lógica do `GoldFlowTracker`, só que *bucketed*. *Anti-ruído:* descartar a amostra quando o estágio mudou entre leituras (cruzar com `stageEvents`), ignorar **deltas negativos de ouro** (gasto em runa/venda) e exigir span mínimo (como o `MIN_WINDOW_SPAN`). *Exatidão (opcional):* o save tem contadores **cumulativos** em `aggregateSaveDatas[]` (`Type 2` = ouro ganho — `SubKey 0` total, `SubKey 1/2/3` por **ato**; `Type 0` = kills por **monstro**, `SubKey 0` total — ver `TBHPEDIA.md › aggregateSaveDatas[]`). Eles **não são por fase individual** (granularidade total/ato/monstro), mas dão ouro/kills **exatos** para métricas globais e por ato — útil para validar/calibrar as taxas por estágio derivadas do delta de snapshot. *Saída:* anexar `Snapshot.stageFarm` (taxas por estágio) ao snapshot e exibir na Aba de Farm (U2).
+- **F3 (P1):** ✅ **v0.20.0** — Histórico persistente por estágio. `StageFarmTracker` ganhou `serialize()`/`restore()` e o namespace `stageFarm` em `src/main/history.ts`; as medições retomam por save ao reabrir (igual a `goldFlow`/`stageEvents`).
+- **F4 (P1):** ✅ **v0.20.0** — Recomendar melhor estágio para **ouro**, **XP** e **combo** via `rankStages` (F0), exibido na **Aba de Farm** (U2) com seletor de métrica + filtro de dificuldade e destaque do estágio atual. *Refino opcional futuro:* combinar com as **medições reais** (F2/F3) em vez de só a densidade do catálogo.
+- **F5 (P2):** Projeção para estágios ainda não medidos (modelo de tempo/retenção de XP). *Base pronta:* **F0 (v0.18.0)** traz HP total, EXP/clear e ouro/clear base por fase; com a penalidade de over-level (wiki) dá para extrapolar tempo/ganho a partir de poucas medições (F2).
 
 ### Heróis (P1) — `HeroSaveDatas[]`, `ArrangedHeroKey`
 - **H7 (P2):** Herói **líder** em destaque no card de ativos (pendência herdada de H1) — identificar/marcar o líder da formação quando observável no save.
@@ -34,7 +34,7 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 ### Itens / drops (P2) — `itemSaveDatas[]`
 - **D1 (P2):** Detectar drops novos por corrida (por `UniqueId`). *Base pronta:* catálogo `items.ts`/`itemData.ts` (D3) classifica cada `ItemKey` por tipo/raridade; falta a fronteira de corrida (depende de F1, bloqueado).
-- **D2 (P3):** Classificar por raridade (catálogo) e destacar Legendary+ (vendável no Market) **fora da aba Inventário** — ex.: nos drops/dashboard. *Base pronta:* `classifyItem` + `GRADES` (catálogo de raridade) entregues no D3 (v15.0); falta aplicar no contexto de drops.
+- **D2 (P3):** Classificar por raridade (catálogo) e destacar Legendary+ (vendável no Market) **fora da aba Inventário** — ex.: nos drops/dashboard. *Base pronta:* `classifyItem` + `GRADES` (catálogo de raridade) entregues no D3 (v0.15.0); falta aplicar no contexto de drops.
 - **D4 (P2):** **Catálogo de bônus/atributos de itens** — base para o filtro por status e a lista de seleção de bônus (ex.: "+35 de armadura"). *Fonte (datamine `tbh-farm/engine/gamedata.js`, mesmo DB do `gen-items`):* **`statStrings`** (117 tipos de bônus com **nome e template pt-BR** prontos — ex.: `"Armadura +{0}"`); **`statMods`** (620, por `id:nível`: tipo de modificador FLAT/aditivo + min/max) e **`affixRep`** (57: valor/mod/tier por stat) → faixas de valor; **`gear`** (5760: `b1`/`b2`/`inh`/`uniq`) + **`gradeSlots`** (slots de afixo por raridade) → quantos/quais bônus cada peça pode ter. *Entrega:* novo gerador `scripts/gen-stats.cjs` → `src/shared/statData.ts` + helpers em `items.ts`. **Pré-requisito do filtro por status (parte do U11).** *Em aberto (verificar contra save real):* se `itemSaveDatas[]` guarda os **afixos rolados por instância** (necessário para mostrar os bônus do item que o jogador tem) ou se só dá para mostrar os **bônus possíveis** por tipo/raridade.
 
 - **D5 (P2):** **Calculadora de derretimento (Alchemy/Cubo)** — estima **quanto ouro + XP de Cubo** você ganha derretendo o gear (Alchemy é a renda principal do jogo). *Base pronta:* o inventário (D3) já classifica por tipo/raridade/local e o datamine tem **`DB.itemSell`** (valor de venda por `ItemKey`, ~5.744 itens) e **`DB.itemCubeExp`** (XP de Cubo por item). *Saída:* total derretível do stash/inventário, **excluindo Legendary+** (vendável no Market) e equipados, com filtro por raridade/local. *Em aberto:* confirmar se "derreter" usa `itemSell` ou outra tabela; valor pode escalar com nível do item. *Esforço:* 🟢–🟡.
@@ -44,17 +44,17 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 
 ### Runas (P2) — `RuneSaveData[]`
 - **R2 (P2):** Gasto de ouro em runas para **calibrar ouro recuperado** (corridas com ouro negativo). *(Catálogo de custos já disponível em `runeTree.ts`; falta a detecção de upgrade + a calibração de ouro/h, que depende do agente de corridas.)*
-- **R3 (P2):** ✅ **v16.0** — **Runa-alvo**: marcar uma runa como alvo na aba **Runas** e calcular **quanto ouro falta** para comprá-la **considerando os pré-requisitos** (caminho de menor custo até a raiz + níveis restantes do alvo, menos o ouro atual, com progresso %). Card no Dashboard (ícone/nome, custo, falta, barra, passos) + seleção persistida (`runeTargetKey` em `tbh-tracker-config.json`). Pré-req em soul stones entra no caminho mas não soma ouro.
+- **R3 (P2):** ✅ **v0.16.0** — **Runa-alvo**: marcar uma runa como alvo na aba **Runas** e calcular **quanto ouro falta** para comprá-la **considerando os pré-requisitos** (caminho de menor custo até a raiz + níveis restantes do alvo, menos o ouro atual, com progresso %). Card no Dashboard (ícone/nome, custo, falta, barra, passos) + seleção persistida (`runeTargetKey` em `tbh-tracker-config.json`). Pré-req em soul stones entra no caminho mas não soma ouro.
 
 ### Onboarding / chave ES3 (infra)
-- **K1 (P1):** ✅ **v18.0→v19.0** *(entregue v19.0)* — **Localizar chave ES3 automaticamente**: localiza a instalação do jogo (Steam) e lê o `resources.assets` (asset `ES3Defaults` do Easy Save 3) **somente leitura**, validando as strings candidatas contra o save (a chave certa decifra para JSON). Aviso/consentimento nativo antes de ler arquivos do jogo; chave aplicada via `safeStorage` e nunca exposta ao renderer. `src/main/keyFinder.ts` + IPC `tbh:findKey`. *Pendente opcional:* suporte Proton/Linux (locator já tem os caminhos base).
+- **K1 (P1):** ✅ **v0.18.0→v0.19.0** *(entregue v0.19.0)* — **Localizar chave ES3 automaticamente**: localiza a instalação do jogo (Steam) e lê o `resources.assets` (asset `ES3Defaults` do Easy Save 3) **somente leitura**, validando as strings candidatas contra o save (a chave certa decifra para JSON). Aviso/consentimento nativo antes de ler arquivos do jogo; chave aplicada via `safeStorage` e nunca exposta ao renderer. `src/main/keyFinder.ts` + IPC `tbh:findKey`. *Pendente opcional:* suporte Proton/Linux (locator já tem os caminhos base).
 
 ### Sessão / atividade (P2) — `PlayTime`
 - **A1 (P2):** Tempo de sessão e detecção ativo vs. parado (inferido por mudança do save — **não** enumerar processo).
 - **A3 (P2):** **System tray + notificações nativas** — rodar minimizado na bandeja e **notificar fora da janela** nos eventos que já detectamos: baús transbordando (B2), level-up (H2), novo estágio máximo (S3) e runa-alvo já comprável (R3). *Base pronta:* todos esses eventos já existem no snapshot; falta só o `Tray` + `Notification` do Electron (com toggle por tipo, persistido no config) e janela "fechar = minimizar para a bandeja". *Por que vale:* é um tracker passivo que fica aberto em background — alertas só dentro da UI têm pouco alcance. *Esforço:* 🟡.
 
 ### Atualizações do jogo (P2) — fonte oficial (externo ao save)
-- **N1 (P2):** ✅ **v17.0** — **Aba Atualizações** (com U9): busca patch notes/anúncios oficiais na **Steam News API** (`ISteamNews/GetNewsForApp`, `appid=3678970`) e lista título, data, resumo (BBCode/HTML limpos) e link para o anúncio completo (abre no navegador via `shell.openExternal`). Busca no processo main (`src/main/news.ts`) com cache de 10 min e botão "Atualizar". *Segurança:* só GET HTTPS a serviço público da Steam — não interage com o jogo nem com o save. *Extra ainda pendente:* destacar quando há versão mais nova que a observada (chave/`GameAssembly` muda com patches).
+- **N1 (P2):** ✅ **v0.17.0** — **Aba Atualizações** (com U9): busca patch notes/anúncios oficiais na **Steam News API** (`ISteamNews/GetNewsForApp`, `appid=3678970`) e lista título, data, resumo (BBCode/HTML limpos) e link para o anúncio completo (abre no navegador via `shell.openExternal`). Busca no processo main (`src/main/news.ts`) com cache de 10 min e botão "Atualizar". *Segurança:* só GET HTTPS a serviço público da Steam — não interage com o jogo nem com o save. *Extra ainda pendente:* destacar quando há versão mais nova que a observada (chave/`GameAssembly` muda com patches).
 - **N2 (P2):** **Detecção de patch / catálogo desatualizado** — avisar quando o jogo foi atualizado e os catálogos (datamine) podem estar velhos. *Sinais observáveis:* mudança da **chave ES3**/`GameAssembly` (já lidos pelo `keyFinder`), aparição de `ItemKey`/estágios **fora do catálogo** durante o parsing, ou versão nova na Steam News (N1). *Saída:* banner "o jogo atualizou — regenere os catálogos (`scripts/gen-*.cjs`)". Realiza o "extra pendente" do N1. *Esforço:* 🟡.
 
 ### Recompensas offline (P3)
@@ -74,8 +74,8 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 |---|------|-------|
 | U10 (P2) | **Dashboard customizável** — flags para ligar/desligar widgets + seções colapsáveis, com layout persistido | Plano fechado (ver abaixo) |
 | U11 (P2) | **Itens na TBHPedia** com **filtro por status (bônus)** + **lista de seleção de bônus** (ex.: "+35 de armadura") | Depende de D4 (catálogo de bônus) |
-| U2 (P1) ✅ v20.0 | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Entregue: `Farm.tsx` + aba; medições F2/F3 + recomendação F4. (F1 segue bloqueado, mas a aba não depende dele) |
-| U9 (P2) ✅ v17.0 | Aba **Atualizações** (patch notes/anúncios da Steam) | Entregue junto do N1 (`Updates.tsx` + aba na navegação) |
+| U2 (P1) ✅ v0.20.0 | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Entregue: `Farm.tsx` + aba; medições F2/F3 + recomendação F4. (F1 segue bloqueado, mas a aba não depende dele) |
+| U9 (P2) ✅ v0.17.0 | Aba **Atualizações** (patch notes/anúncios da Steam) | Entregue junto do N1 (`Updates.tsx` + aba na navegação) |
 | U4 (P2) | Eventos coloridos / log de atividade | Progress, gold, level-up, chest |
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
 | U6 (P3) | i18n PT/EN | Jogo já é multilíngue |
@@ -86,7 +86,7 @@ Fluxo de ouro → Level-ups → Progresso de estágio → Baús → Marcos do Cu
 bruto), sem como esconder nada — daí a poluição. Objetivo: dar **flags para ligar/desligar** as
 ferramentas que mais importam (ou que estão em teste) e **lembrar a configuração de tela**.
 
-**Decisões fechadas (19/06/2026):** escopo **só o Dashboard** (vira v20.0); granularidade **por
+**Decisões fechadas (19/06/2026):** escopo **só o Dashboard** (próxima feature sob SemVer, ex.: v1.1.0); granularidade **por
 seção/widget** (não por card individual); layout = **toggles on/off + seções colapsáveis**
 (lembrar aberto/fechado), **sem** drag & drop; ordem dos widgets fixa (padrão atual).
 
@@ -132,7 +132,51 @@ possíveis** (catálogo) ou sobre os **itens que o jogador possui com afixos rol
 o save expor os afixos por instância (ver D4). *Esforço:* 🟡–🔴 (depende do catálogo D4 e da
 modelagem de afixos).
 
-> Itens entregues até a **v15.0** foram arquivados em `BACKLOG-HISTORICO.md` (último corte: v11–v15). Os próximos ✅ ficam aqui até o corte da v20.0.
+> Itens entregues até a **v0.15.0** foram arquivados em `BACKLOG-HISTORICO.md` (último corte: v0.11–v0.15). Os próximos ✅ ficam aqui até o corte da v0.20.0.
+
+## Épico W — TBHPedia completa: ingerir 100% das 5 wikis
+
+**Objetivo:** absorver **todo o conhecimento** das 5 wikis da comunidade (ver `FONTES.md`) e
+fazer a **TBHPedia do app conter tudo isso**, navegável e cruzado com o que já lemos do save/datamine.
+Fontes: **taskbarhero.wiki** (PT), **taskbarherowiki.com**, **taskbarhero.org**,
+**task-bar-hero.wiki**, **taskbarhero.xyz**.
+
+> **Postura/segurança:** leitura **passiva** de páginas **públicas** (mesma postura da Steam News, N1) —
+> nada de tocar no jogo. Preferir **dados estruturados/espelhos** (ex.: payload RSC de
+> `taskbarherowiki.com`; `tbh-farm` espelha `taskbarhero.wiki`) a *scraping* de HTML. Respeitar
+> **ToS/rate limit** de cada site e **manter atribuição** (cada conteúdo guarda a fonte + data de
+> coleta). Conteúdo é de fãs — versionar a proveniência e regenerar a cada patch (sinergia com N2).
+
+> **Faseado e incremental.** W0/W1 são a fundação; W2–W8 ingerem um domínio por vez (cada um já
+> entrega valor na TBHPedia); W9 unifica a navegação. *Esforço do épico:* 🔴 (grande).
+
+- **W0 (P2) — Levantamento + esquema canônico:** inventariar **o que cada uma das 5 wikis cobre**
+  (heróis, pets, runas, itens, efeitos, estágios/farm, monstros, cubo, baús, soul stones, mecânicas,
+  guias) e **como expõe os dados** (JSON/RSC estruturado vs. HTML; idiomas). Definir o **esquema
+  canônico** da TBHPedia (tópico → entrada → campos/seções, com `source`, `sourceUrl`, `lang`,
+  `fetchedAt`) e as **regras de conflito/autoridade** (qual wiki manda por domínio; PT-BR canônico;
+  dedup/merge). Saída: doc de cobertura + tipos do corpus. *Esforço:* 🟡.
+- **W1 (P2) — Pipeline de ingestão reutilizável:** geradores no padrão `scripts/gen-*.cjs`
+  (um por wiki/domínio) que **buscam, parseiam e normalizam** para o esquema do W0, com **cache do
+  bruto + proveniência** e *rate limit*. Saída: `src/shared/pedia/*` (catálogo gerado) + helpers.
+  *Esforço:* 🔴 (parsing heterogêneo entre as fontes).
+- **W2 (P2) — Domínio Heróis (completo):** stats, árvore de habilidades, builds e descrições de
+  todas as wikis. *Estende:* `heroes.ts`/H9 (já temos a base via `taskbarhero.wiki`). *Esforço:* 🟡.
+- **W3 (P2) — Domínio Runas:** preencher lacunas além do R1 (efeitos completos, prioridades,
+  notas) cruzando as fontes. *Base:* `runeTree.ts` (v0.4.0). *Esforço:* 🟡.
+- **W4 (P2) — Domínio Itens & Efeitos:** gear, **efeitos/afixos**, drops e descrições. *Sinergia:*
+  D3 (catálogo de itens) e **D4** (catálogo de bônus). *Esforço:* 🟡.
+- **W5 (P2) — Domínio Estágios/Farm/Monstros/Mapa:** além do F0 (108 fases), trazer **monstros**,
+  *threat*, bosses de ato e o mapa do mundo. *Sinergia:* F0/S5/S6 e G4 (ouro por kill). *Esforço:* 🟡.
+- **W6 (P3) — Domínio Pets/Mascotes:** catálogo completo + efeitos. *Sinergia:* **PE1**. *Esforço:* 🟡.
+- **W7 (P3) — Domínio Cubo, Baús, Soul Stones e mecânicas gerais:** Alchemy/Crafting/Decoration/
+  Removal/Engraving/Inscription/Offering, tipos de baú, soul stones, fórmulas e mecânicas. *Esforço:* 🟡.
+- **W8 (P3) — Guias & estratégias (prosa):** "Task Bar Hero 101" e guias de comunidade, como
+  artigos navegáveis (texto longo, não só tabelas). *Esforço:* 🟡.
+- **W9 (P2) — TBHPedia unificada na UI:** reconstruir a aba TBHPedia para renderizar **todo o
+  corpus** com **busca global**, **cross-links** (herói → runas/itens/estágios recomendados),
+  **atribuição de fonte** e "atualizado em <data>". Opcional: ação "atualizar das wikis" (como o
+  refresh da N1) ou geração em build. *Sinergia:* U6 (i18n, wikis são multilíngues). *Esforço:* 🟡–🔴.
 
 ## Fora de escopo (regra de segurança)
 
