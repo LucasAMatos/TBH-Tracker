@@ -30,7 +30,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | A1 | P2 | Tempo de sessão / ativo vs. parado | Inferir por mudança do save |
 | U4 | P2 | Eventos coloridos / log | Depende de G3/H2/S3 (detecção de eventos) |
 | U5 | P3 | Gráficos de sessão | Depende de histórico em memória |
-| U11 | P2 | Itens na TBHPedia + filtro por status (bônus) + lista de seleção | Depende de D4; modelagem de afixos pode puxar pro 🔴 |
 | U6 | P3 | i18n PT/EN | Trabalho amplo, porém mecânico |
 | G4 | P2 | Calculadora de ouro por kill | Bônus de runa pronto; falta o ouro base por kill (catálogo de monstros) |
 

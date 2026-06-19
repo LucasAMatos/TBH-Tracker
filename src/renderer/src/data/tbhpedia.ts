@@ -14,6 +14,8 @@ export interface PediaSection {
   intro?: string[]
   tables?: PediaTable[]
   notes?: string[]
+  // Seção com conteúdo interativo (renderizada por um componente dedicado, não por tabelas).
+  custom?: 'itemBonus'
 }
 
 export const TBHPEDIA: PediaSection[] = [
@@ -191,6 +193,19 @@ export const TBHPEDIA: PediaSection[] = [
       }
     ],
     notes: ['Remover sockets antes de listar no Market.']
+  },
+  {
+    id: 'bonus-itens',
+    title: 'Bônus de itens',
+    icon: '✨',
+    intro: [
+      'Catálogo dos bônus/atributos que itens podem conceder (ex.: "Armadura +35"), com a faixa de valor e o tipo de modificador. Use a busca e o filtro para montar sua lista de seleção.'
+    ],
+    notes: [
+      'Faixas (min–max) vêm da tabela de rolagem do datamine; o valor exato de cada item depende da rolagem e do nível do afixo.',
+      'Mostrar os bônus rolados do item que você tem depende dos afixos por instância no save (a verificar) — aqui ficam os bônus possíveis por status.'
+    ],
+    custom: 'itemBonus'
   },
   {
     id: 'baus',

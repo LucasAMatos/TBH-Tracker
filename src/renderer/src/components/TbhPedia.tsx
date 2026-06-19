@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TBHPEDIA, type PediaSection, type PediaTable } from '../data/tbhpedia'
+import { ItemBonusExplorer } from './ItemBonusExplorer'
 
 function PediaTableView({ table }: { table: PediaTable }): JSX.Element {
   return (
@@ -38,6 +39,7 @@ function SectionView({ section }: { section: PediaSection }): JSX.Element {
           {p}
         </p>
       ))}
+      {section.custom === 'itemBonus' && <ItemBonusExplorer />}
       {section.tables?.map((t, i) => (
         <PediaTableView key={i} table={t} />
       ))}

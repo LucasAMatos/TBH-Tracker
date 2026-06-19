@@ -61,8 +61,9 @@ O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não
 > Aplicativo / engenharia` (I9 diagnóstico, N2 detecção de patch).
 >
 > **Catálogo de bônus de itens** (✅ v1.6.0 / D4 — `gen-stats.cjs` → `statData.ts` + `stats.ts`):
-> tipos de status pt-BR, faixas de rolagem e slots por raridade. Foundation do **U11** (itens na
-> TBHPedia + filtro/seleção por status) e insumo do futuro modelo de stats (H10/H11).
+> tipos de status pt-BR, faixas de rolagem e slots por raridade. Foundation do **U11** (✅ v1.7.0 —
+> seção "Bônus de itens" na TBHPedia: busca + filtro por modificador + faixas) e insumo do futuro
+> modelo de stats (H10/H11).
 
 ## 5. Estrutura de docs
 
