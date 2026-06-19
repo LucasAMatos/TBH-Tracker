@@ -17,6 +17,7 @@ export const DASHBOARD_WIDGETS: WidgetDef[] = [
   { id: 'levelUps', title: 'Level-ups', collapsible: true, defaultOn: true },
   { id: 'stageProgress', title: 'Progresso de estágio', collapsible: true, defaultOn: true },
   { id: 'boxes', title: 'Baús por tipo', collapsible: true, defaultOn: true },
+  { id: 'inventoryRarity', title: 'Raridade do inventário', collapsible: true, defaultOn: true },
   { id: 'cubeMilestones', title: 'Marcos do Cubo', collapsible: true, defaultOn: true },
   { id: 'activeHeroes', title: 'Heróis ativos', collapsible: true, defaultOn: true },
   { id: 'rawJson', title: 'JSON bruto (calibração)', collapsible: true, defaultOn: false }

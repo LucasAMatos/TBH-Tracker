@@ -2137,3 +2137,82 @@ body {
 .progress__act--done {
   color: var(--ok);
 }
+
+/* Raridade do inventário no Dashboard (D2) */
+.rarityhi {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  margin-bottom: 12px;
+}
+
+.rarityhi--on {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.rarityhi__count {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rarityhi--on .rarityhi__count {
+  color: #f59e0b;
+}
+
+.rarityhi__label {
+  font-weight: 600;
+}
+
+.rarityhi__sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.rarityhi__total {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.raritystrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.raritychip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.raritychip--mkt {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.raritychip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.raritychip__name {
+  font-weight: 600;
+}
+
+.raritychip__count {
+  color: var(--text-dim);
+}
