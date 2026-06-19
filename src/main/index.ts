@@ -1,9 +1,12 @@
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { findEs3Key } from './keyFinder'
+import { locateSave } from './locator'
 import { fetchNews } from './news'
 import * as store from './store'
 import { Tracker } from './tracker'
-import type { TrackerState } from '@shared/types'
+import type { KeyFindResult, TrackerState } from '@shared/types'
 
 let mainWindow: BrowserWindow | null = null
 let tracker: Tracker | null = null
@@ -76,6 +79,39 @@ function registerIpc(): void {
 
   ipcMain.handle('tbh:getRuneTarget', () => store.getRuneTarget())
   ipcMain.handle('tbh:setRuneTarget', (_e, key: number | null) => store.setRuneTarget(key))
+
+  // Descoberta automatica da chave ES3 nos arquivos do jogo (leitura passiva em disco).
+  // Mostra um aviso/consentimento ANTES de ler qualquer arquivo do jogo.
+  ipcMain.handle('tbh:findKey', async (): Promise<KeyFindResult> => {
+    const savePath = store.getSavePathOverride() ?? locateSave()
+    if (!savePath || !existsSync(savePath)) return { status: 'no-save' }
+
+    const choice = await dialog.showMessageBox(mainWindow!, {
+      type: 'warning',
+      buttons: ['Cancelar', 'Continuar'],
+      defaultId: 1,
+      cancelId: 0,
+      title: 'Localizar a chave automaticamente',
+      message: 'Procurar a chave de descriptografia nos arquivos do jogo?',
+      detail:
+        'O TBH-Tracker vai LER (somente leitura) os arquivos de instalação do jogo no ' +
+        'disco — em especial o "resources.assets", onde o Easy Save 3 guarda a senha do ' +
+        'save — e testá-la contra o seu save.\n\n' +
+        'Isto NÃO toca no processo nem na memória do jogo, NÃO injeta nada, NÃO modifica ' +
+        'nenhum arquivo e NÃO acessa a internet. É a mesma postura passiva da leitura do ' +
+        'save. A chave fica guardada localmente e cifrada pelo sistema.',
+      noLink: true
+    })
+    if (choice.response !== 1) return { status: 'cancelled' }
+
+    const result = findEs3Key(savePath)
+    if (result.status === 'found' && result.key) {
+      store.setKey(result.key)
+      tracker?.refresh()
+    }
+    // Nao devolve a chave ao renderer; ela vive so no processo main + store cifrada.
+    return { status: result.status, gamePath: result.gamePath, message: result.message }
+  })
 
   ipcMain.handle('tbh:getNews', (_e, force?: boolean) => fetchNews(force === true))
   ipcMain.handle('tbh:openExternal', (_e, url: string) => {

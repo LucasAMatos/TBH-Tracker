@@ -6,11 +6,11 @@ Tracker **somente leitura** para **TBH: Task Bar Hero**. Lê o save do jogo, int
 
 O jogo roda anti-cheat (ACTk) que escaneia processos em segundo plano. Para não dar nenhum motivo técnico de detecção, o tracker:
 
-1. **Só lê** o arquivo de save (`SaveFile_Live.es3`), relendo apenas quando ele muda no disco.
+1. **Só lê arquivos em disco** — o save (`SaveFile_Live.es3`, relendo só quando muda) e, **opcionalmente e com aviso/consentimento explícito**, os arquivos de **instalação do jogo** (ex.: `resources.assets`) para **descobrir a chave ES3 automaticamente** (v19.0). Tudo é leitura passiva de arquivo; nada é executado nem alterado.
 2. **Nunca** lê/escreve a memória do jogo, anexa a processos, injeta DLL ou automatiza input.
-3. **Nunca** modifica o save nem força qualquer comportamento no jogo.
+3. **Nunca** modifica o save, os arquivos do jogo, nem força qualquer comportamento no jogo.
 4. É **externo e passivo** — mesmo padrão das ferramentas open-source da comunidade (tbh-farm, tbh-copilot, TBH-Optimizer).
-5. Mantém **transparência**: documenta o risco residual; a decisão de uso é do jogador.
+5. Mantém **transparência**: documenta o risco residual e **avisa antes** de ler arquivos do jogo; a decisão de uso é do jogador.
 
 ## 2. Blocos de construção (independente de stack)
 

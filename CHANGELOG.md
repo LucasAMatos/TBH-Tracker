@@ -14,6 +14,35 @@ Exemplos: `v1.0` → nova feature → `v2.0`; `v2.0` → correção → `v2.1`.
 
 ---
 
+## v19.0 — Descoberta automática da chave ES3 (onboarding)
+
+### Adicionado
+- **Localizar chave automaticamente:** novo botão no painel de configuração que descobre a
+  **chave de descriptografia ES3** sem digitação. Fluxo: localiza a instalação do jogo
+  (Steam: registro → `libraryfolders.vdf` → `appmanifest_3678970.acf`), lê **somente em
+  modo leitura** o `resources.assets` (onde o **Easy Save 3** guarda a senha no asset
+  `ES3Defaults`), extrai as strings candidatas e **valida cada uma contra o save real** —
+  a chave correta é a que descriptografa o save para JSON válido (~120 ms via busca
+  ancorada no marcador `ES3Defaults`).
+- **Aviso/consentimento antes de ler arquivos do jogo:** um popup nativo explica que a
+  operação é **somente leitura** de arquivos em disco, **não** toca no processo/memória do
+  jogo, **não** injeta nada, **não** modifica nada e **não** acessa a internet. Só prossegue
+  se o usuário confirmar.
+- `src/main/keyFinder.ts` (locator do jogo + extração/validação da chave) e IPC
+  `tbh:findKey`. A chave encontrada é aplicada via `store.setKey` (cifrada por `safeStorage`)
+  e **nunca é devolvida ao renderer** — vive só no processo main.
+
+### Notas / segurança
+- **Mudança de postura (documentada em `PLAN.md`):** o tracker agora pode ler — **com aviso
+  explícito** — arquivos de **instalação do jogo** além do save. Continua 100% passivo: só
+  leitura de arquivo em disco, mesmo princípio da leitura do save.
+- Fallbacks: sem save → pede para abrir o jogo uma vez; sem instalação localizada ou chave
+  não encontrada → orienta colar manualmente (entrada manual segue disponível).
+- A chave **não acompanha o repositório**; é descoberta localmente a partir dos arquivos do
+  próprio usuário.
+
+---
+
 ## v18.0 — Catálogo de estágios: ouro/EXP/HP por fase (F0)
 
 ### Adicionado

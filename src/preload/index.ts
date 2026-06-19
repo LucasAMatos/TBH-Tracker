@@ -21,7 +21,8 @@ const api = {
   getRuneTarget: () => ipcRenderer.invoke('tbh:getRuneTarget'),
   setRuneTarget: (key: number | null) => ipcRenderer.invoke('tbh:setRuneTarget', key),
   getNews: (force?: boolean) => ipcRenderer.invoke('tbh:getNews', force),
-  openExternal: (url: string) => ipcRenderer.invoke('tbh:openExternal', url)
+  openExternal: (url: string) => ipcRenderer.invoke('tbh:openExternal', url),
+  findKey: () => ipcRenderer.invoke('tbh:findKey')
 }
 
 contextBridge.exposeInMainWorld('tbh', api)

@@ -36,9 +36,15 @@ npm run preview
 1. Abra o app. Ele tenta localizar o save automaticamente em
    `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Live.es3`.
    Se não achar, use **Escolher SaveFile_Live.es3**.
-2. Cole a **chave de descriptografia ES3** (extraída do `GameAssembly.dll`). Ela é guardada
-   localmente e **cifrada pelo sistema operacional** (`safeStorage`); nunca sai da máquina
-   nem é commitada.
+2. Informe a **chave de descriptografia ES3**, de uma de duas formas:
+   - **Localizar automaticamente** (recomendado): clique em **Localizar chave**. Após um
+     **aviso de consentimento**, o app lê (somente leitura) os arquivos de instalação do
+     jogo — o `resources.assets`, onde o Easy Save 3 guarda a senha — e a valida contra o
+     seu save. Não toca no processo/memória do jogo e não acessa a internet.
+   - **Manual**: cole a chave no campo e clique em **Salvar**.
+
+   A chave é guardada localmente e **cifrada pelo sistema operacional** (`safeStorage`);
+   nunca sai da máquina nem é commitada.
 3. O dashboard começa a monitorar e re-lê o save automaticamente quando ele muda no disco.
 
 > A chave ES3 **não** acompanha este repositório por questões legais e de segurança — você
@@ -51,6 +57,7 @@ src/
   main/          processo principal (Node): leitura passiva do save
     es3.ts       descriptografia Easy Save 3 (AES-128-CBC + PBKDF2-SHA1)
     locator.ts   localiza o SaveFile_Live.es3 (Windows/Proton)
+    keyFinder.ts descobre a chave ES3 no resources.assets do jogo (passivo, com aviso)
     watcher.ts   file watcher com fingerprint (relê só quando muda)
     parser.ts    JSON do save -> snapshot tipado (busca defensiva)
     store.ts     config local (chave via safeStorage, override de caminho)
