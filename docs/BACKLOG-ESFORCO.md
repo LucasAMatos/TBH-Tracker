@@ -48,10 +48,9 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 |---|-----------|------|-------------------|
 | H10 | P2 | Modelo de stats do personagem (derivar todos os status) | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 |
 | H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
-| D1 | P2 | Detectar drops novos por corrida | Depende de fronteira de corrida (F1, bloqueado) |
+| D1 | P2 | Detectar drops novos por corrida | Depende da **fronteira de corrida**, que segue inviável pelo save (o F1 entregou só eficiência/clears estimados, não a corrida individual) |
 | F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v0.20.0) |
 | R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
-| F1 | P1 | ⛔ Detectar fim de corrida | **Bloqueado** — save não persiste tempo/clears por corrida |
 | W1 | P2 | Épico W: pipeline de ingestão das wikis | Parsing heterogêneo (RSC/HTML/espelho) + normalização; fundação do épico |
 | W9 | P2 | Épico W: TBHPedia unificada na UI | Busca global + cross-links + atribuição sobre todo o corpus |
 

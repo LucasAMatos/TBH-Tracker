@@ -166,11 +166,13 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 
 #### `aggregateSaveDatas[]` — estatísticas cumulativas `{Type, SubKey, Value}` (validado)
 
-- **`Type 0`** = kills por monstro (`SubKey` = ID do monstro; `SubKey 0` = total de kills). No estágio 1‑1, ~11 kills por clear (= nº de monstros do estágio).
+- **`Type 0`** = kills por monstro (`SubKey` = ID do monstro; `SubKey 0` = total de kills). No estágio 1‑1, ~11 kills por clear (= nº de monstros do estágio). ✅ **Usado no F1** (`SubKey 0` → `Snapshot.totalKills`): o delta de kills por estágio ÷ `stageData.count` estima clears/clears-h/tempo por clear.
 - **`Type 2`** = ouro ganho cumulativo (`SubKey 0` = total; `SubKey 1/2/3` = por ato).
 - **`Type 15` / `Type 16`** = contadores ligados a **tempo/progresso**, **NÃO a clears** (Type 15 sobe ~1 por minuto). ⚠️ Não usar como contador de corridas.
 
-#### Detecção de corridas — achados (item F1 PARADO)
+#### Detecção de corridas — achados (F1 entregue como eficiência/clears estimados)
+
+> **F1 (v1.2.0):** entregue o pivô (b) abaixo — **clears estimados** por estágio (Δkills ÷ `stageData.count`), com clears/h, tempo médio por clear e ouro/xp por clear na Aba Farm. O que segue **inviável** é o tempo/fronteira por **corrida individual**:
 
 Investigação concluída: **não dá (hoje) para medir o tempo por corrida individual a partir do save.** Resumo:
 
@@ -178,4 +180,4 @@ Investigação concluída: **não dá (hoje) para medir o tempo por corrida indi
 2. **O tempo por corrida NÃO é persistido.** Só há `playTime` (cumulativo) e `lastSavedTime` (.NET ticks da gravação). Não há campo de tempo/recorde por estágio. O `Player.log` só tem debug (contagem de baús, erros de Steam, `[OfflineReward]`); o log com timestamp na tela (`settingSaveData.LogShowTime`) é UI em memória, não vai pro disco.
 3. **Cadência de save esparsa e fora de ciclo** (~28‑30s, com backups rotativos `SaveFile_Live_N.es3.bak`); `currentStageWave` quase sempre é capturado em 0 — cedo/tarde demais para reconstruir corridas de ~26s.
 
-**Caminhos para retomar:** (a) detecção por **salto de ouro** auto‑calibrando o *lump* por estágio + leitura mais frequente (~30s) → tempo aproximado por corrida; (b) pivotar para **ouro/h, kills/h e clears estimados**, que são exatos e robustos ao intervalo de leitura.
+**Caminhos:** (a) detecção por **salto de ouro** auto‑calibrando o *lump* por estágio + leitura mais frequente (~30s) → tempo aproximado por corrida — **não seguido** (cadência do save limita); (b) ✅ **entregue (F1, v1.2.0)** — pivô para **clears estimados, clears/h e tempo médio por clear** (via kills ÷ inimigos por clear), exatos e robustos ao intervalo de leitura.

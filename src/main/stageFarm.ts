@@ -1,9 +1,11 @@
+import { stageDataForRaw } from '@shared/stage'
 import type { StageFarm, StageFarmEntry } from '@shared/types'
 
 // Acumulado por estágio (estado serializável para persistência entre sessões, F3).
 interface StageBucket {
   goldGained: number
   expGained: number
+  killsGained: number
   seconds: number
   reads: number
   lastAt: number
@@ -16,6 +18,7 @@ export interface StageFarmState {
   lastStageRaw: string | null
   lastGold: number | null
   lastExp: number | null
+  lastKills: number | null
 }
 
 // Intervalo máximo (s) entre duas leituras para atribuir o tempo a um estágio. O save é
@@ -38,7 +41,10 @@ const MIN_SECONDS_FOR_RATE = 20
  *  - deltas negativos (gasto de ouro/venda; reset de XP em level-up) → contam como 0;
  *  - intervalos longos (jogo fechado/parado) → descartados.
  *
- * É uma aproximação por snapshot — sem contador de clears nem tempo por corrida (F1).
+ * Eficiência de farm (F1): além de ouro/XP, atribui o **delta de kills** (aggregate Type 0)
+ * ao estágio; dividindo pelo nº de inimigos por clear do catálogo (F0) estima **clears**,
+ * **clears/h** e **tempo médio por clear**. O tempo por corrida individual continua fora de
+ * escopo (o save não persiste fronteira/tempo por corrida).
  */
 export class StageFarmTracker {
   private stages: Record<string, StageBucket> = {}
@@ -46,6 +52,7 @@ export class StageFarmTracker {
   private lastStageRaw: string | null = null
   private lastGold: number | null = null
   private lastExp: number | null = null
+  private lastKills: number | null = null
 
   reset(): void {
     this.stages = {}
@@ -53,6 +60,7 @@ export class StageFarmTracker {
     this.lastStageRaw = null
     this.lastGold = null
     this.lastExp = null
+    this.lastKills = null
   }
 
   /** Estado serializável (para persistir entre sessões, F3). */
@@ -62,7 +70,8 @@ export class StageFarmTracker {
       lastAt: this.lastAt,
       lastStageRaw: this.lastStageRaw,
       lastGold: this.lastGold,
-      lastExp: this.lastExp
+      lastExp: this.lastExp,
+      lastKills: this.lastKills
     }
   }
 
@@ -73,6 +82,11 @@ export class StageFarmTracker {
     this.lastStageRaw = state?.lastStageRaw ?? null
     this.lastGold = state?.lastGold ?? null
     this.lastExp = state?.lastExp ?? null
+    this.lastKills = state?.lastKills ?? null
+    // Retrocompat: histórico F3 antigo não tinha killsGained por estágio.
+    for (const bucket of Object.values(this.stages)) {
+      if (typeof bucket.killsGained !== 'number') bucket.killsGained = 0
+    }
   }
 
   /**
@@ -83,7 +97,8 @@ export class StageFarmTracker {
     at: number,
     stageRaw: string | null,
     gold: number | null,
-    totalExp: number | null
+    totalExp: number | null,
+    totalKills: number | null
   ): StageFarm | null {
     const canAttribute =
       this.lastAt !== null &&
@@ -104,6 +119,9 @@ export class StageFarmTracker {
         if (totalExp !== null && this.lastExp !== null) {
           bucket.expGained += Math.max(0, totalExp - this.lastExp)
         }
+        if (totalKills !== null && this.lastKills !== null) {
+          bucket.killsGained += Math.max(0, totalKills - this.lastKills)
+        }
       }
     }
 
@@ -112,6 +130,7 @@ export class StageFarmTracker {
     this.lastStageRaw = stageRaw
     if (gold !== null) this.lastGold = gold
     if (totalExp !== null) this.lastExp = totalExp
+    if (totalKills !== null) this.lastKills = totalKills
 
     return this.current(stageRaw)
   }
@@ -119,7 +138,14 @@ export class StageFarmTracker {
   private bucket(stageRaw: string): StageBucket {
     return (
       this.stages[stageRaw] ??
-      (this.stages[stageRaw] = { goldGained: 0, expGained: 0, seconds: 0, reads: 0, lastAt: 0 })
+      (this.stages[stageRaw] = {
+        goldGained: 0,
+        expGained: 0,
+        killsGained: 0,
+        seconds: 0,
+        reads: 0,
+        lastAt: 0
+      })
     )
   }
 
@@ -130,14 +156,25 @@ export class StageFarmTracker {
     const entries: StageFarmEntry[] = keys.map((stageRaw) => {
       const b = this.stages[stageRaw]
       const rateOk = b.seconds >= MIN_SECONDS_FOR_RATE
+      // Clears estimados (F1): kills atribuídos / inimigos-por-clear do catálogo (F0).
+      // Sem catálogo (boss de ato etc.) ou sem kills → clears indisponível.
+      const perClear = stageDataForRaw(stageRaw)?.count ?? null
+      const clears = perClear && perClear > 0 ? b.killsGained / perClear : null
+      const hasClears = clears !== null && clears > 0
       return {
         stageRaw,
         goldGained: Math.round(b.goldGained),
         expGained: Math.round(b.expGained),
+        killsGained: Math.round(b.killsGained),
         seconds: b.seconds,
         reads: b.reads,
         goldPerHour: rateOk ? (b.goldGained / b.seconds) * 3600 : null,
         expPerHour: rateOk ? (b.expGained / b.seconds) * 3600 : null,
+        clears,
+        clearsPerHour: rateOk && clears !== null ? (clears / b.seconds) * 3600 : null,
+        secondsPerClear: hasClears ? b.seconds / (clears as number) : null,
+        goldPerClear: hasClears ? b.goldGained / (clears as number) : null,
+        expPerClear: hasClears ? b.expGained / (clears as number) : null,
         lastAt: b.lastAt
       }
     })

@@ -21,6 +21,29 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.2.0 — Eficiência de farm por estágio: clears estimados (F1)
+
+### Adicionado
+- **Clears estimados por estágio (F1):** a Aba Farm agora mostra, por estágio medido,
+  **clears/h**, **tempo médio por clear** e **clears acumulados (estimados)**. A estimativa é
+  `kills no estágio ÷ inimigos por clear` (catálogo F0, `stageData.count`).
+- **Leitura do total de kills:** o parser passou a ler `aggregateSaveDatas` **Type 0 / SubKey 0**
+  (total de kills cumulativo) em `Snapshot.totalKills`.
+- **`StageFarmTracker` estendido:** atribui o **delta de kills** ao estágio corrente (mesmo
+  anti-ruído de ouro/XP — troca de estágio, deltas negativos e intervalos longos são
+  descartados) e deriva clears, clears/h, tempo/clear, ouro/clear e xp/clear. O histórico F3
+  ganhou `killsGained` por estágio (retrocompatível com saves antigos: assume 0).
+
+### Notas / limitações
+- **Clears são estimados** (kills ÷ inimigos por clear) e o **tempo por clear é derivado** dessa
+  estimativa — robusto ao intervalo de leitura, mas é uma aproximação.
+- **Fora de escopo (segue inviável pelo save):** tempo/fronteira por **corrida individual** — o
+  save não persiste contador de clears nem tempo por corrida. Por isso o D1 (drops por corrida)
+  continua bloqueado.
+- Estágios fora do catálogo (ex.: boss de ato) não têm estimativa de clears.
+
+---
+
 ## v1.1.0 — Dashboard customizável: liga/desliga e recolhe widgets (U10)
 
 ### Adicionado
