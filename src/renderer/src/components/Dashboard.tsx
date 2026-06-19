@@ -10,6 +10,8 @@ import {
 } from '@shared/boxes'
 import { CUBE_MILESTONES, isMilestoneReached, nextCubeMilestone } from '@shared/cube'
 import { GRADES } from '@shared/items'
+import { petById, petEffectLines, petUnlockLabel } from '@shared/pets'
+import { PET_LIST } from '@shared/petData'
 import { planRuneTarget, RUNE_CATEGORY_META } from '@shared/runes'
 import {
   DEFAULT_DASHBOARD_LAYOUT,
@@ -19,6 +21,7 @@ import {
   type HeroEvents,
   type HeroSnapshot,
   type InventorySummary,
+  type PetSnapshot,
   type RuneTargetPlan,
   type Snapshot,
   type StageEvents,
@@ -549,6 +552,71 @@ function InventoryRarityBody({ inventory }: { inventory: InventorySummary }): JS
   )
 }
 
+// PE1: progresso de pets (desbloqueado/bloqueado) + bônus do pet ATIVO. O bônus não é
+// cumulativo: apenas o pet equipado concede seu efeito. Catálogo (nome/efeitos) em petData.ts.
+function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
+  const unlockedSet = new Set(pets.filter((p) => p.unlocked).map((p) => p.key))
+  const total = PET_LIST.length
+  const activeKey = pets.find((p) => p.active && p.unlocked)?.key ?? null
+  const activePet = activeKey !== null ? petById(activeKey) : undefined
+  // Lista os 8 pets do catálogo (ordem fixa), marcando o estado do save.
+  const rows = PET_LIST.map((def) => ({
+    def,
+    unlocked: unlockedSet.has(def.key),
+    active: def.key === activeKey
+  }))
+
+  return (
+    <>
+      <div className={`petshi${unlockedSet.size > 0 ? ' petshi--on' : ''}`}>
+        <span className="petshi__count">
+          {unlockedSet.size}/{total}
+        </span>
+        <span className="petshi__label">pets desbloqueados</span>
+      </div>
+
+      {activePet ? (
+        <div className="petsbonus">
+          <h4 className="petsbonus__title">Bônus ativo · {activePet.name}</h4>
+          <ul className="petsbonus__list">
+            {petEffectLines(activePet).map((line, i) => (
+              <li className="petsbonus__item" key={i}>
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="card__hint">
+          O bônus não é cumulativo: apenas o pet ativo (equipado) concede seu efeito
+          {unlockedSet.size > 0 ? ' — equipe um pet no jogo.' : '. Nenhum pet desbloqueado ainda.'}
+        </p>
+      )}
+
+      <ul className="petslist">
+        {rows.map(({ def, unlocked, active }) => (
+          <li
+            className={`petrow${unlocked ? ' petrow--on' : ''}${active ? ' petrow--active' : ''}`}
+            key={def.key}
+          >
+            <span
+              className="petrow__state"
+              title={active ? 'Ativo (equipado)' : unlocked ? 'Desbloqueado' : 'Bloqueado'}
+            >
+              {active ? '★' : unlocked ? '✓' : '🔒'}
+            </span>
+            <div className="petrow__main">
+              <span className="petrow__name">{def.name}</span>
+              <span className="petrow__effects">{petEffectLines(def).join(' · ')}</span>
+            </div>
+            <span className="petrow__unlock">{petUnlockLabel(def.unlock)}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
 // I7: o JSON bruto é lido sob demanda (IPC `getRawSave`) só quando este widget abre,
 // em vez de viajar no snapshot a cada atualização do save.
 function RawJsonBody(): JSX.Element {
@@ -834,6 +902,12 @@ export function Dashboard({
       {s.inventory && s.inventory.gearCount > 0 && (
         <Widget id="inventoryRarity" layout={layout} onToggleCollapse={toggleCollapse}>
           <InventoryRarityBody inventory={s.inventory} />
+        </Widget>
+      )}
+
+      {s.pets && s.pets.length > 0 && (
+        <Widget id="pets" layout={layout} onToggleCollapse={toggleCollapse}>
+          <PetsBody pets={s.pets} />
         </Widget>
       )}
 

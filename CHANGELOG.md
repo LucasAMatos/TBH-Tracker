@@ -21,6 +21,29 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.8.0 — Pets no Dashboard: desbloqueio + bônus ativos (PE1)
+
+### Adicionado
+- **Catálogo de pets (PE1):** novo gerador `scripts/gen-pets.cjs` → `src/shared/petData.ts`
+  (8 pets) com **nome pt-BR**, **condição de desbloqueio** (`KillMonster`/`DLC`) + `param1`, e os
+  **efeitos** (`{st, mt, v}`, com `st` referenciando o catálogo de status do D4).
+- **Leitura do save:** o parser agora lê `PetSaveData[]` (`PetKey`/`IsUnlock`) → `snapshot.pets`
+  (`PetSnapshot[]`).
+- **Helper `src/shared/pets.ts`:** `petEffectLines` (efeitos formatados via `formatStatLine` do D4),
+  `petUnlockLabel` e `petById`.
+- **Widget "Pets" no Dashboard (U10):** mostra **desbloqueados/total**, o **bônus do pet ativo**
+  (equipado) e a lista dos 8 pets (estado bloqueado/desbloqueado/ativo + efeitos + como obter).
+  Liga/desliga e colapsável como os demais widgets.
+- **Testes:** `test/pets.test.ts` (catálogo, formatação) — suíte sobe para 69.
+
+### Notas
+- O bônus de pets **não é cumulativo**: apenas o pet **ativo/equipado** concede seu efeito (correção
+  da hipótese inicial de soma). O parser tenta detectar o pet ativo no save de forma tolerante
+  (flag de equipado por entrada e/ou chave de pet equipado) — o campo exato do save ainda está
+  sendo confirmado; sem ele, a lista ainda mostra o bônus de cada pet e a regra de "só o ativo".
+
+---
+
 ## v1.7.0 — Bônus de itens na TBHPedia: busca + filtro por status (U11)
 
 ### Adicionado
