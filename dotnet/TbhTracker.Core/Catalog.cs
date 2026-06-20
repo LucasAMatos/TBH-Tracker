@@ -27,6 +27,10 @@ public static class Catalog
     private static readonly Lazy<List<PediaSection>> _pedia = new(() => Load<List<PediaSection>>("tbhpedia.json"));
     private static readonly Lazy<List<WidgetDef>> _widgets = new(() => Load<List<WidgetDef>>("dashboardWidgets.json"));
 
+    // Corpus da TBHPedia (Epico W) — recursos em Data/pedia/<dominio>.json.
+    private static readonly Lazy<PediaCorpus<PetEntry>> _pediaPets =
+        new(() => Load<PediaCorpus<PetEntry>>("pedia.pets.json"));
+
     public static RuneTreeData Runes => _runes.Value;
     public static StatDataModel Stats => _stats.Value;
     public static ItemDataModel Items => _items.Value;
@@ -35,4 +39,5 @@ public static class Catalog
     public static List<HeroCatalogEntry> Heroes => _heroes.Value;
     public static List<PediaSection> Pedia => _pedia.Value;
     public static List<WidgetDef> Widgets => _widgets.Value;
+    public static PediaCorpus<PetEntry> PediaPets => _pediaPets.Value;
 }

@@ -12,6 +12,7 @@
     "gen:stats": "node scripts/gen-stats.cjs",
     "gen:items": "node scripts/gen-items.cjs",
     "gen:attributes": "node scripts/gen-attributes.cjs",
+    "gen:pedia-pets": "node scripts/gen-pedia-pets.cjs",
     "export-json": "node scripts/export-json.cjs"
   },
   "devDependencies": {
