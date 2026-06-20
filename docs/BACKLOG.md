@@ -182,6 +182,16 @@ Fontes: **taskbarhero.wiki** (PT), **taskbarherowiki.com**, **taskbarhero.org**,
   **atribuição de fonte** e "atualizado em <data>". Opcional: ação "atualizar das wikis" (como o
   refresh da N1) ou geração em build. *Sinergia:* U6 (i18n, wikis são multilíngues). *Esforço:* 🟡–🔴.
 
+## Bugs conhecidos (não corrigir agora — período de estabilidade)
+
+- **BUG-1 — Runa-alvo aceita runa já no nível máximo (R3):** é possível clicar **"Definir como
+  alvo"** numa runa que já está no **nível máximo** (`level >= node.MaxLevel`). Nesse caso não há
+  ouro a faltar, então o card de runa-alvo no Dashboard fica sem sentido (alvo já 100%). *Onde:* o
+  botão em `dotnet/TbhTracker.App/Components/Tabs/RuneTree.razor` (~linha 252) é renderizado sem
+  checar `maxed`. *Correção futura:* esconder/desabilitar "Definir como alvo" quando a runa
+  selecionada está no nível máximo (e, idealmente, validar também em `ToggleTarget`/`TrackerApi`).
+  *Status:* anotado, **não corrigir agora**.
+
 ## Fora de escopo (regra de segurança)
 
 - Qualquer leitura/escrita de memória do jogo.
