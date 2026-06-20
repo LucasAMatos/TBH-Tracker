@@ -1,0 +1,99 @@
+@inject TrackerApi Api
+
+<div class="updates">
+    <div class="updates__head">
+        <div>
+            <h2 class="updates__title">Atualizações do jogo</h2>
+            <p class="card__hint">
+                Patch notes e anúncios oficiais via Steam News (TBH · App 3678970). Só leitura de
+                um serviço público — não toca no jogo nem no save.
+            </p>
+        </div>
+        <button class="btn btn--ghost btn--sm" @onclick="() => Load(true)" disabled="@_loading">
+            @(_loading ? "Atualizando…" : "Atualizar")
+        </button>
+    </div>
+
+    @{
+        var items = _feed?.Items ?? new List<NewsItem>();
+    }
+
+    @if (_feed?.Error != null)
+    {
+        <div class="alert alert--warn">
+            Não foi possível buscar as atualizações (@_feed.Error).@(items.Count > 0 ? " Exibindo o último resultado carregado." : "")
+        </div>
+    }
+
+    @if (_loading && items.Count == 0)
+    {
+        <p class="card__hint">Carregando anúncios…</p>
+    }
+    else if (items.Count == 0)
+    {
+        <p class="card__hint">
+            Nenhum anúncio disponível @(_feed?.Error != null ? "no momento" : "ainda"). Tente "Atualizar".
+        </p>
+    }
+    else
+    {
+        <ul class="newslist">
+            @foreach (var item in items)
+            {
+                <li class="newscard">
+                    <div class="newscard__meta">
+                        <span class="newscard__feed">@item.FeedLabel</span>
+                        <span class="newscard__date">@FmtDate(item.Date)</span>
+                    </div>
+                    <button class="newscard__title" @onclick="() => Open(item.Url)">@item.Title</button>
+                    @if (!string.IsNullOrEmpty(item.Summary))
+                    {
+                        <p class="newscard__summary">@item.Summary</p>
+                    }
+                    <button class="newscard__link" @onclick="() => Open(item.Url)">Ver anúncio completo ↗</button>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (_feed != null && _feed.Error == null && items.Count > 0)
+    {
+        <p class="card__hint updates__foot">Atualizado @FmtTime(_feed.FetchedAt).</p>
+    }
+</div>
+
+@code {
+    private NewsFeed? _feed;
+    private bool _loading;
+
+    protected override async Task OnInitializedAsync() => await Load(false);
+
+    private async Task Load(bool force)
+    {
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            _feed = await Api.GetNewsAsync(force);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Open(string url) => _ = Api.OpenExternalAsync(url);
+
+    private static string FmtDate(long at)
+    {
+        if (at == 0) return "—";
+        var dt = DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime;
+        return dt.ToString("dd MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+    }
+
+    private static string FmtTime(long at)
+    {
+        var dt = DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime;
+        return dt.ToString("HH:mm:ss", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+    }
+}

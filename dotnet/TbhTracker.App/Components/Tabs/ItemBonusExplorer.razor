@@ -1,0 +1,109 @@
+@{
+    var rows = Stats.StatList.Where(s =>
+    {
+        if (!string.IsNullOrEmpty(_query))
+        {
+            var hay = $"{s.Name} {s.Line} {s.Id}".ToLowerInvariant();
+            if (!hay.Contains(_query.Trim().ToLowerInvariant())) return false;
+        }
+        if (_modFilter != "all")
+        {
+            var types = Stats.ModsForStat(s.Id).Select(m => m.ModType).ToHashSet();
+            if (!types.Contains(_modFilter)) return false;
+        }
+        return true;
+    }).ToList();
+}
+
+<div class="bonusx">
+    <div class="bonusx__toolbar">
+        <input class="input bonusx__search" type="search"
+               placeholder="Buscar bônus (ex.: armadura, crítico, ouro)…"
+               @bind="_query" @bind:event="oninput" />
+        <div class="bonusx__chips">
+            @foreach (var f in _filters)
+            {
+                <button class="chip@(_modFilter == f.Id ? " chip--active" : "")" @onclick="@(() => _modFilter = f.Id)">@f.Label</button>
+            }
+        </div>
+        <span class="bonusx__count">@rows.Count bônus</span>
+    </div>
+
+    <ul class="bonusx__list">
+        @foreach (var s in rows)
+        {
+            var rep = Stats.AffixRepFor(s.Id);
+            var mod = ModLabel(s.Id);
+            <li class="bonusx__row">
+                <div class="bonusx__main">
+                    <span class="bonusx__name">@s.Name</span>
+                    <span class="bonusx__line">@LineWithRange(s.Id)</span>
+                </div>
+                <div class="bonusx__tags">
+                    @if (mod != null)
+                    {
+                        <span class="bonusx__tag">@mod</span>
+                    }
+                    @if (rep != null)
+                    {
+                        <span class="bonusx__tag bonusx__tag--tier">tier @rep.Tier</span>
+                    }
+                </div>
+            </li>
+        }
+        @if (rows.Count == 0)
+        {
+            <li class="bonusx__empty">Nenhum bônus encontrado.</li>
+        }
+    </ul>
+
+    <div class="bonusx__slots">
+        <h4 class="bonusx__slotstitle">Slots de afixo por raridade</h4>
+        <div class="bonusx__slotchips">
+            @foreach (var g in Items.Grades)
+            {
+                var total = Stats.GradeSlotTotal(g.Id);
+                <span class="raritychip" title="@g.NamePt: @total slot(s)">
+                    <span class="raritychip__dot" style="background:@g.Color"></span>
+                    <span class="raritychip__name" style="color:@g.Color">@g.NamePt</span>
+                    <span class="raritychip__count">@total</span>
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _query = "";
+    private string _modFilter = "all";
+
+    private sealed record FilterDef(string Id, string Label);
+    private static readonly FilterDef[] _filters =
+    {
+        new("all", "Todos"), new("FLAT", "Fixo"), new("ADDITIVE", "Percentual")
+    };
+
+    private static string Fmt(double n)
+    {
+        var isInt = n == Math.Floor(n);
+        return n.ToString(isInt ? "#,##0" : "#,##0.##", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+    }
+
+    private static string LineWithRange(string id)
+    {
+        var line = Stats.StatLine(id);
+        var r = Stats.StatRange(id);
+        var token = r != null ? (r.Value.Min == r.Value.Max ? Fmt(r.Value.Min) : $"{Fmt(r.Value.Min)}–{Fmt(r.Value.Max)}") : "X";
+        return line.Contains("{0}") ? line.Replace("{0}", token) : line;
+    }
+
+    private static string? ModLabel(string id)
+    {
+        var types = Stats.ModsForStat(id).Select(m => m.ModType).ToHashSet();
+        if (types.Count == 0) return null;
+        var parts = new List<string>();
+        if (types.Contains("FLAT")) parts.Add("fixo");
+        if (types.Contains("ADDITIVE")) parts.Add("percentual");
+        return string.Join(" / ", parts);
+    }
+}

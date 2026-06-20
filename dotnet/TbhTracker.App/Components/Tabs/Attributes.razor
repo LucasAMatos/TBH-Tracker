@@ -1,0 +1,108 @@
+@using AttrLogic = TbhTracker.Core.Logic.Attributes
+@using HeroLogic = TbhTracker.Core.Logic.Heroes
+@{
+    var heroes = AttrLogic.AttrHeroes();
+    var firstWithPoints = FirstWithPoints(heroes);
+    var active = (_hero != null && heroes.Contains(_hero.Value)) ? _hero.Value : firstWithPoints;
+    var tree = AttrLogic.HeroAttributeTree(active, HeroAttributes);
+    var activeMeta = HeroLogic.HeroByKey(active.ToString());
+}
+
+<div class="attrs">
+    <aside class="attrs__heroes">
+        @foreach (var h in heroes)
+        {
+            var meta = HeroLogic.HeroByKey(h.ToString());
+            var portrait = AssetUrls.HeroPortrait(h);
+            var t = AttrLogic.HeroAttributeTree(h, HeroAttributes);
+            <button class="attrs__hero@(h == active ? " attrs__hero--active" : "")" @onclick="() => _hero = h">
+                @if (portrait != null)
+                {
+                    <img class="attrs__heroimg" src="@portrait" alt="" />
+                }
+                else
+                {
+                    <span class="attrs__heroimg attrs__heroimg--ph">@(meta?.NamePt?.Substring(0, 1) ?? "?")</span>
+                }
+                <span class="attrs__heroname">@(meta?.NamePt ?? $"Herói {h}")</span>
+                <span class="attrs__heropts">@t.TotalAllocated pts</span>
+            </button>
+        }
+    </aside>
+
+    <section class="attrs__content">
+        <div class="attrs__summary">
+            <h2 class="attrs__title">@(activeMeta?.NamePt ?? $"Herói {active}")</h2>
+            <span class="attrs__meta">@tree.AllocatedNodes/@tree.TotalNodes nós · @tree.TotalAllocated pontos alocados</span>
+        </div>
+
+        @if (tree.TotalAllocated == 0)
+        {
+            <p class="attrs__hint">
+                Nenhum ponto de atributo alocado para este herói no save lido (ou o save não traz a
+                árvore). Os nós abaixo mostram o efeito por ponto.
+            </p>
+        }
+
+        <div class="attrs__grid">
+            @foreach (var col in tree.Columns)
+            {
+                <div class="attrs__col">
+                    <div class="attrs__colhead">Grupo @(col.Grp % 100 == 0 ? col.Grp : col.Grp % 100)</div>
+                    @foreach (var v in col.Nodes)
+                    {
+                        @RenderNode(v)
+                    }
+                </div>
+            }
+        </div>
+
+        <p class="attrs__note">
+            Valores vêm do datamine (por ponto). O cálculo do stat final do herói (base + nível +
+            árvore + equipamento + runas + pets) é o modelo de stats (H10), ainda no backlog.
+        </p>
+    </section>
+</div>
+
+@code {
+    [Parameter] public List<HeroAttributeLevel> HeroAttributes { get; set; } = new();
+
+    private int? _hero;
+
+    private int FirstWithPoints(List<int> heroes)
+    {
+        foreach (var h in heroes)
+            if (AttrLogic.HeroAttributeTree(h, HeroAttributes).AllocatedNodes > 0) return h;
+        return heroes.Count > 0 ? heroes[0] : 0;
+    }
+
+    private RenderFragment RenderNode(AttrNodeView view) => __builder =>
+    {
+        var node = view.Node;
+        var icon = AssetUrls.AttributeIcon(node.Icon);
+        var allocated = view.Level > 0;
+        <div class="attrnode@(allocated ? " attrnode--on" : "")">
+            <div class="attrnode__head">
+                @if (icon != null)
+                {
+                    <img class="attrnode__icon" src="@icon" alt="" />
+                }
+                else
+                {
+                    <span class="attrnode__icon attrnode__icon--ph">@(node.Kind == "active" ? "✦" : "◆")</span>
+                }
+                <div class="attrnode__titles">
+                    <span class="attrnode__name">@AttrLogic.AttrTitle(node)</span>
+                    <span class="attrnode__kind attrnode__kind--@node.Kind">@(node.Kind == "active" ? "Ativa" : "Passiva")</span>
+                </div>
+                <span class="attrnode__lvl">@view.Level/@node.Max</span>
+            </div>
+            <p class="attrnode__effect">@view.Effect</p>
+            @if (allocated)
+            {
+                <p class="attrnode__perlevel">@view.PerLevel</p>
+            }
+        </div>
+    };
+}
+

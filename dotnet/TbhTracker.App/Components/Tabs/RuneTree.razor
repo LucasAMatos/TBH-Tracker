@@ -1,0 +1,277 @@
+@using System.Globalization
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@{
+    var levelByKey = Levels.ToDictionary(l => l.Key, l => l.Level);
+    var progress = Runes.SummarizeRunes(Levels);
+    var nodes = Catalog.Runes.Nodes;
+    var edges = Catalog.Runes.Edges;
+    var nodeByKey = nodes.ToDictionary(n => n.Key);
+    var selectedNode = _selected != null ? nodes.FirstOrDefault(n => n.Key == _selected) : null;
+}
+
+<div class="rune-view">
+    <div class="rune-view__head">
+        <div class="rune-summary">
+            <div class="rune-summary__main">
+                <strong>@progress.OwnedNodes</strong> / @progress.TotalNodes nós
+                <span class="card__hint"> · @progress.MaxedNodes no máx.</span>
+            </div>
+            <div class="rune-summary__cats">
+                @foreach (var kv in progress.ByCategory.Where(v => v.Value.Total > 0))
+                {
+                    var meta = Runes.CategoryMeta.GetValueOrDefault(kv.Key) ?? new RuneCategoryMeta();
+                    <span class="rune-chip" title="@meta.Label">
+                        <span class="rune-chip__dot" style="background:@meta.Color"></span>
+                        @meta.Label @kv.Value.Owned/@kv.Value.Total
+                    </span>
+                }
+            </div>
+        </div>
+        <button class="btn btn--ghost btn--sm" @onclick="ResetView">Resetar zoom</button>
+    </div>
+
+    <div class="rune-view__body">
+        <svg @ref="_svg" class="rune-canvas"
+             viewBox="@ViewBox"
+             @onwheel="OnWheel" @onwheel:preventDefault="true"
+             @onmousedown="OnMouseDown" @onmousemove="OnMouseMove"
+             @onmouseup="EndDrag" @onmouseleave="EndDrag">
+            <g>
+                @foreach (var e in edges)
+                {
+                    if (!nodeByKey.TryGetValue(e.From, out var a) || !nodeByKey.TryGetValue(e.To, out var b)) { continue; }
+                    var owned = levelByKey.GetValueOrDefault(e.From) > 0 && levelByKey.GetValueOrDefault(e.To) > 0;
+                    <line x1="@N(a.X)" y1="@N(a.Y)" x2="@N(b.X)" y2="@N(b.Y)"
+                          stroke="@(owned ? "#3fb95080" : "#2d3748")" stroke-width="@(owned ? 4 : 3)" />
+                }
+            </g>
+            <g>
+                @foreach (var n in nodes)
+                {
+                    var lv = levelByKey.GetValueOrDefault(n.Key);
+                    var owned = lv > 0;
+                    var maxed = owned && lv >= n.MaxLevel;
+                    var isSel = n.Key == _selected;
+                    var isTarget = n.Key == Target;
+                    var color = Runes.RuneColor(n);
+                    var icon = AssetUrls.RuneIcon(n.Icon);
+                    var key = n.Key;
+                    <g transform="translate(@N(n.X),@N(n.Y))" class="rune-node" @onclick="() => _selected = key">
+                        @if (isTarget)
+                        {
+                            <circle r="@(NodeR + 10)" fill="none" stroke="#ffb020" stroke-width="3" stroke-dasharray="6 5">
+                                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="12s" repeatCount="indefinite" />
+                            </circle>
+                        }
+                        <circle r="@(NodeR + 3)" fill="#0d1117"
+                                stroke="@(isSel ? "#ffb020" : maxed ? color : owned ? color : "#2d3748")"
+                                stroke-width="@(isSel ? 5 : owned ? 4 : 2)"
+                                opacity="@N(owned ? 1 : 0.55)" />
+                        @if (icon != null)
+                        {
+                            <image href="@icon" x="@(-NodeR)" y="@(-NodeR)" width="@(NodeR * 2)" height="@(NodeR * 2)"
+                                   opacity="@N(owned ? 1 : 0.35)" style="pointer-events:none" />
+                        }
+                        @if (owned && n.MaxLevel > 1)
+                        {
+                            @RuneLabel(lv, n.MaxLevel)
+                        }
+                    </g>
+                }
+            </g>
+        </svg>
+
+        <aside class="rune-view__side">
+            @RenderDetail(selectedNode, selectedNode != null ? levelByKey.GetValueOrDefault(selectedNode.Key) : 0)
+            <p class="card__hint rune-view__hint">
+                Arraste para mover · roda do mouse para zoom. Catálogo: taskbarhero.wiki.
+            </p>
+        </aside>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<RuneLevel> Levels { get; set; } = new();
+    [Parameter] public int? Target { get; set; }
+    [Parameter] public EventCallback<int?> OnSetTarget { get; set; }
+
+    private const double Pad = 80;
+    private const int NodeR = 26;
+
+    private ElementReference _svg;
+    private IJSObjectReference? _module;
+    private int? _selected;
+
+    private double _vx, _vy, _vw, _vh;
+    private double _fullW, _fullH;
+    private (double X, double Y)? _drag;
+    private (double W, double H)? _rect;
+
+    private string ViewBox => $"{N(_vx)} {N(_vy)} {N(_vw)} {N(_vh)}";
+
+    private static string N(double v) => v.ToString("0.###", CultureInfo.InvariantCulture);
+
+    // SVG <text> colide com a tag de controle <text> do Razor; emitimos via RenderTreeBuilder.
+    private RenderFragment RuneLabel(int lv, int max) => b =>
+    {
+        b.OpenElement(0, "text");
+        b.AddAttribute(1, "class", "rune-node__lv");
+        b.AddAttribute(2, "y", (NodeR + 18).ToString(CultureInfo.InvariantCulture));
+        b.AddAttribute(3, "text-anchor", "middle");
+        b.AddContent(4, $"{lv}/{max}");
+        b.CloseElement();
+    };
+
+    protected override void OnInitialized()
+    {
+        var b = Catalog.Runes.Bounds;
+        _fullW = b.MaxX - b.MinX + Pad * 2;
+        _fullH = b.MaxY - b.MinY + Pad * 2;
+        SetFullView();
+    }
+
+    private void SetFullView()
+    {
+        var b = Catalog.Runes.Bounds;
+        _vx = b.MinX - Pad;
+        _vy = b.MinY - Pad;
+        _vw = _fullW;
+        _vh = _fullH;
+    }
+
+    private void ResetView() => SetFullView();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./assets/runetree.js");
+    }
+
+    private async Task<(double Left, double Top, double Width, double Height)?> GetRect()
+    {
+        if (_module == null) return null;
+        try
+        {
+            var r = await _module.InvokeAsync<RectDto>("getRect", _svg);
+            return (r.Left, r.Top, r.Width, r.Height);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task OnWheel(WheelEventArgs e)
+    {
+        var rect = await GetRect();
+        if (rect == null || rect.Value.Width == 0) return;
+        var factor = e.DeltaY > 0 ? 1.12 : 1 / 1.12;
+        var newW = Math.Min(_fullW * 1.5, Math.Max(400, _vw * factor));
+        var newH = newW * (_vh / _vw);
+        var cx = _vx + (e.ClientX - rect.Value.Left) / rect.Value.Width * _vw;
+        var cy = _vy + (e.ClientY - rect.Value.Top) / rect.Value.Height * _vh;
+        var rx = (cx - _vx) / _vw;
+        var ry = (cy - _vy) / _vh;
+        _vx = cx - rx * newW;
+        _vy = cy - ry * newH;
+        _vw = newW;
+        _vh = newH;
+    }
+
+    private async Task OnMouseDown(MouseEventArgs e)
+    {
+        _drag = (e.ClientX, e.ClientY);
+        var rect = await GetRect();
+        if (rect != null) _rect = (rect.Value.Width, rect.Value.Height);
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        if (_drag == null || _rect == null || _rect.Value.W == 0) return;
+        var dxPx = _drag.Value.X - e.ClientX;
+        var dyPx = _drag.Value.Y - e.ClientY;
+        var dx = dxPx / _rect.Value.W * _vw;
+        var dy = dyPx / _rect.Value.H * _vh;
+        _drag = (e.ClientX, e.ClientY);
+        _vx += dx;
+        _vy += dy;
+    }
+
+    private void EndDrag() => _drag = null;
+
+    private static string FmtGold(double n)
+    {
+        var pt = CultureInfo.GetCultureInfo("pt-BR");
+        if (n >= 1_000_000) return $"{(n / 1_000_000).ToString("0.##", pt)}M";
+        if (n >= 1_000) return $"{(n / 1_000).ToString("0.#", pt)}k";
+        return ((long)n).ToString(pt);
+    }
+
+    private async Task ToggleTarget(int key, bool isTarget) => await OnSetTarget.InvokeAsync(isTarget ? null : key);
+
+    private RenderFragment RenderDetail(RuneNode? node, int level) => __builder =>
+    {
+        if (node == null)
+        {
+            <p class="card__hint">Clique em uma runa no mapa para ver detalhes.</p>
+            return;
+        }
+        var meta = Runes.CategoryMeta.GetValueOrDefault(node.Category) ?? new RuneCategoryMeta();
+        var next = Runes.NextLevelGoldCost(node, level);
+        var invested = Runes.InvestedGold(node, level);
+        var icon = AssetUrls.RuneIcon(node.Icon);
+        var isTarget = node.Key == Target;
+        var nodeKey = node.Key;
+        <div class="rune-detail">
+            <div class="rune-detail__head">
+                @if (icon != null)
+                {
+                    <img class="rune-detail__icon" src="@icon" alt="" />
+                }
+                <div>
+                    <div class="rune-detail__name">@node.Name</div>
+                    <span class="rune-badge" style="border-color:@meta.Color;color:@meta.Color">@meta.Label</span>
+                </div>
+            </div>
+            <p class="rune-detail__effect">@Runes.FormatRuneEffect(node, level <= 0 ? 1 : level)</p>
+            <div class="rune-detail__rows">
+                <div>
+                    <span class="card__label">Nível</span>
+                    <span class="rune-detail__val">@level / @node.MaxLevel</span>
+                </div>
+                <div>
+                    <span class="card__label">@(level >= node.MaxLevel ? "Investido" : "Próximo nível")</span>
+                    <span class="rune-detail__val">
+                        @(level >= node.MaxLevel
+                            ? (invested > 0 ? $"{FmtGold(invested)} ouro" : "—")
+                            : (next > 0 ? $"{FmtGold(next)} ouro" : "—"))
+                    </span>
+                </div>
+            </div>
+            <button class="btn btn--sm @(isTarget ? "btn--ghost" : "btn--primary")" @onclick="() => ToggleTarget(nodeKey, isTarget)">
+                @(isTarget ? "Remover alvo" : "Definir como alvo")
+            </button>
+            @if (isTarget)
+            {
+                <p class="card__hint">Esta é a runa-alvo — veja quanto ouro falta no card do Dashboard.</p>
+            }
+        </div>
+    };
+
+    private sealed class RectDto
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            try { await _module.DisposeAsync(); } catch { }
+        }
+    }
+}

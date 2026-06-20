@@ -5,6 +5,12 @@ dist/
 *.tsbuildinfo
 .DS_Store
 
+# .NET (MAUI Blazor Hybrid em dotnet/)
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+
 # Arquivos temporários do agente (mensagens de commit / corpo de PR)
 .commit-msg.txt
 .pr-body.md

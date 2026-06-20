@@ -1,0 +1,125 @@
+@{
+    var filtered = Filter();
+    var active = filtered.FirstOrDefault(s => s.Id == _activeId) ?? filtered.FirstOrDefault();
+}
+
+<div class="pedia">
+    <aside class="pedia__nav">
+        <input class="input pedia__search" type="search" placeholder="Buscar..."
+               @bind="_query" @bind:event="oninput" />
+        <nav>
+            @foreach (var s in filtered)
+            {
+                <button class="pedia__navitem @(active?.Id == s.Id ? "pedia__navitem--active" : "")" @onclick="@(() => _activeId = s.Id)">
+                    <span class="pedia__icon">@s.Icon</span>@s.Title
+                </button>
+            }
+            @if (filtered.Count == 0)
+            {
+                <p class="pedia__empty">Nada encontrado.</p>
+            }
+        </nav>
+    </aside>
+    <section class="pedia__content">
+        @if (active != null)
+        {
+            @RenderSection(active)
+        }
+        else
+        {
+            <p class="pedia__empty">Nada encontrado.</p>
+        }
+    </section>
+</div>
+
+@code {
+    private string _activeId = Catalog.Pedia.FirstOrDefault()?.Id ?? "";
+    private string _query = "";
+
+    private List<PediaSection> Filter()
+    {
+        var q = _query.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(q)) return Catalog.Pedia;
+        return Catalog.Pedia.Where(s =>
+        {
+            var parts = new List<string> { s.Title };
+            if (s.Intro != null) parts.AddRange(s.Intro);
+            if (s.Notes != null) parts.AddRange(s.Notes);
+            if (s.Tables != null)
+                foreach (var t in s.Tables)
+                {
+                    parts.Add(t.Caption ?? "");
+                    parts.AddRange(t.Headers);
+                    foreach (var row in t.Rows) parts.AddRange(row);
+                }
+            return string.Join(" ", parts).ToLowerInvariant().Contains(q);
+        }).ToList();
+    }
+
+    private RenderFragment RenderSection(PediaSection sec) => __builder =>
+    {
+        <article class="pedia__article">
+            <h2 class="pedia__title">
+                <span class="pedia__icon">@sec.Icon</span> @sec.Title
+            </h2>
+            @if (sec.Intro != null)
+            {
+                @foreach (var p in sec.Intro)
+                {
+                    <p class="pedia__p">@p</p>
+                }
+            }
+            @if (sec.Custom == "itemBonus")
+            {
+                <ItemBonusExplorer />
+            }
+            @if (sec.Tables != null)
+            {
+                @foreach (var t in sec.Tables)
+                {
+                    @RenderTable(t)
+                }
+            }
+            @if (sec.Notes is { Count: > 0 })
+            {
+                <ul class="pedia__notes">
+                    @foreach (var n in sec.Notes)
+                    {
+                        <li>@n</li>
+                    }
+                </ul>
+            }
+        </article>
+    };
+
+    private RenderFragment RenderTable(PediaTable table) => __builder =>
+    {
+        <div class="pedia__tablewrap">
+            @if (!string.IsNullOrEmpty(table.Caption))
+            {
+                <h4 class="pedia__caption">@table.Caption</h4>
+            }
+            <table class="table">
+                <thead>
+                    <tr>
+                        @foreach (var h in table.Headers)
+                        {
+                            <th>@h</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in table.Rows)
+                    {
+                        <tr>
+                            @foreach (var cell in row)
+                            {
+                                <td>@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+}

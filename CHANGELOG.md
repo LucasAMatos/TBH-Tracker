@@ -21,6 +21,32 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v2.0.0 — Migração para C# (.NET MAUI Blazor Hybrid)
+
+### Alterado
+- **Reescrita completa da stack** de Electron + Vite + React + TypeScript para **.NET 9 MAUI
+  Blazor Hybrid** (Windows), preservando 100% das funcionalidades: leitura/descriptografia
+  passiva do save ES3, parser, catálogos, analytics e todas as abas da UI.
+- **Solução em `dotnet/`** (`TbhTracker.sln`):
+  - **`TbhTracker.Core`** — class library sem dependências de plataforma: `Es3Crypto`
+    (PBKDF2-SHA1 + AES-128-CBC/PKCS7), `SaveParser`, lógica pura (runes, stage, stats,
+    attributes, boxes, cube, export, heroes, items), eventos/fluxo (goldFlow, stageEvents,
+    heroEvents, stageFarm, history) e catálogos embutidos como JSON.
+  - **`TbhTracker.App`** — app MAUI Blazor Hybrid: serviços de plataforma via DI (`Locator`,
+    `KeyFinder`, `SaveWatcher`, `ConfigStore`, `HistoryStore`, `NewsService`, `Tracker`,
+    `TrackerApi`) e todas as abas em Razor (Dashboard, Farm, Heroes, Attributes, Inventory,
+    TbhPedia + ItemBonusExplorer, Updates, KeyPanel, StatusBar, RuneTree).
+  - **`TbhTracker.Tests`** — suíte xUnit (73 testes) portada do Vitest: stage, stats, runes,
+    items, boxes, export, stageFarm e attributes.
+
+### Mapeamento de plataforma
+- `crypto.pbkdf2Sync`/`aes-128-cbc` → `Rfc2898DeriveBytes` + `Aes`.
+- `fs.watch` + poll + fingerprint → `FileSystemWatcher` + `System.Timers.Timer` + debounce.
+- `safeStorage` (DPAPI) → `System.Security.Cryptography.ProtectedData` (com import do `plainKey` legado).
+- IPC `window.tbh.*`/`onState` → serviço `TrackerApi` injetado + evento `OnState`.
+- `Intl.NumberFormat('pt-BR')` → `CultureInfo("pt-BR")`.
+- `dialog`/`shell.openExternal` → `FilePicker`/`Launcher` do MAUI.
+
 ## v1.9.0 — Árvore de atributos por herói: aba Atributos (H12)
 
 > Nota: a v1.8.0 (Pets / PE1) está numa PR paralela; esta entrada assume que ela entra antes.

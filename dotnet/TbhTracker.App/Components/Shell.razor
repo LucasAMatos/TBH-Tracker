@@ -1,0 +1,130 @@
+@implements IDisposable
+@inject TrackerApi Api
+
+<div class="app">
+    <header class="app__header">
+        <div class="app__brand">
+            <span class="app__logo">TBH</span>
+            <div>
+                <h1>
+                    TBH-Tracker
+                    @if (!string.IsNullOrEmpty(_version))
+                    {
+                        <span class="app__version">@_version</span>
+                    }
+                </h1>
+                <p class="app__subtitle">Leitura passiva do save · Task Bar Hero</p>
+            </div>
+        </div>
+        <StatusBar State="_state" />
+    </header>
+
+    <nav class="tabs">
+        @foreach (var t in _tabs)
+        {
+            <button class="tabs__btn @(_tab == t.Id ? "tabs__btn--active" : "")"
+                    @onclick="() => _tab = t.Id">
+                @t.Label
+            </button>
+        }
+    </nav>
+
+    <main class="app__main">
+        @switch (_tab)
+        {
+            case "tbhpedia":
+                <TbhPedia />
+                break;
+            case "atualizacoes":
+                <Updates />
+                break;
+            case "herois":
+                <Heroes HeroesList="@(_state.Snapshot?.Heroes ?? new())"
+                        ArrangedKeys="@(_state.Snapshot?.ArrangedHeroKeys ?? new())" />
+                break;
+            case "farm":
+                <Farm Snapshot="_state.Snapshot" />
+                break;
+            case "atributos":
+                <Attributes HeroAttributes="@(_state.Snapshot?.HeroAttributes ?? new())" />
+                break;
+            case "inventario":
+                <Inventory InventoryData="_state.Snapshot?.Inventory" />
+                break;
+            case "runes":
+                <RuneTree Levels="@(_state.Snapshot?.Runes ?? new())"
+                          Target="_runeTarget"
+                          OnSetTarget="ChangeRuneTarget" />
+                break;
+            default:
+                @if (_state.Status == ConnectionStatus.Monitoring && _state.Snapshot != null)
+                {
+                    <Dashboard Snapshot="_state.Snapshot" RuneTarget="_runeTarget" />
+                }
+                else
+                {
+                    <KeyPanel State="_state" OnChange="OnStateChanged" />
+                }
+                break;
+        }
+    </main>
+
+    <footer class="app__footer">
+        Somente leitura · nunca toca no jogo, na memoria ou no save.
+    </footer>
+</div>
+
+@code {
+    private record TabDef(string Id, string Label);
+
+    private static readonly TabDef[] _tabs =
+    {
+        new("dashboard", "Dashboard"),
+        new("farm", "Farm"),
+        new("herois", "Heróis"),
+        new("atributos", "Atributos"),
+        new("inventario", "Inventário"),
+        new("runes", "Runas"),
+        new("atualizacoes", "Atualizações"),
+        new("tbhpedia", "TBHPedia")
+    };
+
+    private TrackerState _state = new();
+    private string _tab = "dashboard";
+    private string _version = "";
+    private int? _runeTarget;
+
+    protected override void OnInitialized()
+    {
+        Api.OnState += HandleState;
+        Api.EnsureStarted();
+        _state = Api.GetState();
+        _runeTarget = Api.GetRuneTarget();
+        var v = Api.GetVersion();
+        var parts = (v ?? "").Split('.');
+        var major = parts.Length > 0 && parts[0].Length > 0 ? parts[0] : "1";
+        var minor = parts.Length > 1 ? parts[1] : "0";
+        var patch = parts.Length > 2 ? parts[2] : "0";
+        _version = $"v{major}.{minor}.{patch}";
+    }
+
+    private void HandleState(TrackerState s)
+    {
+        _state = s;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnStateChanged(TrackerState s)
+    {
+        _state = s;
+        StateHasChanged();
+    }
+
+    private void ChangeRuneTarget(int? key)
+    {
+        _runeTarget = Api.SetRuneTarget(key);
+        StateHasChanged();
+    }
+
+    public void Dispose() => Api.OnState -= HandleState;
+}

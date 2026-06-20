@@ -1,0 +1,133 @@
+@inject TrackerApi Api
+
+<div class="panel">
+    <h2 class="panel__title">Configuracao</h2>
+
+    <section class="panel__row">
+        <div>
+            <strong>Arquivo de save</strong>
+            <p class="panel__hint">@(string.IsNullOrEmpty(State.SavePath) ? "Nao localizado automaticamente." : State.SavePath)</p>
+        </div>
+        <button class="btn" @onclick="PickSave" disabled="@_busy">Escolher SaveFile_Live.es3</button>
+    </section>
+
+    <section class="panel__row panel__row--stack">
+        <div>
+            <strong>Chave de descriptografia ES3</strong>
+            <p class="panel__hint">
+                Guardada localmente e cifrada pelo sistema. Nunca enviada para lugar nenhum nem
+                commitada. @(State.HasKey ? "Uma chave ja esta salva." : "")
+            </p>
+            <p class="panel__hint">
+                Não sabe a chave? O app pode <strong>localizá-la automaticamente</strong> lendo
+                (somente leitura) os arquivos do jogo no disco e validando contra o seu save —
+                sem tocar no jogo. Um aviso é mostrado antes.
+            </p>
+        </div>
+        <div class="panel__keyrow">
+            <input class="input" type="password"
+                   placeholder="@(State.HasKey ? "Substituir chave..." : "Cole a chave ES3")"
+                   @bind="_key" @bind:event="oninput"
+                   @onkeydown="@(e => { if (e.Key == "Enter") _ = SaveKey(); })" />
+            <button class="btn btn--primary" @onclick="SaveKey"
+                    disabled="@(_busy || string.IsNullOrWhiteSpace(_key))">
+                Salvar
+            </button>
+        </div>
+    </section>
+
+    <section class="panel__row">
+        <div>
+            <strong>Localizar chave automaticamente</strong>
+            <p class="panel__hint">
+                Procura a senha do Easy Save 3 nos arquivos da instalação do jogo (Steam).
+            </p>
+        </div>
+        <button class="btn" @onclick="FindKey" disabled="@_finding">
+            @(_finding ? "Procurando…" : "Localizar chave")
+        </button>
+    </section>
+
+    @if (_feedback != null)
+    {
+        <div class="alert @(_feedback.Kind == "ok" ? "alert--ok" : _feedback.Kind == "err" ? "alert--err" : "alert--warn")">
+            @_feedback.Text
+        </div>
+    }
+
+    @if (State.Status == ConnectionStatus.Error && !string.IsNullOrEmpty(State.LastError))
+    {
+        <div class="alert alert--err">@State.LastError</div>
+    }
+    @if (State.Status == ConnectionStatus.NoSave)
+    {
+        <div class="alert alert--warn">
+            Save nao encontrado. Abra o jogo ao menos uma vez ou selecione o arquivo manualmente.
+        </div>
+    }
+    @if (State.Status == ConnectionStatus.NoKey)
+    {
+        <div class="alert alert--warn">
+            Save localizado. Informe a chave ES3 para comecar a monitorar.
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public TrackerState State { get; set; } = new();
+    [Parameter] public EventCallback<TrackerState> OnChange { get; set; }
+
+    private sealed record Feedback(string Kind, string Text);
+
+    private string _key = "";
+    private bool _busy;
+    private bool _finding;
+    private Feedback? _feedback;
+
+    private async Task SaveKey()
+    {
+        if (string.IsNullOrWhiteSpace(_key)) return;
+        _busy = true;
+        var next = Api.SetKey(_key.Trim());
+        await OnChange.InvokeAsync(next);
+        _key = "";
+        _busy = false;
+    }
+
+    private async Task PickSave()
+    {
+        _busy = true;
+        var next = await Api.PickSaveFileAsync();
+        await OnChange.InvokeAsync(next);
+        _busy = false;
+    }
+
+    private async Task FindKey()
+    {
+        _finding = true;
+        _feedback = null;
+        try
+        {
+            var result = await Api.FindKeyAsync();
+            _feedback = FindFeedback(result);
+        }
+        catch
+        {
+            _feedback = new Feedback("err", "Falha ao localizar a chave.");
+        }
+        finally
+        {
+            _finding = false;
+        }
+    }
+
+    private static Feedback FindFeedback(KeyFindResult result) => result.Status switch
+    {
+        KeyFindStatus.Found => new("ok", "Chave localizada e aplicada! Monitorando o save."),
+        KeyFindStatus.Cancelled => new("warn", "Busca cancelada."),
+        KeyFindStatus.NoSave => new("warn", "Nenhum save encontrado para validar. Abra o jogo uma vez ou selecione o save."),
+        KeyFindStatus.NoGame => new("warn", "Instalação do jogo (Steam) não localizada. Cole a chave manualmente."),
+        KeyFindStatus.NotFound => new("warn", "Arquivos do jogo lidos, mas a chave não foi encontrada (o jogo pode ter mudado). Cole a chave manualmente."),
+        _ => new("err", result.Message ?? "Falha ao localizar a chave.")
+    };
+}

@@ -1,0 +1,76 @@
+@implements IDisposable
+
+<div class="status">
+    <span class="@_dotClass"></span>
+    <span class="status__text">@_text</span>
+    @if (_detail != null)
+    {
+        <span class="status__detail">· @_detail</span>
+    }
+</div>
+
+@code {
+    [Parameter] public TrackerState State { get; set; } = new();
+
+    private const long IdleThresholdMs = 30_000;
+    private const long HeartbeatFreshMs = 12_000;
+
+    private System.Timers.Timer? _ticker;
+    private string _text = "";
+    private string _cls = "warn";
+    private bool _alive;
+    private string? _detail;
+    private string _dotClass = "status__dot status__dot--warn";
+
+    protected override void OnInitialized()
+    {
+        _ticker = new System.Timers.Timer(1000) { AutoReset = true };
+        _ticker.Elapsed += (_, _) => InvokeAsync(Recompute);
+        _ticker.Start();
+    }
+
+    protected override void OnParametersSet() => Recompute();
+
+    private static long NowMs() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private static string FmtAgo(long ms)
+    {
+        var s = ms / 1000;
+        if (s < 60) return $"{s}s";
+        var m = s / 60;
+        if (m < 60) return $"{m}min";
+        var h = m / 60;
+        return $"{h}h {m % 60}min";
+    }
+
+    private void Recompute()
+    {
+        (_text, _cls) = State.Status switch
+        {
+            ConnectionStatus.Monitoring => ("Monitorando", "ok"),
+            ConnectionStatus.NoKey => ("Sem chave", "warn"),
+            ConnectionStatus.NoSave => ("Save nao encontrado", "warn"),
+            ConnectionStatus.Error => ("Erro", "err"),
+            _ => ("—", "warn")
+        };
+
+        var now = NowMs();
+        _alive = State.HeartbeatAt != null && now - State.HeartbeatAt.Value < HeartbeatFreshMs;
+        var monitoring = State.Status == ConnectionStatus.Monitoring;
+        long? idleMs = State.LastChangeAt != null ? now - State.LastChangeAt.Value : null;
+        var idle = idleMs != null && idleMs >= IdleThresholdMs;
+
+        _detail = null;
+        if (monitoring && idleMs != null)
+            _detail = idle ? $"parado há {FmtAgo(idleMs.Value)}" : $"ativo · atualizado há {FmtAgo(idleMs.Value)}";
+
+        _dotClass = $"status__dot status__dot--{_cls}" + (_alive ? " status__dot--beat" : "");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _ticker?.Stop();
+        _ticker?.Dispose();
+    }
+}

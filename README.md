@@ -9,26 +9,25 @@ na memória ou no save**.
 
 ## Stack
 
-- **Electron** (processo principal em Node) + **Vite** + **React** + **TypeScript**.
-- Build orquestrado por **electron-vite**.
+- **.NET 9** **MAUI Blazor Hybrid** (Windows): UI em **Razor/Blazor**, lógica em **C#**.
+- Solução em `dotnet/` (`TbhTracker.sln`): `TbhTracker.Core` (lógica pura, sem deps de
+  plataforma), `TbhTracker.App` (app MAUI) e `TbhTracker.Tests` (xUnit).
+
+> A versão original em **Electron + Vite + React + TypeScript** vive em `src/` e foi migrada
+> integralmente para C# (ver `CHANGELOG.md`, v2.0.0). Os geradores de catálogo/asset em
+> `scripts/*.cjs` continuam como tooling Node de build.
 
 ## Pré-requisitos
 
-- **Node.js 18+** com **npm** (não vem instalado por padrão nesta máquina — instale via
-  [nodejs.org](https://nodejs.org/) ou `winget install OpenJS.NodeJS.LTS`).
+- **.NET SDK 9** com o workload MAUI: `dotnet workload install maui`.
 
 ## Como rodar
 
 ```bash
-npm install
-npm run dev      # app em modo desenvolvimento (hot reload)
-```
-
-Build de produção:
-
-```bash
-npm run build
-npm run preview
+cd dotnet
+dotnet build TbhTracker.sln          # compila Core + App + Tests
+dotnet run --project TbhTracker.App  # executa o app (Windows)
+dotnet test TbhTracker.Tests         # roda a suíte xUnit
 ```
 
 ## Primeiro uso
@@ -43,30 +42,33 @@ npm run preview
      seu save. Não toca no processo/memória do jogo e não acessa a internet.
    - **Manual**: cole a chave no campo e clique em **Salvar**.
 
-   A chave é guardada localmente e **cifrada pelo sistema operacional** (`safeStorage`);
-   nunca sai da máquina nem é commitada.
+   A chave é guardada localmente e **cifrada pelo sistema operacional** (DPAPI /
+   `ProtectedData`); nunca sai da máquina nem é commitada.
 3. O dashboard começa a monitorar e re-lê o save automaticamente quando ele muda no disco.
 
 > A chave ES3 **não** acompanha este repositório por questões legais e de segurança — você
 > a fornece localmente.
 
-## Arquitetura (Fase 1 — MVP de leitura)
+## Arquitetura
 
 ```
-src/
-  main/          processo principal (Node): leitura passiva do save
-    es3.ts       descriptografia Easy Save 3 (AES-128-CBC + PBKDF2-SHA1)
-    locator.ts   localiza o SaveFile_Live.es3 (Windows/Proton)
-    keyFinder.ts descobre a chave ES3 no resources.assets do jogo (passivo, com aviso)
-    watcher.ts   file watcher com fingerprint (relê só quando muda)
-    parser.ts    JSON do save -> snapshot tipado (busca defensiva)
-    store.ts     config local (chave via safeStorage, override de caminho)
-    tracker.ts   orquestra leitura + estado
-    index.ts     janela, ciclo de vida e IPC
-  preload/       ponte segura (contextBridge) -> window.tbh
-  renderer/      UI React (dashboard, status, painel de chave)
-  shared/        tipos + decodificação de estágio (DAPP)
+dotnet/
+  TbhTracker.Core/        class library (sem deps de plataforma)
+    Es3Crypto             descriptografia Easy Save 3 (AES-128-CBC + PBKDF2-SHA1)
+    SaveParser            JSON do save -> Snapshot tipado (busca defensiva)
+    Logic/                runes, stage, stats, attributes, boxes, cube, export, heroes, items
+                          + goldFlow, stageEvents, heroEvents, stageFarm, history
+    Models/               records/DTOs (ex-types.ts) + catálogos JSON embutidos
+  TbhTracker.App/         app MAUI Blazor Hybrid (Windows)
+    Services/             Locator, KeyFinder, SaveWatcher, ConfigStore, HistoryStore,
+                          NewsService, Tracker, TrackerApi (DI; substitui o IPC do Electron)
+    Components/           shell + abas em Razor (Dashboard, Farm, Heroes, Attributes,
+                          Inventory, TbhPedia, Updates, KeyPanel, StatusBar, RuneTree)
+    wwwroot/              styles.css + assets (heroes/runes/attributes)
+  TbhTracker.Tests/       suíte xUnit (regressão da lógica do Core)
 ```
+
+> A árvore `src/` (Electron/React/TS original) é mantida como referência histórica.
 
 ### Detalhe do formato ES3
 
@@ -76,25 +78,11 @@ o ciphertext PKCS7. O conteúdo descriptografado é JSON.
 
 ## Status
 
-- **Fase 1 (MVP de leitura): em desenvolvimento.** Dashboard com ouro, estágio (DAPP),
-  onda, estágio máximo, cubo, baús, heróis e tempo de jogo; estados de conexão
-  (monitorando / sem chave / sem save / erro); visualizador de JSON bruto para calibrar o
-  parser contra um save real.
-- Próximas fases (farm analytics, aba TBHPedia, qualidade de vida): ver `docs/PLAN.md`.
-
-## Solução de problemas
-
-**`Error: Electron uninstall` ao rodar `npm run dev`** — o postinstall do Electron baixou o
-binário mas a extração via `extract-zip` falhou silenciosamente (visto com Node 24 nesta
-máquina). O zip fica em `%LOCALAPPDATA%\electron\Cache\...\electron-v*.zip`. Contorno:
-extrair o zip manualmente para `node_modules/electron/dist` e criar o `path.txt`:
-
-```powershell
-$zip  = (Get-ChildItem "$env:LOCALAPPDATA\electron\Cache" -Recurse -Filter *.zip).FullName
-$dist = "node_modules\electron\dist"
-Expand-Archive -Path $zip -DestinationPath $dist -Force
-Set-Content "node_modules\electron\path.txt" "electron.exe" -NoNewline
-```
+- **Migração para C# concluída (v2.0.0).** App MAUI Blazor Hybrid com paridade de
+  funcionalidades: Dashboard (ouro, estágio DAPP, onda, estágio máximo, cubo, baús, heróis,
+  tempo de jogo + widgets/customização), Farm, Heroes, Attributes, Inventory, TbhPedia,
+  Updates, painel de chave e StatusBar; estados de conexão (monitorando / sem chave / sem
+  save / erro). Cobertura de regressão via xUnit (73 testes).
 
 ## Licença
 

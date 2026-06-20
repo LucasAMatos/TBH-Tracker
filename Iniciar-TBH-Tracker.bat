@@ -1,24 +1,18 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0dotnet"
 
 echo ============================================
 echo   TBH-Tracker - iniciando...
 echo ============================================
 echo.
 
-if not exist "node_modules" (
-    echo [1/3] Instalando dependencias ^(primeira vez^)...
-    call npm install
-    if errorlevel 1 goto erro
-)
-
-echo [2/3] Gerando build...
-call npm run build
+echo [1/2] Gerando build...
+call dotnet build TbhTracker.sln -c Release
 if errorlevel 1 goto erro
 
-echo [3/3] Abrindo o app...
-call npm start
+echo [2/2] Abrindo o app...
+call dotnet run --project TbhTracker.App -c Release
 if errorlevel 1 goto erro
 
 goto fim

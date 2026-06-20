@@ -1,0 +1,249 @@
+@{
+    var inv = InventoryData;
+}
+
+@if (inv == null || inv.TotalItems == 0)
+{
+    <div class="inventory">
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Inventário</h3>
+            </div>
+            <div class="alert alert--info">
+                Sem itens no save lido. A distribuição por tipo e raridade aparece quando o
+                save é lido e há itens em `itemSaveDatas`.
+            </div>
+        </section>
+    </div>
+}
+else
+{
+    var d = Derive(inv, _scope);
+    var scopes = BuildScopes(inv);
+    <div class="inventory">
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Inventário · tipo × raridade</h3>
+                <span class="card__hint">@Ui.Fmt(inv.GearCount) equipamentos · @Ui.Fmt(inv.TotalItems) itens no total</span>
+            </div>
+
+            <div class="invstats">
+                @RenderStat("Equipamentos", Ui.Fmt(inv.GearCount), null)
+                @RenderStat("Legendary+", Ui.Fmt(inv.LegendaryPlus), "vendável no Market")
+                @RenderStat("Materiais", Ui.Fmt(inv.MaterialCount), null)
+                @if (inv.BoxCount > 0)
+                {
+                    @RenderStat("Baús", Ui.Fmt(inv.BoxCount), null)
+                }
+                @if (inv.UnknownCount > 0)
+                {
+                    @RenderStat("Desconhecidos", Ui.Fmt(inv.UnknownCount), "fora do catálogo")
+                }
+            </div>
+
+            <div class="invscopes">
+                @foreach (var s in scopes)
+                {
+                    var label = s == "all" ? "Tudo" : ItemLocation.Labels[s];
+                    var count = s == "all" ? inv.TotalItems : inv.LocationTotals.GetValueOrDefault(s);
+                    <button type="button" class="chip@(_scope == s ? " chip--active" : "")" @onclick="@(() => _scope = s)">
+                        @label <span class="chip__count">@Ui.Fmt(count)</span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Distribuição por raridade</h3>
+                <span class="card__hint">
+                    @(_scope == "all" ? "Todos os locais" : ItemLocation.Labels[_scope]) · @Ui.Fmt(d.GearTotal) equipamentos
+                </span>
+            </div>
+            @if (d.GearTotal > 0)
+            {
+                @RenderRarityBars(d.ByGrade, d.GearTotal)
+            }
+            else
+            {
+                <div class="alert alert--info">Nenhum equipamento neste local.</div>
+            }
+        </section>
+
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Matriz tipo × raridade</h3>
+                <span class="card__hint">
+                    Colunas Legendary+ destacadas (vendáveis). Células tingidas pela raridade.
+                </span>
+            </div>
+            @if (d.Rows.Count > 0)
+            {
+                @RenderMatrix(d)
+            }
+            else
+            {
+                <div class="alert alert--info">Nenhum equipamento neste local.</div>
+            }
+            <p class="card__hint">
+                Raridade não escala por área (só o nível do item). Apenas Legendary+ é vendável no
+                Steam Market. Materiais e baús não entram na matriz de equipamentos.
+            </p>
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public InventorySummary? InventoryData { get; set; }
+
+    private static readonly string[] CategoryOrder = { "weapon", "offhand", "armor", "accessory" };
+    private string _scope = "all";
+
+    private sealed class RowD
+    {
+        public InventoryRow Row = new();
+        public int[] Counts = Array.Empty<int>();
+        public int Total;
+    }
+
+    private sealed class Derived
+    {
+        public List<RowD> Rows = new();
+        public int[] ByGrade = Array.Empty<int>();
+        public int GearTotal;
+        public int LegendaryPlus;
+        public int MaxCell;
+    }
+
+    private static int[] ScopedCounts(InventoryRow row, string scope) =>
+        scope == "all" ? row.Counts : row.ByLocation.GetValueOrDefault(scope) ?? new int[row.Counts.Length];
+
+    private Derived Derive(InventorySummary summary, string scope)
+    {
+        var grades = Items.Grades;
+        var byGrade = new int[summary.GradeCount];
+        var gearTotal = 0;
+        var legendaryPlus = 0;
+        var maxCell = 0;
+        var rows = new List<RowD>();
+        foreach (var row in summary.Rows)
+        {
+            var counts = ScopedCounts(row, scope);
+            var total = counts.Sum();
+            for (var tier = 0; tier < counts.Length; tier++)
+            {
+                var c = counts[tier];
+                if (tier < byGrade.Length) byGrade[tier] += c;
+                if (c > maxCell) maxCell = c;
+                if (tier < grades.Count && grades[tier].Marketable) legendaryPlus += c;
+            }
+            gearTotal += total;
+            if (total > 0) rows.Add(new RowD { Row = row, Counts = counts, Total = total });
+        }
+        return new Derived { Rows = rows, ByGrade = byGrade, GearTotal = gearTotal, LegendaryPlus = legendaryPlus, MaxCell = maxCell };
+    }
+
+    private List<string> BuildScopes(InventorySummary inv)
+    {
+        var list = new List<string> { "all" };
+        foreach (var loc in ItemLocation.All)
+            if (inv.LocationTotals.GetValueOrDefault(loc) > 0) list.Add(loc);
+        return list;
+    }
+
+    private static string HexA(string hex, double alpha)
+    {
+        var m = hex.Replace("#", "");
+        var r = Convert.ToInt32(m.Substring(0, 2), 16);
+        var g = Convert.ToInt32(m.Substring(2, 2), 16);
+        var b = Convert.ToInt32(m.Substring(4, 2), 16);
+        return $"rgba({r}, {g}, {b}, {alpha.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture)})";
+    }
+
+    private RenderFragment RenderStat(string label, string value, string? hint) => @<div class="invstat">
+        <span class="invstat__label">@label</span>
+        <span class="invstat__value">@value</span>
+        @if (hint != null)
+        {
+            <span class="invstat__hint">@hint</span>
+        }
+    </div>;
+
+    private RenderFragment RenderRarityBars(int[] byGrade, int total) => __builder =>
+    {
+        var max = Math.Max(1, byGrade.DefaultIfEmpty(0).Max());
+        <div class="raritybars">
+            @foreach (var g in Items.Grades)
+            {
+                var count = g.Tier < byGrade.Length ? byGrade[g.Tier] : 0;
+                var pct = total > 0 ? (int)Math.Round((double)count / total * 100) : 0;
+                var h = count > 0 ? Math.Max(6, (double)count / max * 100) : 0;
+                <div class="raritybar" title="@g.NamePt: @Ui.Fmt(count) (@pct%)">
+                    <div class="raritybar__track">
+                        <div class="raritybar__fill" style="height:@(h.ToString(System.Globalization.CultureInfo.InvariantCulture))%;background:@g.Color"></div>
+                    </div>
+                    <span class="raritybar__count">@(count > 0 ? Ui.Fmt(count) : "·")</span>
+                    <span class="raritybar__name" style="color:@g.Color">@g.NamePt</span>
+                </div>
+            }
+        </div>
+    };
+
+    private RenderFragment RenderMatrix(Derived d) => __builder =>
+    {
+        var grades = Items.Grades;
+        var groups = CategoryOrder
+            .Select(cat => (Cat: cat, Items: d.Rows.Where(r => r.Row.Category == cat).ToList()))
+            .Where(g => g.Items.Count > 0)
+            .ToList();
+        <div class="invmatrix__wrap">
+            <table class="invmatrix">
+                <thead>
+                    <tr>
+                        <th class="invmatrix__corner">Tipo</th>
+                        @foreach (var g in grades)
+                        {
+                            <th class="invmatrix__grade@(g.Marketable ? " invmatrix__grade--mkt" : "")" title="@(g.Marketable ? $"{g.NamePt} · vendável no Market" : g.NamePt)">
+                                <span class="invmatrix__dot" style="background:@g.Color"></span>@g.NamePt
+                            </th>
+                        }
+                        <th class="invmatrix__total">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in groups)
+                    {
+                        <tr class="invmatrix__cat">
+                            <td colspan="@(grades.Count + 2)">@Items.CategoryLabels.GetValueOrDefault(group.Cat)</td>
+                        </tr>
+                        @foreach (var item in group.Items)
+                        {
+                            <tr>
+                                <th class="invmatrix__rowhead">@item.Row.Label</th>
+                                @foreach (var g in grades)
+                                {
+                                    var c = g.Tier < item.Counts.Length ? item.Counts[g.Tier] : 0;
+                                    var intensity = d.MaxCell > 0 && c > 0 ? 0.12 + (double)c / d.MaxCell * 0.6 : 0;
+                                    var cellCls = "invmatrix__cell" + (c == 0 ? " invmatrix__cell--empty" : "") + (g.Marketable && c > 0 ? " invmatrix__cell--mkt" : "");
+                                    <td class="@cellCls" style="@(c > 0 ? $"background:{HexA(g.Color, intensity)}" : "")">@(c > 0 ? Ui.Fmt(c) : "·")</td>
+                                }
+                                <td class="invmatrix__total">@Ui.Fmt(item.Total)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th class="invmatrix__rowhead">Total</th>
+                        @foreach (var g in grades)
+                        {
+                            var v = g.Tier < d.ByGrade.Length ? d.ByGrade[g.Tier] : 0;
+                            <td class="invmatrix__total">@(v > 0 ? Ui.Fmt(v) : "·")</td>
+                        }
+                        <td class="invmatrix__total invmatrix__total--grand">@Ui.Fmt(d.GearTotal)</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    };
+}

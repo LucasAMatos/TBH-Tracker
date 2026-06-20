@@ -1,0 +1,49 @@
+@inject TrackerApi Api
+
+<div class="raw__toolbar">
+    <button class="btn btn--ghost btn--sm" @onclick="Load" disabled="@_loading">
+        @(_loading ? "Carregando…" : "Atualizar")
+    </button>
+    <span class="card__hint">
+        Lido sob demanda do save (não trafega a cada atualização).
+        @if (_fetchedAt != null)
+        {
+            <text> Lido @_fetchedAt.Value.ToString("HH:mm:ss", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")).</text>
+        }
+    </span>
+</div>
+@if (_text != null)
+{
+    <pre class="raw">@_text</pre>
+}
+else if (!_loading)
+{
+    <p class="card__hint">Sem JSON disponível (sem save ou sem chave?).</p>
+}
+
+@code {
+    private string? _text;
+    private bool _loading;
+    private DateTime? _fetchedAt;
+
+    private static readonly System.Text.Json.JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    protected override void OnInitialized() => Load();
+
+    private void Load()
+    {
+        _loading = true;
+        var raw = Api.GetRawSave();
+        if (raw == null)
+        {
+            _text = null;
+        }
+        else
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(raw, Indented);
+            _text = json.Length > 20000 ? json[..20000] : json;
+        }
+        _fetchedAt = DateTime.Now;
+        _loading = false;
+    }
+}

@@ -1,0 +1,278 @@
+@inject TrackerApi Api
+@{
+    var currentRaw = Snapshot?.Stage?.Raw;
+    var maxRaw = Snapshot?.MaxCompletedStage?.Raw;
+}
+
+<div class="farm">
+    @* ExportBar *@
+    <div class="farm-export">
+        <span class="card__hint">Exportar:</span>
+        <button class="btn btn--ghost btn--sm" @onclick="ExportJson" disabled="@(Snapshot == null)">Sessão (JSON)</button>
+        <button class="btn btn--ghost btn--sm" @onclick="ExportCsv" disabled="@(Snapshot == null)">Farm (CSV)</button>
+    </div>
+
+    @RenderLevelAdvice()
+    @RenderMeasurements()
+    @RenderProgress(maxRaw)
+    @RenderBestStages(currentRaw)
+</div>
+
+@code {
+    [Parameter] public Snapshot? Snapshot { get; set; }
+
+    private const int TopLimit = 12;
+    private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
+
+    private sealed record MetricDef(string Id, string Label, string Hint);
+    private static readonly MetricDef[] Metrics =
+    {
+        new("gold", "Ouro", "ouro por HP abatido"),
+        new("exp", "XP", "EXP por HP abatido"),
+        new("combo", "Combo", "ouro + XP equilibrados")
+    };
+    private static readonly int[] Difficulties = { 0, 1, 2, 3, 4 };
+
+    private string _metric = "gold";
+    private int _difficulty = 0;
+
+    private static string Pad4(int key) => key.ToString().PadLeft(4, '0');
+
+    private static string FmtNum(double? n) => n == null ? "—" : Math.Round(n.Value).ToString("#,##0", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+    private static string FmtRate(double? perHour) => perHour == null ? "—" : $"{FmtNum(perHour)}/h";
+    private static string FmtClearsRate(double? perHour)
+    {
+        if (perHour == null) return "—";
+        var v = perHour.Value < 10 ? perHour.Value.ToString("0.0", Inv) : FmtNum(perHour);
+        return $"{v}/h";
+    }
+    private static string FmtDuration(double seconds)
+    {
+        if (seconds < 60) return $"{Math.Round(seconds)}s";
+        var totalMin = (int)Math.Round(seconds / 60);
+        var h = totalMin / 60;
+        var m = totalMin % 60;
+        if (h == 0) return $"{m}min";
+        if (m == 0) return $"{h}h";
+        return $"{h}h {m}min";
+    }
+
+    private void ExportJson()
+    {
+        if (Snapshot == null) return;
+        _ = Api.SaveTextFileAsync($"tbh-sessao-{Export.ExportStamp()}.json", Export.BuildSessionJson(Snapshot));
+    }
+    private void ExportCsv()
+    {
+        if (Snapshot == null) return;
+        _ = Api.SaveTextFileAsync($"tbh-farm-{Export.ExportStamp()}.csv", Export.BuildFarmCsv(Snapshot));
+    }
+
+    private RenderFragment RenderLevelAdvice() => __builder =>
+    {
+        var currentRaw = Snapshot?.Stage?.Raw;
+        var activeLevels = (Snapshot?.Heroes ?? new()).Where(h => h.Active).Select(h => h.Level ?? 0);
+        var advice = Stages.ComputeLevelAdvice(currentRaw, activeLevels);
+        if (advice.Status == "unknown" || advice.RecommendedLevel == null) return;
+
+        var rec = advice.RecommendedLevel;
+        var avg = advice.AvgActiveLevel != null ? (int?)Math.Round(advice.AvgActiveLevel.Value) : null;
+        var gap = advice.Delta != null ? (int?)Math.Abs(Math.Round(advice.Delta.Value)) : null;
+        var stageLabel = Stages.StageDataForRaw(currentRaw)?.Label ?? currentRaw ?? "—";
+        var cls = advice.Status == "under" ? "alert alert--warn" : advice.Status == "over" ? "alert alert--info" : "alert alert--ok";
+
+        <section class="section">
+            <div class="@cls">
+                @if (advice.Status == "under")
+                {
+                    <text>Seus heróis ativos estão ~<strong>@gap</strong> nível(is) <strong>abaixo</strong> do recomendado (@rec) para o estágio <strong>@stageLabel</strong> — o clear tende a ficar lento ou arriscado. Considere descer de estágio ou subir de nível.</text>
+                }
+                else if (advice.Status == "over")
+                {
+                    <text>Seus heróis ativos estão ~<strong>@gap</strong> nível(is) <strong>acima</strong> do recomendado (@rec) para <strong>@stageLabel</strong> — há <strong>penalidade de XP por over-level</strong>. Considere subir de estágio para farmar XP melhor.</text>
+                }
+                else
+                {
+                    <text>Nível adequado para <strong>@stageLabel</strong> (recomendado @rec, seus ativos ~@avg).</text>
+                }
+            </div>
+        </section>
+    };
+
+    private RenderFragment RenderMeasurements() => __builder =>
+    {
+        var farm = Snapshot?.StageFarm;
+        if (farm == null || farm.Entries.Count == 0)
+        {
+            <section class="section">
+                <div class="section__head"><h3 class="section__title">Medições da sessão</h3></div>
+                <div class="alert alert--info">
+                    Ainda sem medições. Ouro/h e XP/h por estágio aparecem conforme o jogo roda e grava o
+                    save (precisa de pelo menos dois saves no mesmo estágio). As medições são acumuladas e
+                    persistidas por save entre sessões.
+                </div>
+            </section>
+            return;
+        }
+        var entries = farm.Entries.OrderByDescending(e => e.Seconds).ToList();
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Medições da sessão</h3>
+                <span class="card__hint">@FmtDuration(farm.TotalSeconds) de farm observado · @entries.Count estágio(s)</span>
+            </div>
+            <div class="farmtable__wrap">
+                <table class="farmtable">
+                    <thead>
+                        <tr>
+                            <th>Estágio</th>
+                            <th class="farmtable__num">Tempo</th>
+                            <th class="farmtable__num">Ouro/h</th>
+                            <th class="farmtable__num">XP/h</th>
+                            <th class="farmtable__num">Clears/h</th>
+                            <th class="farmtable__num">Tempo/clear</th>
+                            <th class="farmtable__num">Clears (est.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in entries)
+                        {
+                            var data = Stages.StageDataForRaw(e.StageRaw);
+                            var label = data?.Label ?? e.StageRaw;
+                            var name = data?.Name;
+                            var isCurrent = farm.CurrentStageRaw == e.StageRaw;
+                            <tr class="@(isCurrent ? "farmtable__row--current" : "")">
+                                <td>
+                                    <span class="farmtable__stage">@label</span>
+                                    @if (!string.IsNullOrEmpty(name))
+                                    {
+                                        <span class="farmtable__name">@name</span>
+                                    }
+                                    @if (isCurrent)
+                                    {
+                                        <span class="farmtable__here">atual</span>
+                                    }
+                                </td>
+                                <td class="farmtable__num">@FmtDuration(e.Seconds)</td>
+                                <td class="farmtable__num farmtable__num--gold">@FmtRate(e.GoldPerHour)</td>
+                                <td class="farmtable__num farmtable__num--exp">@FmtRate(e.ExpPerHour)</td>
+                                <td class="farmtable__num">@FmtClearsRate(e.ClearsPerHour)</td>
+                                <td class="farmtable__num">@(e.SecondsPerClear != null ? FmtDuration(e.SecondsPerClear.Value) : "—")</td>
+                                <td class="farmtable__num">@(e.Clears != null ? FmtNum(e.Clears) : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="card__hint">
+                Taxas medidas pelo delta entre leituras enquanto o estágio fica estável (intervalos com
+                troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>Clears são
+                estimados</strong> = kills no estágio ÷ inimigos por clear do catálogo; o <strong>tempo por
+                clear</strong> é derivado dessa estimativa (o save não registra a fronteira/tempo de cada
+                corrida individual). Estágios fora do catálogo (ex.: boss de ato) não têm estimativa de clears.
+            </p>
+        </section>
+    };
+
+    private RenderFragment RenderProgress(string? maxRaw) => __builder =>
+    {
+        var progress = Stages.StageProgress(maxRaw);
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Progresso por dificuldade</h3>
+                <span class="card__hint">Fases concluídas do catálogo (1–9 por ato, sem boss)</span>
+            </div>
+            <div class="progress">
+                @foreach (var d in progress)
+                {
+                    var pct = (int)Math.Round(d.Fraction * 100);
+                    <div class="progress__row">
+                        <div class="progress__head">
+                            <span class="progress__name">@d.DifficultyName</span>
+                            <span class="progress__count">@d.Completed/@d.Total (@pct%)</span>
+                        </div>
+                        <div class="progress__bar">
+                            <div class="progress__fill" style="width:@(pct)%"></div>
+                        </div>
+                        <div class="progress__acts">
+                            @foreach (var a in d.Acts)
+                            {
+                                <span class="progress__act@(a.Completed == a.Total ? " progress__act--done" : "")">Ato @a.Act: @a.Completed/@a.Total</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    };
+
+    private RenderFragment RenderBestStages(string? currentRaw) => __builder =>
+    {
+        var ranked = Stages.RankStages(_metric, _difficulty == 0 ? null : _difficulty, TopLimit);
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Melhores estágios</h3>
+                <span class="card__hint">
+                    Eficiência pelo catálogo (densidade por HP) — proxy de ganho por tempo. Medições reais
+                    refinam isto abaixo.
+                </span>
+            </div>
+            <div class="farm-filters">
+                <div class="invscopes">
+                    @foreach (var m in Metrics)
+                    {
+                        <button type="button" class="chip@(_metric == m.Id ? " chip--active" : "")" title="@m.Hint" @onclick="@(() => _metric = m.Id)">@m.Label</button>
+                    }
+                </div>
+                <div class="invscopes">
+                    @foreach (var d in Difficulties)
+                    {
+                        <button type="button" class="chip@(_difficulty == d ? " chip--active" : "")" @onclick="@(() => _difficulty = d)">@(d == 0 ? "Todas" : Stages.DifficultyName(d))</button>
+                    }
+                </div>
+            </div>
+            <div class="farmtable__wrap">
+                <table class="farmtable">
+                    <thead>
+                        <tr>
+                            <th class="farmtable__rank">#</th>
+                            <th>Estágio</th>
+                            <th class="farmtable__num">Nível</th>
+                            <th class="farmtable__num">Ouro/clear</th>
+                            <th class="farmtable__num">XP/clear</th>
+                            <th class="farmtable__num">Ouro/HP</th>
+                            <th class="farmtable__num">XP/HP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < ranked.Count; i++)
+                        {
+                            var s = ranked[i];
+                            var isCurrent = currentRaw != null && Pad4(s.Key) == currentRaw;
+                            <tr class="@(isCurrent ? "farmtable__row--current" : "")">
+                                <td class="farmtable__rank">@(i + 1)</td>
+                                <td>
+                                    <span class="farmtable__stage">@s.Label</span>
+                                    <span class="farmtable__name">@s.Name</span>
+                                    @if (isCurrent)
+                                    {
+                                        <span class="farmtable__here">você está aqui</span>
+                                    }
+                                    <div class="farmtable__sub">@Stages.DifficultyName(s.Difficulty) · @FmtNum(s.Count) inimigos</div>
+                                </td>
+                                <td class="farmtable__num">@s.Level</td>
+                                <td class="farmtable__num">@FmtNum(s.ExpectedGold)</td>
+                                <td class="farmtable__num">@FmtNum(s.ExpectedEXP)</td>
+                                <td class="farmtable__num">@s.GoldPerHP.ToString("0.0000", Inv)</td>
+                                <td class="farmtable__num">@s.ExpPerHP.ToString("0.0000", Inv)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="card__hint">
+                O catálogo cobre as fases 1–9 de cada ato (sem boss de ato). Ouro/clear e XP/clear são
+                valores base; ganhos reais variam com runas, nível e composição.
+            </p>
+        </section>
+    };
+}

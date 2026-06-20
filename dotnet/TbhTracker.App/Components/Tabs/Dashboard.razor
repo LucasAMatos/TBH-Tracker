@@ -1,0 +1,510 @@
+@inject TrackerApi Api
+@{
+    var s = Snapshot;
+    var runePlan = RuneTarget != null ? Runes.PlanRuneTarget(RuneTarget.Value, s.Runes, s.Gold) : null;
+    var activeHeroes = s.Heroes.Where(h => h.Active).ToList();
+    var heroSlots = BuildHeroSlots(s);
+    var nextCube = Cube.NextMilestone(s.CubeLevel);
+    var boxLevel = Boxes.ClassifyBacklog(s.BoxQuantity, _boxThresholds);
+    var flow = s.GoldFlow;
+    double? goldRate = flow != null ? (flow.WindowRatePerHour ?? flow.SessionRatePerHour) : null;
+}
+
+<div class="dashboard">
+    <div class="dashboard__toolbar">
+        <button class="btn btn--ghost btn--sm @(_customizing ? "btn--active" : "")" @onclick="() => _customizing = !_customizing">
+            @(_customizing ? "Fechar" : "Personalizar")
+        </button>
+    </div>
+
+    @if (_customizing)
+    {
+        <section class="section customize">
+            <div class="customize__head">
+                <h3 class="section__title">Personalizar Dashboard</h3>
+                <button class="btn btn--ghost btn--sm" @onclick="RestoreDefault">Restaurar padrão</button>
+            </div>
+            <div class="customize__list">
+                @foreach (var w in Catalog.Widgets)
+                {
+                    var on = !_layout.Hidden.Contains(w.Id);
+                    <label class="switch @(on ? "switch--on" : "")">
+                        <input class="switch__input" type="checkbox" checked="@on" @onchange="() => ToggleHidden(w.Id)" />
+                        <span class="switch__track"><span class="switch__thumb"></span></span>
+                        <span class="switch__label">@w.Title</span>
+                    </label>
+                }
+            </div>
+            <p class="card__hint">
+                Desligar um widget só o esconde do Dashboard. Widgets que dependem de dados (ex.: Runa-alvo,
+                Cubo) só aparecem quando há o que mostrar.
+            </p>
+        </section>
+    }
+
+    @Widget(WidgetIds.Cards, null, @<text>
+        <div class="grid">
+            @Card("Ouro", Ui.FmtNum(s.Gold), goldRate != null ? FmtRate(goldRate) : null, null)
+            @Card("Estagio atual", s.Stage != null ? s.Stage.Raw : "—", s.Stage?.Label, null)
+            @Card("Onda", s.CurrentWave != null ? s.CurrentWave.ToString() : "—", s.CurrentWave == 0 ? "clear" : null, null)
+            @Card("Estagio maximo", s.MaxCompletedStage != null ? s.MaxCompletedStage.Raw : "—", s.MaxCompletedStage?.Label, null)
+            @Card("Cubo", s.CubeLevel != null ? $"Nv {s.CubeLevel}" : "—",
+                s.CubeLevel == null ? null : (nextCube != null ? $"Próx: Nv {nextCube.Level} · {nextCube.Name}" : "tudo desbloqueado"), null)
+            @Card("Baús", Ui.FmtNum(s.BoxQuantity),
+                boxLevel == "high" ? "transbordando" : boxLevel == "warn" ? "acumulando" : null, BacklogTone(boxLevel))
+            @Card("Herois ativos", $"{activeHeroes.Count} / {HeroSlots}", s.Heroes.Count > 0 ? $"{s.Heroes.Count} no roster" : null, null)
+            @Card("Tempo de jogo", FmtPlayTime(s.PlayTimeSeconds), null, null)
+        </div>
+    </text>)
+
+    @if (runePlan != null)
+    {
+        @Widget(WidgetIds.RuneTarget, null, RenderRuneTarget(runePlan))
+    }
+    @if (flow != null)
+    {
+        @Widget(WidgetIds.GoldFlow, null, RenderGoldFlow(flow))
+    }
+    @if (s.HeroEvents != null)
+    {
+        @Widget(WidgetIds.LevelUps, null, RenderLevelUps(s.HeroEvents))
+    }
+    @if (s.StageEvents != null)
+    {
+        @Widget(WidgetIds.StageProgress, null, RenderStageEvents(s.StageEvents))
+    }
+    @if (s.Boxes.Count > 0)
+    {
+        @Widget(WidgetIds.Boxes,
+            @<ThresholdEditor Thresholds="_boxThresholds" OnSave="SaveBoxThresholds" />,
+            RenderBoxes(s.Boxes, s.BoxQuantity, boxLevel))
+    }
+    @if (s.Inventory != null && s.Inventory.GearCount > 0)
+    {
+        @Widget(WidgetIds.InventoryRarity, null, RenderInventoryRarity(s.Inventory))
+    }
+    @if (s.CubeLevel != null)
+    {
+        @Widget(WidgetIds.CubeMilestones, null, RenderCubeMilestones(s.CubeLevel.Value, nextCube))
+    }
+    @if (s.Heroes.Count > 0)
+    {
+        @Widget(WidgetIds.ActiveHeroes, null, RenderActiveHeroes(heroSlots))
+    }
+    @Widget(WidgetIds.RawJson, null, @<RawJsonBody />)
+</div>
+
+@code {
+    [Parameter] public Snapshot Snapshot { get; set; } = new();
+    [Parameter] public int? RuneTarget { get; set; }
+
+    private const int HeroSlots = 3;
+    private static readonly System.Globalization.CultureInfo PtBr = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+
+    private BoxThresholds _boxThresholds = Boxes.DefaultThresholds;
+    private DashboardLayout _layout = DashboardLayout.Default();
+    private bool _customizing;
+
+    protected override void OnInitialized()
+    {
+        _boxThresholds = Api.GetBoxThresholds();
+        _layout = Api.GetDashboardLayout();
+    }
+
+    private List<HeroSnapshot?> BuildHeroSlots(Snapshot s)
+    {
+        var slots = new List<HeroSnapshot?>();
+        for (var i = 0; i < HeroSlots; i++)
+        {
+            if (i >= s.ArrangedHeroKeys.Count) { slots.Add(null); continue; }
+            var key = s.ArrangedHeroKeys[i];
+            slots.Add(s.Heroes.FirstOrDefault(h => h.Key == key));
+        }
+        return slots;
+    }
+
+    private void SaveBoxThresholds((int Warn, int High) t) => _boxThresholds = Api.SetBoxThresholds(t.Warn, t.High);
+
+    private void PersistLayout(DashboardLayout next) => _layout = Api.SetDashboardLayout(next);
+
+    private static List<string> ToggleIn(List<string> list, string id)
+    {
+        var copy = new List<string>(list);
+        if (!copy.Remove(id)) copy.Add(id);
+        return copy;
+    }
+
+    private void ToggleHidden(string id) => PersistLayout(new DashboardLayout { Hidden = ToggleIn(_layout.Hidden, id), Collapsed = _layout.Collapsed });
+    private void ToggleCollapse(string id) => PersistLayout(new DashboardLayout { Hidden = _layout.Hidden, Collapsed = ToggleIn(_layout.Collapsed, id) });
+    private void RestoreDefault() => PersistLayout(DashboardLayout.Default());
+
+    private static string WidgetTitle(string id) => Catalog.Widgets.FirstOrDefault(w => w.Id == id)?.Title ?? id;
+
+    // ── Formatadores (port dos helpers do React) ──
+    private static string FmtSigned(double n)
+    {
+        var sign = n > 0 ? "+" : n < 0 ? "−" : "";
+        return $"{sign}{Math.Abs(Math.Round(n)).ToString("#,##0", PtBr)}";
+    }
+    private static string FmtRate(double? perHour) => perHour == null ? "—" : $"{FmtSigned(perHour.Value)}/h";
+    private static string FmtClock(long at) => DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime.ToString("HH:mm:ss", PtBr);
+    private static string FmtPlayTime(int? seconds)
+    {
+        if (seconds == null) return "—";
+        var h = seconds.Value / 3600;
+        var m = (seconds.Value % 3600) / 60;
+        return $"{h}h {m}m";
+    }
+    private static string FmtAutoOpen(int? seconds) => seconds == null ? "sem auto-abrir" : $"auto-abrir {seconds}s";
+    private static string FmtDuration(double seconds)
+    {
+        if (seconds < 60) return $"{Math.Round(seconds)}s";
+        var totalMin = (int)Math.Round(seconds / 60);
+        var h = totalMin / 60;
+        var m = totalMin % 60;
+        if (h == 0) return $"{m}min";
+        if (m == 0) return $"{h}h";
+        return $"{h}h {m}min";
+    }
+    private static string? BacklogTone(string level) => level switch { "warn" => "warn", "high" => "alert", _ => null };
+
+    private RenderFragment Card(string label, string value, string? hint, string? tone) => __builder =>
+    {
+        var cls = tone != null ? $"card card--{tone}" : "card";
+        <div class="@cls">
+            <span class="card__label">@label</span>
+            <span class="card__value">@value</span>
+            @if (hint != null)
+            {
+                <span class="card__hint">@hint</span>
+            }
+        </div>
+    };
+
+    private RenderFragment Widget(string id, RenderFragment? headerExtra, RenderFragment body) => __builder =>
+    {
+        if (_layout.Hidden.Contains(id)) return;
+        var collapsed = _layout.Collapsed.Contains(id);
+        <section class="section widget">
+            <div class="widget__head">
+                <button class="widget__toggle" @onclick="() => ToggleCollapse(id)" aria-expanded="@(!collapsed)">
+                    <span class="widget__chevron @(collapsed ? "widget__chevron--collapsed" : "")">▾</span>
+                    <h3 class="section__title">@WidgetTitle(id)</h3>
+                </button>
+                @if (headerExtra != null)
+                {
+                    <div class="widget__actions">@headerExtra</div>
+                }
+            </div>
+            @if (!collapsed)
+            {
+                <div class="widget__body">@body</div>
+            }
+        </section>
+    };
+
+    private RenderFragment RenderRuneTarget(RuneTargetPlan plan) => __builder =>
+    {
+        var meta = Runes.CategoryMeta.GetValueOrDefault(plan.Category) ?? new RuneCategoryMeta();
+        var icon = AssetUrls.RuneIcon(plan.TargetIcon);
+        var pct = (int)Math.Round(plan.Progress * 100);
+        var done = plan.AlreadyComplete || (plan.GoldHave != null && plan.GoldMissing <= 0);
+        var readyCount = plan.Steps.Count(step => step.Affordable);
+        <div class="runetarget @(done ? "runetarget--done" : "")">
+            <div class="runetarget__head">
+                @if (icon != null)
+                {
+                    <img class="runetarget__icon" src="@icon" alt="" />
+                }
+                <div class="runetarget__id">
+                    <div class="runetarget__name">@plan.TargetName</div>
+                    <span class="rune-badge" style="border-color:@meta.Color;color:@meta.Color">@meta.Label</span>
+                    <span class="runetarget__lvl">Nv @plan.CurrentLevel / @plan.MaxLevel</span>
+                </div>
+            </div>
+            @if (plan.AlreadyComplete)
+            {
+                <p class="runetarget__msg runetarget__msg--ok">Runa-alvo já está no nível máximo. ✓</p>
+            }
+            else if (!plan.Reachable)
+            {
+                <p class="runetarget__msg">Não foi possível traçar o caminho de pré-requisitos desta runa.</p>
+            }
+            else
+            {
+                <div class="runetarget__nums">
+                    <div><span class="card__label">Custo total</span><span class="runetarget__val">@Ui.FmtNum(plan.TotalGoldCost)</span></div>
+                    <div><span class="card__label">Ouro atual</span><span class="runetarget__val">@Ui.FmtNum(plan.GoldHave)</span></div>
+                    <div>
+                        <span class="card__label">@(done ? "Pode comprar" : "Falta")</span>
+                        <span class="runetarget__val @(done ? "runetarget__val--ok" : "")">@(done ? "✓" : Ui.FmtNum(plan.GoldMissing))</span>
+                    </div>
+                </div>
+                <div class="runetarget__bar">
+                    <div class="runetarget__fill @(done ? "runetarget__fill--ok" : "")" style="width:@(pct)%"></div>
+                </div>
+                <p class="card__hint">
+                    @pct% do ouro necessário · @plan.Steps.Count passo(s) no caminho@(readyCount > 0 ? $" · {readyCount} já dá pra comprar em sequência" : "")@(plan.HasNonGold ? " · alguns pré-requisitos custam soul stones (não contados no ouro)" : "")
+                </p>
+                @if (plan.Steps.Count > 0)
+                {
+                    <ul class="runetarget__steps">
+                        @foreach (var step in plan.Steps)
+                        {
+                            var stepIcon = AssetUrls.RuneIcon(step.Icon);
+                            <li class="runetarget__step @(step.Affordable ? "runetarget__step--ready" : "")">
+                                @if (stepIcon != null)
+                                {
+                                    <img class="runetarget__stepicon" src="@stepIcon" alt="" />
+                                }
+                                <span class="runetarget__stepname">
+                                    @step.Name
+                                    @if (step.IsTarget)
+                                    {
+                                        <span class="runetarget__steptag">alvo</span>
+                                    }
+                                    @if (step.Affordable)
+                                    {
+                                        <span class="runetarget__steptag runetarget__steptag--ready">✓ dá pra comprar</span>
+                                    }
+                                </span>
+                                <span class="runetarget__steplvl">Nv @step.FromLevel → @step.ToLevel</span>
+                                <span class="runetarget__stepcost">@(step.PayableInGold ? $"{Ui.FmtNum(step.GoldCost)} ouro" : "soul stones")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    };
+
+    private RenderFragment RenderGoldFlow(GoldFlow flow) => __builder =>
+    {
+        var hasEvents = flow.Events.Count > 0;
+        <div class="goldflow__rates">
+            <div class="goldflow__rate">
+                <span class="card__label">Ouro/h (janela @(flow.WindowSeconds)s)</span>
+                <span class="goldflow__rate-val @((flow.WindowRatePerHour ?? 0) < 0 ? "goldflow__neg" : "")">@FmtRate(flow.WindowRatePerHour)</span>
+            </div>
+            <div class="goldflow__rate">
+                <span class="card__label">Ouro/h (sessão)</span>
+                <span class="goldflow__rate-val @((flow.SessionRatePerHour ?? 0) < 0 ? "goldflow__neg" : "")">@FmtRate(flow.SessionRatePerHour)</span>
+            </div>
+            <div class="goldflow__rate">
+                <span class="card__label">Líquido da sessão</span>
+                <span class="goldflow__rate-val @(flow.NetDelta < 0 ? "goldflow__neg" : "")">@FmtSigned(flow.NetDelta)</span>
+            </div>
+        </div>
+        if (hasEvents)
+        {
+            <ul class="goldlog">
+                @foreach (var e in flow.Events)
+                {
+                    <li class="goldlog__item">
+                        <span class="goldlog__time">@FmtClock(e.At)</span>
+                        <span class="goldlog__delta @(e.Delta < 0 ? "goldflow__neg" : "")">@FmtSigned(e.Delta)</span>
+                        <span class="goldlog__total">total @Ui.FmtNum(e.Gold)</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="card__hint">
+                Coletando… os eventos de ouro aparecem conforme o save é atualizado (o jogo precisa
+                estar rodando). Gasto (ex.: runas) aparece como valor negativo.
+            </p>
+        }
+    };
+
+    private RenderFragment RenderLevelUps(HeroEvents heroEvents) => __builder =>
+    {
+        if (heroEvents.LevelUps.Count > 0)
+        {
+            <ul class="goldlog">
+                @foreach (var e in heroEvents.LevelUps)
+                {
+                    <li class="goldlog__item">
+                        <span class="goldlog__time">@FmtClock(e.At)</span>
+                        <span class="levelup__hero">@e.HeroName</span>
+                        <span class="levelup__delta">Nv @e.FromLevel → @e.ToLevel</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="card__hint">
+                Coletando… os level-ups aparecem conforme os heróis sobem de nível (o jogo precisa estar
+                rodando). Só registra a partir da 1ª leitura da sessão.
+            </p>
+        }
+    };
+
+    private RenderFragment RenderStageEvents(StageEvents stageEvents) => __builder =>
+    {
+        if (stageEvents.Events.Count > 0)
+        {
+            <ul class="goldlog">
+                @foreach (var e in stageEvents.Events)
+                {
+                    <li class="goldlog__item">
+                        <span class="goldlog__time">@FmtClock(e.At)</span>
+                        <span class="stageevt__label">
+                            <span class="stageevt__badge stageevt__badge--@(e.Kind == "new-max" ? "max" : "change")">@(e.Kind == "new-max" ? "novo recorde" : "troca")</span>
+                            @e.ToLabel
+                        </span>
+                        <span class="goldlog__total">@e.ToRaw</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="card__hint">
+                Coletando… os eventos aparecem ao trocar de estágio ou bater um novo estágio máximo (o jogo
+                precisa estar rodando). Só registra a partir da 1ª leitura da sessão.
+            </p>
+        }
+    };
+
+    private RenderFragment RenderBoxes(List<BoxCount> boxes, int? total, string level) => __builder =>
+    {
+        var drains = boxes.Select(b => Boxes.BoxDrainSeconds(b.Kind, b.Quantity)).Where(x => x != null).Select(x => x!.Value).ToList();
+        var fullClear = drains.Count > 0 ? (int?)drains.Max() : null;
+        var manualBoxes = boxes.Where(b => Boxes.BoxAutoOpenSeconds(b.Kind) == null).Sum(b => b.Quantity);
+        if (level != "ok")
+        {
+            <div class="alert @(level == "high" ? "alert--err" : "alert--warn")">
+                @(level == "high"
+                    ? $"Muitos baús não abertos ({Ui.FmtNum(total)}) — risco de perder drops se o inventário/stash encher. "
+                    : $"Baús acumulando ({Ui.FmtNum(total)}). ")
+                Abra-os ou garanta o auto-abrir (runas do Extremo Norte) e espaço de inventário/stash.
+            </div>
+        }
+        <div class="boxbar">
+            @foreach (var b in boxes)
+            {
+                var drain = Boxes.BoxDrainSeconds(b.Kind, b.Quantity);
+                <div class="boxchip">
+                    <span class="boxchip__dot" style="background:@Boxes.BoxColor(b.Kind)"></span>
+                    <div>
+                        <div class="boxchip__qty">@Ui.FmtNum(b.Quantity)</div>
+                        <div class="boxchip__meta">@b.Label · @FmtAutoOpen(Boxes.BoxAutoOpenSeconds(b.Kind))</div>
+                        <div class="boxchip__eta">
+                            @(drain != null ? $"≈ esvazia em {FmtDuration(drain.Value)}" : b.Quantity > 0 ? "abrir manualmente" : "vazio")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        if (fullClear != null)
+        {
+            <p class="card__hint">
+                No auto-abrir base (sem runas do Extremo Norte), o acúmulo esvazia em ~@FmtDuration(fullClear.Value).@(manualBoxes > 0 ? $" Baús de Ato ({Ui.FmtNum(manualBoxes)}) não têm auto-abrir — abra manualmente." : "")
+            </p>
+        }
+        <p class="card__hint">
+            Avisa a partir de @_boxThresholds.Warn e alerta a partir de @_boxThresholds.High baús (não há teto fixo no jogo).
+        </p>
+    };
+
+    private RenderFragment RenderInventoryRarity(InventorySummary inventory) => __builder =>
+    {
+        var byGrade = new int[inventory.GradeCount];
+        foreach (var row in inventory.Rows)
+            for (var tier = 0; tier < row.Counts.Length && tier < byGrade.Length; tier++)
+                byGrade[tier] += row.Counts[tier];
+        var gearTotal = byGrade.Sum();
+        var present = Items.Grades.Where(g => (g.Tier < byGrade.Length ? byGrade[g.Tier] : 0) > 0).OrderByDescending(g => g.Tier).ToList();
+        <div class="rarityhi @(inventory.LegendaryPlus > 0 ? "rarityhi--on" : "")">
+            <span class="rarityhi__count">@Ui.FmtNum(inventory.LegendaryPlus)</span>
+            <span class="rarityhi__label">Legendary+ <span class="rarityhi__sub">vendável no Market</span></span>
+            <span class="rarityhi__total">@Ui.FmtNum(gearTotal) equipamentos</span>
+        </div>
+        if (gearTotal > 0)
+        {
+            <div class="raritystrip">
+                @foreach (var g in present)
+                {
+                    var count = g.Tier < byGrade.Length ? byGrade[g.Tier] : 0;
+                    var pct = (int)Math.Round((double)count / gearTotal * 100);
+                    <div class="raritychip @(g.Marketable ? "raritychip--mkt" : "")" title="@g.NamePt: @Ui.FmtNum(count) (@pct%)">
+                        <span class="raritychip__dot" style="background:@g.Color"></span>
+                        <span class="raritychip__name" style="color:@g.Color">@g.NamePt</span>
+                        <span class="raritychip__count">@Ui.FmtNum(count)</span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="card__hint">Sem equipamentos no save lido.</p>
+        }
+        <p class="card__hint">
+            Detalhe completo (tipo × raridade, por local) na aba Inventário. Apenas Legendary+ é
+            vendável no Steam Market.
+        </p>
+    };
+
+    private RenderFragment RenderCubeMilestones(int cubeLevel, CubeMilestone? nextCube) => __builder =>
+    {
+        if (nextCube != null)
+        {
+            <div class="alert alert--info">
+                Cubo <strong>Nv @cubeLevel</strong> — faltam <strong>@(nextCube.Level - cubeLevel)</strong> nível(is) para <strong>Nv @nextCube.Level · @nextCube.Name</strong>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert--ok">Todos os marcos do Cubo desbloqueados.</div>
+        }
+        <ul class="milestones">
+            @foreach (var m in Cube.Milestones)
+            {
+                var reached = Cube.IsMilestoneReached(m, cubeLevel);
+                var isNext = nextCube?.Level == m.Level;
+                var cls = "milestone" + (reached ? " milestone--reached" : "") + (isNext ? " milestone--next" : "");
+                <li class="@cls">
+                    <span class="milestone__mark">@(reached ? "✓" : isNext ? "→" : "•")</span>
+                    <span class="milestone__lvl">Nv @m.Level</span>
+                    <span class="milestone__name">@m.Name</span>
+                    <span class="milestone__desc">@m.Description</span>
+                </li>
+            }
+        </ul>
+    };
+
+    private RenderFragment RenderActiveHeroes(List<HeroSnapshot?> slots) => __builder =>
+    {
+        <div class="heroslots">
+            @for (var i = 0; i < slots.Count; i++)
+            {
+                var h = slots[i];
+                var slotNum = i + 1;
+                if (h != null)
+                {
+                    var portrait = AssetUrls.HeroPortrait(h.Key);
+                    <div class="heroslot">
+                        @if (portrait != null)
+                        {
+                            <img class="heroavatar heroavatar--sm" src="@portrait" alt="" />
+                        }
+                        <span class="heroslot__slot">Slot @slotNum</span>
+                        <span class="heroslot__name">@h.Name</span>
+                        <span class="heroslot__meta">Nível @(h.Level?.ToString() ?? "—")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="heroslot heroslot--empty">
+                        <span class="heroslot__slot">Slot @slotNum</span>
+                        <span class="heroslot__name">Vazio</span>
+                        <span class="heroslot__meta">slot livre</span>
+                    </div>
+                }
+            }
+        </div>
+        <p class="card__hint">Roster completo (todos os 6 heróis) vai para a aba Heróis (H5).</p>
+    };
+}

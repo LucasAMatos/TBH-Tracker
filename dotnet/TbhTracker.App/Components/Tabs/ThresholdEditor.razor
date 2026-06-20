@@ -1,0 +1,40 @@
+@if (!_open)
+{
+    <button class="btn btn--ghost btn--sm" @onclick="() => _open = true">Ajustar limiares</button>
+}
+else
+{
+    <div class="threshold">
+        <label class="threshold__field">
+            Avisar a partir de
+            <input class="input input--sm" type="number" min="1" @bind="_warn" />
+        </label>
+        <label class="threshold__field">
+            Alerta a partir de
+            <input class="input input--sm" type="number" min="1" @bind="_high" />
+        </label>
+        <button class="btn btn--primary btn--sm" @onclick="Apply">Salvar</button>
+        <button class="btn btn--ghost btn--sm" @onclick="() => _open = false">Cancelar</button>
+    </div>
+}
+
+@code {
+    [Parameter] public BoxThresholds Thresholds { get; set; } = new();
+    [Parameter] public EventCallback<(int Warn, int High)> OnSave { get; set; }
+
+    private bool _open;
+    private int _warn;
+    private int _high;
+
+    protected override void OnParametersSet()
+    {
+        _warn = Thresholds.Warn;
+        _high = Thresholds.High;
+    }
+
+    private async Task Apply()
+    {
+        await OnSave.InvokeAsync((_warn, _high));
+        _open = false;
+    }
+}

@@ -1,0 +1,233 @@
+@using HeroLogic = TbhTracker.Core.Logic.Heroes
+@{
+    var rows = BuildRows();
+    var activeCount = rows.Count(r => r.Active);
+    var unlockedCount = rows.Count(r => r.Unlocked);
+    var hasSave = HeroesList.Count > 0;
+    var selectedRow = _selected != null ? rows.FirstOrDefault(r => r.Catalog.Key == _selected) : null;
+}
+
+<div class="heroes">
+    @if (selectedRow != null)
+    {
+        @RenderDetail(selectedRow)
+    }
+    else
+    {
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Roster de heróis</h3>
+                <span class="card__hint">@activeCount ativo(s) · @unlockedCount/@HeroLogic.Catalog.Count desbloqueado(s)</span>
+            </div>
+            @if (!hasSave)
+            {
+                <div class="alert alert--info">
+                    Sem dados do save — mostrando o catálogo dos 6 heróis. Nível, XP e estado
+                    (desbloqueado/ativo) aparecem quando o save é lido.
+                </div>
+            }
+            <div class="herogrid">
+                @foreach (var row in rows)
+                {
+                    @RenderCard(row)
+                }
+            </div>
+            <p class="card__hint">
+                Clique em um herói para ver os atributos com ranking entre os 6 e a árvore de habilidades.
+            </p>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter] public List<HeroSnapshot> HeroesList { get; set; } = new();
+    [Parameter] public List<string> ArrangedKeys { get; set; } = new();
+
+    private int? _selected;
+
+    private sealed class HeroRow
+    {
+        public HeroCatalogEntry Catalog = new();
+        public int? Level;
+        public double? Exp;
+        public bool Unlocked;
+        public bool Active;
+        public int? Slot;
+    }
+
+    private List<HeroRow> BuildRows()
+    {
+        var bySaveKey = HeroesList.ToDictionary(h => h.Key, h => h);
+        var slotOf = new Dictionary<string, int>();
+        for (var i = 0; i < ArrangedKeys.Count; i++) slotOf[ArrangedKeys[i]] = i + 1;
+
+        return HeroLogic.Catalog.Select(c =>
+        {
+            bySaveKey.TryGetValue(c.Key.ToString(), out var save);
+            int? slot = slotOf.TryGetValue(c.Key.ToString(), out var s) ? s : null;
+            return new HeroRow
+            {
+                Catalog = c,
+                Level = save?.Level,
+                Exp = save?.Exp,
+                Unlocked = save?.Unlocked ?? false,
+                Active = save?.Active ?? false,
+                Slot = slot
+            };
+        }).ToList();
+    }
+
+    private RenderFragment RenderTag(HeroRow row) => @<text>
+        @if (row.Active)
+        {
+            <span class="herotag herotag--active">Ativo · Slot @row.Slot</span>
+        }
+        else if (row.Unlocked)
+        {
+            <span class="herotag herotag--unlocked">Desbloqueado</span>
+        }
+        else
+        {
+            <span class="herotag herotag--locked">Bloqueado</span>
+        }
+    </text>;
+
+    private RenderFragment RenderCard(HeroRow row) => __builder =>
+    {
+        var c = row.Catalog;
+        var cls = "herocard herocard--btn" + (row.Active ? " herocard--active" : "") + (!row.Unlocked ? " herocard--locked" : "");
+        var portrait = AssetUrls.HeroPortrait(c.Key);
+        <button type="button" class="@cls" @onclick="() => _selected = c.Key">
+            <header class="herocard__head">
+                <div class="herocard__title">
+                    @if (portrait != null)
+                    {
+                        <img class="heroavatar heroavatar--sm" src="@portrait" alt="" loading="lazy" />
+                    }
+                    <span class="herocard__name">@c.NamePt</span>
+                    <span class="tierbadge tierbadge--@c.Tier.ToLower()">Tier @c.Tier</span>
+                </div>
+                <div class="herocard__tags">@RenderTag(row)</div>
+            </header>
+            <p class="herocard__meta">@c.Role · @c.Weapon · @c.Availability</p>
+            <div class="herocard__progress">
+                <div>
+                    <span class="herostat__label">Nível</span>
+                    <span class="herocard__level">@(row.Level?.ToString() ?? "—")</span>
+                </div>
+                <div>
+                    <span class="herostat__label">XP</span>
+                    <span class="herocard__exp">@Ui.FmtNum(row.Exp)</span>
+                </div>
+            </div>
+            <div class="herostats">
+                <div class="herostat"><span class="herostat__label">HP</span><span class="herostat__value">@Ui.Fmt(c.BaseStats.Hp)</span></div>
+                <div class="herostat"><span class="herostat__label">ATK</span><span class="herostat__value">@Ui.Fmt(c.BaseStats.Atk)</span></div>
+                <div class="herostat"><span class="herostat__label">Crít.</span><span class="herostat__value">@Ui.Trim(c.BaseStats.Crit)%</span></div>
+                <div class="herostat"><span class="herostat__label">DPS</span><span class="herostat__value">@Ui.Fmt(c.Dps)</span></div>
+            </div>
+            <span class="herocard__cta">Ver detalhes →</span>
+        </button>
+    };
+
+    private RenderFragment RenderDetail(HeroRow row) => __builder =>
+    {
+        var c = row.Catalog;
+        var portrait = AssetUrls.HeroPortrait(c.Key);
+        <button type="button" class="btn btn--ghost herodetail__back" @onclick="() => _selected = null">← Voltar ao roster</button>
+
+        <section class="section">
+            <div class="herodetail__head">
+                @if (portrait != null)
+                {
+                    <img class="heroavatar heroavatar--lg" src="@portrait" alt="@c.NamePt" />
+                }
+                <div class="herodetail__heading">
+                    <div class="herodetail__title">
+                        <span class="herocard__name">@c.NamePt</span>
+                        <span class="herodetail__en">@c.Name</span>
+                        <span class="tierbadge tierbadge--@c.Tier.ToLower()">Tier @c.Tier</span>
+                        @RenderTag(row)
+                    </div>
+                    <p class="herocard__meta">@c.Role · @c.Weapon + @c.OffHand · @c.Availability · @c.Unlock</p>
+                    <p class="herodetail__desc">@c.Description</p>
+                </div>
+            </div>
+            <div class="herodetail__live">
+                <div class="kv"><span class="herostat__label">Nível</span><span class="kv__val">@(row.Level?.ToString() ?? "—")</span></div>
+                <div class="kv"><span class="herostat__label">XP</span><span class="kv__val">@Ui.FmtNum(row.Exp)</span></div>
+                <div class="kv"><span class="herostat__label">Pontos de habilidade</span><span class="kv__val">@(row.Level?.ToString() ?? "—")</span></div>
+                <div class="kv"><span class="herostat__label">DPS base</span><span class="kv__val">@Ui.Fmt(c.Dps)</span></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Atributos base</h3>
+                <span class="card__hint">Ranking entre os 6 heróis · ★ = melhor</span>
+            </div>
+            <div class="statgrid">
+                @foreach (var def in HeroLogic.StatDefs)
+                {
+                    var value = HeroLogic.GetStat(c.BaseStats, def.Key);
+                    var rk = HeroLogic.StatRank(def.Key, value);
+                    <div class="statcard@(rk.Best ? " statcard--best" : "")">
+                        <div class="statcard__top">
+                            <div class="statrow">
+                                <span class="statrow__label">@def.Label</span>
+                                <span class="statrow__value">@def.Format(value)</span>
+                            </div>
+                        </div>
+                        <span class="rankbadge@(rk.Best ? " rankbadge--best" : "")">
+                            @(rk.Best ? "★ " : "")#@rk.Rank de @rk.Total
+                        </span>
+                    </div>
+                }
+            </div>
+            <p class="card__hint">
+                Valores base (nível 1, sem equipamento). Equipamentos, runas e a árvore aumentam os atributos.
+            </p>
+        </section>
+
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Árvore de habilidades</h3>
+                <span class="card__hint">Tiers 1–8 · 1 ponto por nível · tiers abrem ao gastar</span>
+            </div>
+            <div class="tiers">
+                @foreach (var tier in c.SkillTree)
+                {
+                    var locked = tier.Locked == true;
+                    var reachable = row.Level != null && !locked && row.Level >= tier.UnlockCost;
+                    var tcls = "tier" + (locked ? " tier--locked" : "") + (reachable ? " tier--reachable" : "");
+                    <div class="@tcls">
+                        <div class="tier__head">
+                            <span class="tier__name">Tier @tier.Tier</span>
+                            <span class="tier__cost">@(tier.UnlockCost == 0 ? "Início" : $"{tier.UnlockCost} pts")</span>
+                            @if (locked)
+                            {
+                                <span class="tier__lock">🔒 Bloqueado</span>
+                            }
+                            @if (reachable && !locked)
+                            {
+                                <span class="tier__ok">Alcançável</span>
+                            }
+                        </div>
+                        <ul class="tier__skills">
+                            @foreach (var sk in tier.Skills)
+                            {
+                                <li class="skill skill--@sk.Kind">
+                                    <span class="skill__kind skill__kind--@sk.Kind">@(sk.Kind == "active" ? "Ativa" : "Passiva")</span>
+                                    <span class="skill__name">@sk.Name</span>
+                                    <span class="skill__max">nív. máx. @sk.MaxLevel</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        </section>
+    };
+}
+
+
