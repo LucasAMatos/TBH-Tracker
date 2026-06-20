@@ -2,6 +2,9 @@ node_modules/
 out/
 dist/
 *.log
+
+# Cache do datamine da TBHPedia (HTML bruto das wikis)
+scripts/.cache/
 *.tsbuildinfo
 .DS_Store
 
