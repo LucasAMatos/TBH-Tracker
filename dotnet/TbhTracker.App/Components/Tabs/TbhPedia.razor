@@ -1,18 +1,25 @@
+@using TbhTracker.App.Services
 @{
     var filtered = Filter();
-    var active = filtered.FirstOrDefault(s => s.Id == _activeId) ?? filtered.FirstOrDefault();
+    var active = filtered.FirstOrDefault(p => p.Id == _activeId) ?? filtered.FirstOrDefault();
 }
 
+<CascadingValue Value="_nav">
 <div class="pedia">
     <aside class="pedia__nav">
-        <input class="input pedia__search" type="search" placeholder="Buscar..."
+        <input class="input pedia__search" type="search" placeholder="Buscar em tudo..."
                @bind="_query" @bind:event="oninput" />
         <nav>
-            @foreach (var s in filtered)
+            @foreach (var grp in filtered.GroupBy(p => p.Group))
             {
-                <button class="pedia__navitem @(active?.Id == s.Id ? "pedia__navitem--active" : "")" @onclick="@(() => _activeId = s.Id)">
-                    <span class="pedia__icon">@s.Icon</span>@s.Title
-                </button>
+                <div class="pedia__group">@grp.Key</div>
+                @foreach (var p in grp)
+                {
+                    <button class="pedia__navitem @(active?.Id == p.Id ? "pedia__navitem--active" : "")"
+                            @onclick="@(() => Select(p.Id))">
+                        <span class="pedia__icon">@p.Icon</span>@p.Title
+                    </button>
+                }
             }
             @if (filtered.Count == 0)
             {
@@ -21,39 +28,128 @@
         </nav>
     </aside>
     <section class="pedia__content">
-        @if (active != null)
-        {
-            @RenderSection(active)
-        }
-        else
+        @if (active == null)
         {
             <p class="pedia__empty">Nada encontrado.</p>
         }
+        else if (active.Static != null)
+        {
+            @RenderSection(active.Static)
+        }
+        else
+        {
+            <article class="pedia__article">
+                <h2 class="pedia__title"><span class="pedia__icon">@active.Icon</span> @active.Title</h2>
+                @if (active.Id == "dom-heroes")
+                {
+                    <HeroesPedia />
+                }
+                else if (active.Id == "dom-pets")
+                {
+                    <PetsPedia />
+                }
+                else if (active.Id == "dom-runes")
+                {
+                    <RunesPedia />
+                }
+                else if (active.Id == "dom-effects")
+                {
+                    <EffectsPedia />
+                }
+                else if (active.Id == "dom-stages")
+                {
+                    <StagesPedia Select="_select" />
+                }
+                else if (active.Id == "dom-chests")
+                {
+                    <ChestsPedia />
+                }
+            </article>
+        }
     </section>
 </div>
+</CascadingValue>
 
 @code {
-    private string _activeId = Catalog.Pedia.FirstOrDefault()?.Id ?? "";
-    private string _query = "";
+    private sealed record Page(string Id, string Group, string Title, string Icon, PediaSection? Static, string SearchBlob);
 
-    private List<PediaSection> Filter()
+    private string _activeId = "";
+    private string _query = "";
+    private object? _select;
+    private PediaNav _nav = default!;
+    private List<Page>? _pages;
+
+    protected override void OnInitialized()
+    {
+        _nav = new PediaNav { Go = GoAsync };
+        _activeId = Pages.FirstOrDefault()?.Id ?? "";
+    }
+
+    private Task GoAsync(string pageId, object? key)
+    {
+        _activeId = pageId;
+        _select = key;
+        _query = "";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void Select(string id)
+    {
+        _activeId = id;
+        _select = null;
+    }
+
+    private List<Page> Pages => _pages ??= BuildPages();
+
+    private List<Page> BuildPages()
+    {
+        var list = new List<Page>();
+
+        // Wikis da comunidade (corpus do Epico W) — primeiro, sao o destaque novo.
+        list.Add(new("dom-heroes", "Wikis da comunidade", "Heróis", "\u2694\ufe0f", null,
+            Blob(Catalog.PediaHeroes.Entries.Select(h => $"{h.Name} {h.Class} {h.Description}"))));
+        list.Add(new("dom-pets", "Wikis da comunidade", "Pets", "\U0001F43E", null,
+            Blob(Catalog.PediaPets.Entries.Select(p => $"{p.Name} {p.Unlock.MonsterName} {p.Unlock.Note}"))));
+        list.Add(new("dom-runes", "Wikis da comunidade", "Runas", "\U0001F4A0", null,
+            Blob(Catalog.PediaRunes.Entries.Select(r => $"{r.Name} {r.Category} {r.Effect}"))));
+        list.Add(new("dom-effects", "Wikis da comunidade", "Efeitos de material", "\U0001F48E", null,
+            Blob(Catalog.PediaEffects.Entries.Select(e => $"{e.Name} {e.Grade} {e.Category}"))));
+        list.Add(new("dom-stages", "Wikis da comunidade", "Mapa & estágios", "\U0001F5FA\ufe0f", null,
+            Blob(Catalog.PediaMap.Entries.Select(s => $"{s.Label} {s.Name} {string.Join(" ", s.Monsters.Select(m => m.Name))} {s.Boss?.Name}"))));
+        list.Add(new("dom-chests", "Wikis da comunidade", "Baús", "\U0001F4E6", null,
+            Blob(Catalog.PediaChests.Entries.Select(c => c.DropType))));
+
+        // Guia (secoes estaticas que ja existiam).
+        foreach (var s in Catalog.Pedia)
+            list.Add(new($"guide-{s.Id}", "Guia", s.Title, s.Icon, s, StaticBlob(s)));
+
+        return list;
+    }
+
+    private static string Blob(IEnumerable<string?> parts) =>
+        string.Join(" ", parts.Where(p => !string.IsNullOrEmpty(p))).ToLowerInvariant();
+
+    private static string StaticBlob(PediaSection s)
+    {
+        var parts = new List<string> { s.Title };
+        if (s.Intro != null) parts.AddRange(s.Intro);
+        if (s.Notes != null) parts.AddRange(s.Notes);
+        if (s.Tables != null)
+            foreach (var t in s.Tables)
+            {
+                parts.Add(t.Caption ?? "");
+                parts.AddRange(t.Headers);
+                foreach (var row in t.Rows) parts.AddRange(row);
+            }
+        return string.Join(" ", parts).ToLowerInvariant();
+    }
+
+    private List<Page> Filter()
     {
         var q = _query.Trim().ToLowerInvariant();
-        if (string.IsNullOrEmpty(q)) return Catalog.Pedia;
-        return Catalog.Pedia.Where(s =>
-        {
-            var parts = new List<string> { s.Title };
-            if (s.Intro != null) parts.AddRange(s.Intro);
-            if (s.Notes != null) parts.AddRange(s.Notes);
-            if (s.Tables != null)
-                foreach (var t in s.Tables)
-                {
-                    parts.Add(t.Caption ?? "");
-                    parts.AddRange(t.Headers);
-                    foreach (var row in t.Rows) parts.AddRange(row);
-                }
-            return string.Join(" ", parts).ToLowerInvariant().Contains(q);
-        }).ToList();
+        if (string.IsNullOrEmpty(q)) return Pages;
+        return Pages.Where(p => p.Title.ToLowerInvariant().Contains(q) || p.SearchBlob.Contains(q)).ToList();
     }
 
     private RenderFragment RenderSection(PediaSection sec) => __builder =>

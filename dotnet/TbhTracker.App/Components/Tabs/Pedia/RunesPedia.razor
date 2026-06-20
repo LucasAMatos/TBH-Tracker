@@ -1,0 +1,43 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+
+<div class="pediadom">
+    <div class="pediadom__tabs">
+        <button class="chip @(_cat == null ? "chip--active" : "")" @onclick="@(() => _cat = null)">Todas (@Runes.Count)</button>
+        @foreach (var c in Categories)
+        {
+            <button class="chip @(_cat == c ? "chip--active" : "")" @onclick="@(() => _cat = c)">@c</button>
+        }
+    </div>
+
+    <div class="pedia__tablewrap">
+        <table class="table">
+            <thead>
+                <tr><th>Runa</th><th>Categoria</th><th>Efeito</th><th>Máx</th><th>Valores</th><th>Custo total</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Filtered)
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td>@r.Category</td>
+                        <td>@r.Effect</td>
+                        <td>@r.MaxLevel</td>
+                        <td class="muted">@string.Join(" → ", r.Levels.Select(l => l.Value))</td>
+                        <td>@r.TotalCost.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <PediaSource Provenance="Catalog.PediaRunes.Provenance" />
+</div>
+
+@code {
+    private List<PediaRuneEntry> Runes => Catalog.PediaRunes.Entries;
+    private List<string> Categories => Catalog.PediaRunes.Categories;
+    private string? _cat;
+    private IEnumerable<PediaRuneEntry> Filtered =>
+        _cat == null ? Runes : Runes.Where(r => r.Category == _cat);
+}

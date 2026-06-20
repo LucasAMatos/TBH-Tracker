@@ -154,6 +154,13 @@ Fontes: **taskbarhero.wiki** (PT), **taskbarherowiki.com**, **taskbarhero.org**,
 > **Faseado e incremental.** W0/W1 são a fundação; W2–W8 ingerem um domínio por vez (cada um já
 > entrega valor na TBHPedia); W9 unifica a navegação. *Esforço do épico:* 🔴 (grande).
 
+> **Em entrega (jun/2026, 3 PRs sobre `dev`):** Fundação **W0+W1** (esquema canônico
+> `docs/PEDIA-CORPUS.md` + pipeline `scripts/pedia/lib.cjs` + geradores `gen-pedia-*.cjs` →
+> `Core/Data/pedia/*.json`); Domínios **W2–W7** (heróis, runas, efeitos, mapa/estágios/monstros,
+> baús; pets já na fundação) ingeridos de `taskbarherowiki.com`; UI **W9** (aba TBHPedia unificada
+> com busca global, navegação agrupada Guia+Wikis, cross-links e atribuição de fonte). **W8**
+> (guias em prosa da `taskbarhero.wiki`, fonte Remix, P3) **deferido** como follow-up.
+
 - **W0 (P2) — Levantamento + esquema canônico:** inventariar **o que cada uma das 5 wikis cobre**
   (heróis, pets, runas, itens, efeitos, estágios/farm, monstros, cubo, baús, soul stones, mecânicas,
   guias) e **como expõe os dados** (JSON/RSC estruturado vs. HTML; idiomas). Definir o **esquema
