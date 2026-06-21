@@ -9,6 +9,10 @@ alwaysApply: false
 ## Backlog
 - Sempre que entregar um item de `docs/BACKLOG.md`, **atualizar o backlog** marcando-o
   como `✅ vA.B` (a versão em que foi entregue). Itens pendentes ficam `⬜`.
+- **A atualização do backlog sobe JUNTO com o item, no mesmo PR.** O PR que traz o
+  código de uma feature/fix **tem que incluir** a marcação do item em `docs/BACKLOG.md`
+  (`✅ vA.B`) e o ajuste da visão `docs/BACKLOG-ESFORCO.md`. **Proibido** abrir o PR do
+  código sem o backlog ou deixar a atualização do backlog para um PR separado depois.
 - **Arquivamento a cada 5 versões** (`a` múltiplo de 5: v5, v10, v15…): ao fechar uma
   dessas versões, **separar** o backlog — mover os itens **entregues (✅)** para
   `docs/BACKLOG-HISTORICO.md` e manter em `docs/BACKLOG.md` apenas o que está **a fazer**
