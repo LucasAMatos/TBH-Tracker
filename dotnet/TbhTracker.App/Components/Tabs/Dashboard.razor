@@ -65,10 +65,6 @@
     {
         @Widget(WidgetIds.GoldFlow, null, RenderGoldFlow(flow))
     }
-    @if (s.HeroEvents != null)
-    {
-        @Widget(WidgetIds.LevelUps, null, RenderLevelUps(s.HeroEvents))
-    }
     @if (s.StageEvents != null)
     {
         @Widget(WidgetIds.StageProgress, null, RenderStageEvents(s.StageEvents))
@@ -325,30 +321,6 @@
         }
     };
 
-    private RenderFragment RenderLevelUps(HeroEvents heroEvents) => __builder =>
-    {
-        if (heroEvents.LevelUps.Count > 0)
-        {
-            <ul class="goldlog">
-                @foreach (var e in heroEvents.LevelUps)
-                {
-                    <li class="goldlog__item">
-                        <span class="goldlog__time">@FmtClock(e.At)</span>
-                        <span class="levelup__hero">@e.HeroName</span>
-                        <span class="levelup__delta">Nv @e.FromLevel → @e.ToLevel</span>
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p class="card__hint">
-                Coletando… os level-ups aparecem conforme os heróis sobem de nível (o jogo precisa estar
-                rodando). Só registra a partir da 1ª leitura da sessão.
-            </p>
-        }
-    };
-
     private RenderFragment RenderStageEvents(StageEvents stageEvents) => __builder =>
     {
         if (stageEvents.Events.Count > 0)
@@ -554,25 +526,25 @@
             <div class="alert alert--info">
                 Cubo <strong>Nv @cubeLevel</strong> — faltam <strong>@(nextCube.Level - cubeLevel)</strong> nível(is) para <strong>Nv @nextCube.Level · @nextCube.Name</strong>
             </div>
+            <ul class="milestones">
+                @foreach (var m in Cube.Milestones)
+                {
+                    var reached = Cube.IsMilestoneReached(m, cubeLevel);
+                    var isNext = nextCube?.Level == m.Level;
+                    var cls = "milestone" + (reached ? " milestone--reached" : "") + (isNext ? " milestone--next" : "");
+                    <li class="@cls">
+                        <span class="milestone__mark">@(reached ? "✓" : isNext ? "→" : "•")</span>
+                        <span class="milestone__lvl">Nv @m.Level</span>
+                        <span class="milestone__name">@m.Name</span>
+                        <span class="milestone__desc">@m.Description</span>
+                    </li>
+                }
+            </ul>
         }
         else
         {
             <div class="alert alert--ok">Todos os marcos do Cubo desbloqueados.</div>
         }
-        <ul class="milestones">
-            @foreach (var m in Cube.Milestones)
-            {
-                var reached = Cube.IsMilestoneReached(m, cubeLevel);
-                var isNext = nextCube?.Level == m.Level;
-                var cls = "milestone" + (reached ? " milestone--reached" : "") + (isNext ? " milestone--next" : "");
-                <li class="@cls">
-                    <span class="milestone__mark">@(reached ? "✓" : isNext ? "→" : "•")</span>
-                    <span class="milestone__lvl">Nv @m.Level</span>
-                    <span class="milestone__name">@m.Name</span>
-                    <span class="milestone__desc">@m.Description</span>
-                </li>
-            }
-        </ul>
     };
 
     private RenderFragment RenderActiveHeroes(List<HeroSnapshot?> slots) => __builder =>
