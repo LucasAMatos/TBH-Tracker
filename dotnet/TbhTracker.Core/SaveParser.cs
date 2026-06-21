@@ -279,6 +279,59 @@ public static class SaveParser
         };
     }
 
+    private static List<PetSnapshot> ParsePets(JsonElement? player, JsonElement? common)
+    {
+        var list = Pick(player, "PetSaveData", "petSaveData", "PetSaveDatas", "petSaveDatas");
+        var outList = new List<PetSnapshot>();
+
+        // Deteccao tolerante do pet ativo/equipado (BUG-PET-ATIVO): o campo exato no save
+        // ainda nao foi confirmado, entao tentamos nomes provaveis no player e no common.
+        var activeKey =
+            ToNumber(Pick(player, "equippedPetKey", "EquippedPetKey", "arrangedPetKey",
+                "ArrangedPetKey", "currentPetKey", "CurrentPetKey", "selectedPetKey", "SelectedPetKey"))
+            ?? ToNumber(Pick(common, "equippedPetKey", "EquippedPetKey", "arrangedPetKey",
+                "ArrangedPetKey", "currentPetKey", "CurrentPetKey", "selectedPetKey", "SelectedPetKey"));
+
+        foreach (var entry in AsArray(list))
+        {
+            if (!IsObj(entry)) continue;
+            var key = ToNumber(Pick(entry, "PetKey", "petKey", "Key", "key"));
+            if (key == null) continue;
+            var unlocked = IsTrue(Pick(entry, "IsUnlock", "IsUnLock", "isUnlock"));
+            var active = (activeKey != null && (int)activeKey.Value == (int)key.Value)
+                || IsTrue(Pick(entry, "IsEquip", "isEquip", "Equipped", "equipped", "IsActive", "isActive"));
+            outList.Add(new PetSnapshot { Key = (int)key.Value, Unlocked = unlocked, Active = active });
+        }
+        return outList;
+    }
+
+    private static MeltSummary? ParseMelt(JsonElement? player)
+    {
+        var items = AsArray(Pick(player, "itemSaveDatas", "ItemSaveDatas")).ToList();
+        if (items.Count == 0) return null;
+
+        var locations = BuildItemLocationMap(player);
+        var candidates = new List<MeltCandidate>();
+        foreach (var entry in items)
+        {
+            if (!IsObj(entry)) continue;
+            var key = AsString(Pick(entry, "ItemKey", "itemKey", "Key", "key"));
+            var info = key == null ? null : Items.ClassifyItem(key);
+            if (info == null || info.Type != "GEAR") continue; // so gear e derretido
+
+            var uid = AsString(Pick(entry, "UniqueId", "uniqueId", "Id", "id"));
+            var equipped = uid != null && locations.TryGetValue(uid, out var l) && l == ItemLocation.Equipped;
+            candidates.Add(new MeltCandidate
+            {
+                Key = info.Key,
+                GradeTier = info.GradeTier,
+                Marketable = info.Marketable,
+                Equipped = equipped
+            });
+        }
+        return Logic.Melt.Summarize(candidates);
+    }
+
     public static Snapshot ParseSnapshot(JsonElement root, bool includeRaw = false)
     {
         var player = ExtractPlayer(root);
@@ -308,7 +361,9 @@ public static class SaveParser
             ArrangedHeroKeys = arrangedHeroKeys,
             Runes = ParseRunes(player),
             HeroAttributes = ParseHeroAttributes(player),
+            Pets = ParsePets(player, common),
             Inventory = ParseInventory(player),
+            Melt = ParseMelt(player),
             Raw = includeRaw && player.HasValue ? player.Value.Clone() : null
         };
     }

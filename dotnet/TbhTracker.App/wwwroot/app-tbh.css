@@ -2734,5 +2734,239 @@ body {
   color: var(--text-dim);
 }
 
+/* Widget de derretimento / Alchemy (D5) */
+.melt__totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.melt__metric {
+  flex: 1 1 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+}
+
+.melt__value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.melt__value--gold { color: #f5c451; }
+.melt__value--cube { color: #7dd3fc; }
+
+.melt__label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Widget de Pets (PE1) */
+.petshi {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  margin-bottom: 12px;
+}
+
+.petshi--on {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.petshi__count {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.petshi__label { font-weight: 600; }
+
+.petshi__active {
+  margin-left: auto;
+  color: #4ade80;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.petsbonus {
+  margin-bottom: 12px;
+}
+
+.petsbonus__title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.petsbonus__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.petsbonus__item {
+  font-size: 13px;
+}
+
+.petsbonus__disp {
+  font-weight: 700;
+  color: #4ade80;
+  margin-right: 6px;
+}
+
+.petslist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.petrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.petrow--active {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.petrow--locked { opacity: 0.55; }
+
+.petrow__state {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Painel de diagnostico (I9) */
+.diag {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.diag__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diag__title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.diag__sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.diag__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.diag__row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  background: var(--bg-elev);
+}
+
+.diag__row--wide { grid-column: 1 / -1; }
+
+.diag__k {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.diag__v {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.diag__v--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.diag__v--err { color: #f87171; }
+
+.diag__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.diag__dot--ok { background: #4ade80; }
+.diag__dot--warn { background: #f5c451; }
+.diag__dot--err { background: #f87171; }
+
+.diag__warnstitle {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.diag__warnlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diag__warn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.diag__warn--warn {
+  background: rgba(245, 196, 81, 0.12);
+  border-color: rgba(245, 196, 81, 0.4);
+}
+
+.diag__warn--info {
+  background: rgba(125, 211, 252, 0.1);
+  border-color: rgba(125, 211, 252, 0.35);
+}
+
 #app { height: 100%; }
 #blazor-error-ui { background: #f85149; color:#fff; }
