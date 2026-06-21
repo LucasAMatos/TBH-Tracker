@@ -197,6 +197,41 @@ Fontes: **taskbarhero.wiki** (PT), **taskbarherowiki.com**, **taskbarhero.org**,
   **atribuição de fonte** e "atualizado em <data>". Opcional: ação "atualizar das wikis" (como o
   refresh da N1) ou geração em build. *Sinergia:* U6 (i18n, wikis são multilíngues). *Esforço:* 🟡–🔴.
 
+## Épico V — Análise empírica de XP & ouro das fases
+
+**Objetivo:** **entender a fundo** e **validar empiricamente** como o **XP** e o **ouro** funcionam
+por fase — porque os números das wikis/datamine (F0/W5) **podem estar imprecisos**. Em vez de
+confiar só no catálogo, **medir com o próprio save** (deltas entre leituras), **modelar** os
+mecanismos (ouro/kill comum vs boss, XP/clear, multiplicadores, over-level, retenção) e **detalhar**
+tudo em documentação. Se as fontes não baterem, **publicar uma wiki própria** explicando, com a
+**proveniência das medições**.
+
+> **Postura/segurança:** mesma do resto — leitura **passiva** do save (nada de tocar no jogo). Cruza
+> com **F0** (catálogo de 108 fases), **F2/F3** (ouro/h e xp/h medidos), **G4** (ouro por kill),
+> **F5** (projeção), **X1** (fluxo de XP), **W5** (corpus de monstros/HP) e os **contadores
+> cumulativos** `aggregateSaveDatas[]` (ouro por ato, kills por monstro). *Esforço do épico:* 🔴 (grande, pesquisa).
+
+- **V0 (P2) — Metodologia & instrumentação:** definir um **protocolo de coleta controlada** (fixar
+  herói/nível e estágio; medir os **deltas de ouro/XP/kills por tempo**) registrando o **estado dos
+  multiplicadores** (runas de Ouro/EXP, pets, Cubo, buffs) para **isolar variáveis**. Saída: captura
+  de **amostras rotuladas** (estágio + estado + deltas) reutilizável pelas etapas seguintes.
+- **V1 (P2) — Reconciliação catálogo × medido:** comparar `expectedGold`/`expectedEXP` (F0/wiki) com
+  o **medido**; quantificar o **erro por fase/dificuldade**; separar **fatores sistemáticos**
+  (multiplicador global de ouro/exp do jogador) de **erros do catálogo**. Saída: relatório de
+  divergências + fatores de correção.
+- **V2 (P2) — Modelo de ouro por kill (comum × boss):** derivar o **ouro base por abate** separando
+  **monstro comum** e **boss** — desbloqueia o **G4**. Validar contra `aggregateSaveDatas` (ouro por
+  ato) e contagem de kills.
+- **V3 (P2) — Modelo de XP:** XP por **clear/kill**, **penalidade de over-level** e **retenção** —
+  base do **F5** (projeção para fases não medidas).
+- **V4 (P2) — Validação cruzada com contadores cumulativos:** usar `aggregateSaveDatas` (Type 2 =
+  ouro por ato; Type 0 = kills por monstro) como **verdade-terreno exata** para calibrar/refutar as
+  taxas derivadas de delta de snapshot.
+- **V5 (P3) — Documentação & (opcional) nova wiki:** detalhar as **fórmulas/mecânicas** em
+  `docs/TBHPEDIA.md`; se as fontes existentes não baterem, **publicar uma wiki própria** explicando
+  XP/ouro das fases, citando as **medições** (proveniência + versão do jogo). Sinergia com **N2**
+  (avisar quando o jogo atualizou e o catálogo/medições envelheceram).
+
 ## Bugs conhecidos (não corrigir agora — período de estabilidade)
 
 - **BUG-1 — Runa-alvo aceita runa já no nível máximo (R3):** é possível clicar **"Definir como
