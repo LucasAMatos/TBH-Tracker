@@ -2,9 +2,9 @@
 
 Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md › Save`). Nada aqui depende de tocar no jogo. Prioridades: **P0** (fundação/MVP) · **P1** (valor de farm) · **P2** (qualidade de vida) · **P3** (extras).
 
-> **Status:** ⬜ = pendente · ⛔ = parado/bloqueado. Atualizar este arquivo sempre que um item for entregue (marcar `✅ vA.B`). Versionamento em `CHANGELOG.md` (`va.b`).
+> **Status:** ⬜ = pendente · ⛔ = parado/bloqueado · ✅ = entregue. Ao entregar um item, marcar `✅ vMAJOR.MINOR.PATCH` **no mesmo PR** do código (regra em `.cursor/rules/tbh-tracker.mdc`). Versionamento (SemVer) detalhado em `CHANGELOG.md`.
 >
-> **Arquivamento:** a cada 5 versões (`a` múltiplo de 5) os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último arquivamento: **v0.15.0** (v0.11–v0.15: H2, H8, B3, I6, D3, U8).
+> **Arquivamento:** a cada 5 MINORs os itens entregues saem daqui e vão para `BACKLOG-HISTORICO.md`; aqui fica só o que está a fazer. Último corte: **v0.15.0** (v0.11–v0.15). **Dívida:** os ✅ de v0.16 → v2.1.0 ainda estão aqui — pendente um novo corte de arquivamento.
 >
 > **Outras visões:** `BACKLOG-ESFORCO.md` ranqueia os itens do mais fácil ao mais difícil de implementar (este arquivo segue sendo a fonte da verdade).
 
