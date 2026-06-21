@@ -1,0 +1,19 @@
+@using System.Globalization
+@using TbhTracker.Core.Models
+
+@if (Provenance != null)
+{
+    <p class="pedia__attrib">
+        Fonte: <a href="@Provenance.SourceUrl" target="_blank" rel="noreferrer">@Provenance.Source</a>
+        @if (!string.IsNullOrWhiteSpace(Provenance.Lang)) { <span>· @Provenance.Lang.ToUpperInvariant()</span> }
+        @if (Fetched is { } d) { <span>· atualizado em @d.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("pt-BR"))</span> }
+    </p>
+}
+
+@code {
+    [Parameter] public PediaProvenance? Provenance { get; set; }
+
+    private DateTime? Fetched =>
+        DateTime.TryParse(Provenance?.FetchedAt, CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind, out var d) ? d : null;
+}

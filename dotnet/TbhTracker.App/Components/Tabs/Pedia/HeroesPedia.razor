@@ -1,0 +1,78 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+
+<div class="pediadom">
+    <div class="pediadom__tabs">
+        @foreach (var h in Heroes)
+        {
+            <button class="chip @(h.Key == _sel ? "chip--active" : "")" @onclick="@(() => _sel = h.Key)">
+                @h.Name@(h.IsDlc ? " (DLC)" : "")
+            </button>
+        }
+    </div>
+
+    @if (Active is { } hero)
+    {
+        <div class="hero-detail">
+            <h3>@hero.Name <span class="muted">· @hero.Class</span></h3>
+            <p class="pedia__p">@hero.Description</p>
+            <p class="muted">
+                Arma: @hero.MainWeapon@(string.IsNullOrEmpty(hero.SubWeapon) ? "" : " + " + hero.SubWeapon)
+                · Desbloqueio: @hero.UnlockCost.ToString("N0") · Pontos máx.: @hero.MaxPoints
+                · Ataque base: @hero.BaseAttack.DamageType (@string.Join("/", hero.BaseAttack.Delivery), alcance @hero.BaseAttack.Range)
+            </p>
+
+            <div class="pedia__tablewrap">
+                <table class="table">
+                    <thead><tr><th>Stat</th><th>Base</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in hero.Stats)
+                        {
+                            <tr><td>@s.Stat</td><td>@s.Disp</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="pedia__caption">Árvore de habilidades</h4>
+            @foreach (var tier in hero.Tree)
+            {
+                <div class="tier">
+                    <div class="tier__head">Tier @tier.Tier @(tier.LevelGate > 0 ? $"(nível {tier.LevelGate})" : "")</div>
+                    <div class="tier__nodes">
+                        @foreach (var n in tier.Nodes)
+                        {
+                            <div class="node node--@n.Kind">
+                                @if (n.Kind == "active")
+                                {
+                                    <strong>@n.Name</strong>
+                                    <span class="node__meta">ativa · máx @n.MaxLevel@(n.Cooldown is { } cd ? $" · CD {cd}s" : "")</span>
+                                    <span class="node__desc">@n.Desc</span>
+                                }
+                                else
+                                {
+                                    <strong>@(n.Stat ?? "Passiva")</strong>
+                                    <span class="node__meta">passiva · máx @n.MaxLevel</span>
+                                    <span class="node__desc">@n.Total (@n.PerPoint / ponto)</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <PediaSource Provenance="Catalog.PediaHeroes.Provenance" />
+</div>
+
+@code {
+    private List<PediaHeroEntry> Heroes => Catalog.PediaHeroes.Entries;
+    private int _sel;
+    private PediaHeroEntry? Active => Heroes.FirstOrDefault(h => h.Key == _sel) ?? Heroes.FirstOrDefault();
+
+    protected override void OnInitialized()
+    {
+        if (_sel == 0) _sel = Heroes.FirstOrDefault()?.Key ?? 0;
+    }
+}

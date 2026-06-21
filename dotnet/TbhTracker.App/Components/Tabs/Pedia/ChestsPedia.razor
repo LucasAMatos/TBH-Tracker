@@ -1,0 +1,47 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+
+<div class="pediadom">
+    <p class="muted">@Chests.Count baús, com as probabilidades de cada pool e onde aparecem. Odds derivadas do gamedata.</p>
+
+    <div class="pediadom__grid">
+        @foreach (var c in Chests)
+        {
+            <div class="pcard">
+                <div class="pcard__head">
+                    <strong>@c.DropType</strong>
+                    @if (c.GearLevelMin is { } lo && c.GearLevelMax is { } hi)
+                    {
+                        <span class="badge">gear @lo–@hi</span>
+                    }
+                </div>
+                @foreach (var pool in c.Pools)
+                {
+                    <div class="pool">
+                        <div class="pool__label">@pool.Label</div>
+                        <ul class="pool__entries">
+                            @foreach (var e in pool.Entries.OrderByDescending(x => x.Probability).Take(6))
+                            {
+                                <li><span class="pcard__disp">@e.Probability.ToString("P1")</span> @e.RewardType @e.RewardKey</li>
+                            }
+                            @if (pool.Entries.Count > 6)
+                            {
+                                <li class="muted">+@(pool.Entries.Count - 6) outros…</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                @if (c.Stages.Count > 0)
+                {
+                    <div class="pcard__note">Aparece em: @string.Join(", ", c.Stages.Take(8).Select(s => s.Label))</div>
+                }
+            </div>
+        }
+    </div>
+
+    <PediaSource Provenance="Catalog.PediaChests.Provenance" />
+</div>
+
+@code {
+    private List<PediaChestEntry> Chests => Catalog.PediaChests.Entries;
+}

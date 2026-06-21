@@ -136,15 +136,28 @@ function extractProp(flight, key) {
   }
 }
 
-/** Grava o envelope canonico do dominio em Core/Data/pedia/<domain>.json. */
-function writeCorpus(domain, provenance, entries) {
+/** Grava um objeto JSON em Core/Data/pedia/<domain>.json (com log de tamanho). */
+function writeJson(domain, payload, count) {
   fs.mkdirSync(OUT_DIR, { recursive: true })
   const file = path.join(OUT_DIR, `${domain}.json`)
-  const payload = { domain, provenance, entries }
   fs.writeFileSync(file, JSON.stringify(payload), 'utf8')
   const kb = (fs.statSync(file).size / 1024).toFixed(1)
-  console.log(`  ${path.relative(ROOT, file)} — ${entries.length} entradas (${kb} KB)`)
+  const n = count ?? payload.entries?.length ?? '?'
+  console.log(`  ${path.relative(ROOT, file)} — ${n} entradas (${kb} KB)`)
   return file
+}
+
+/** Grava o envelope canonico do dominio em Core/Data/pedia/<domain>.json. */
+function writeCorpus(domain, provenance, entries) {
+  return writeJson(domain, { domain, provenance, entries }, entries.length)
+}
+
+/** Atalho: busca a pagina, extrai a prop e devolve { entries, provenance } padrao. */
+async function ingestProp(url, prop, { lang = 'en', refresh = false } = {}) {
+  const { body, cached } = await cachedGet(url, { lang, refresh })
+  console.log(`  ${cached ? 'cache' : 'rede'} — ${(body.length / 1024).toFixed(1)} KB`)
+  const flight = extractFlight(body)
+  return { flight, body }
 }
 
 module.exports = {
@@ -158,5 +171,7 @@ module.exports = {
   extractFlight,
   extractProp,
   parseBalanced,
-  writeCorpus
+  writeCorpus,
+  writeJson,
+  ingestProp
 }
