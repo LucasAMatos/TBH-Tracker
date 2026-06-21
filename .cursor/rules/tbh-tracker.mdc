@@ -8,21 +8,30 @@ alwaysApply: false
 
 ## Backlog
 - Sempre que entregar um item de `docs/BACKLOG.md`, **atualizar o backlog** marcando-o
-  como `✅ vA.B` (a versão em que foi entregue). Itens pendentes ficam `⬜`.
-- **Arquivamento a cada 5 versões** (`a` múltiplo de 5: v5, v10, v15…): ao fechar uma
-  dessas versões, **separar** o backlog — mover os itens **entregues (✅)** para
+  como `✅ vMAJOR.MINOR.PATCH` (a versão em que foi entregue). Itens pendentes ficam `⬜`.
+- **A atualização do backlog sobe JUNTO com o item, no mesmo PR.** O PR que traz o
+  código de uma feature/fix **tem que incluir** a marcação do item em `docs/BACKLOG.md`
+  (`✅ vMAJOR.MINOR.PATCH`) e o ajuste da visão `docs/BACKLOG-ESFORCO.md`. **Proibido** abrir
+  o PR do código sem o backlog ou deixar a atualização do backlog para um PR separado depois.
+- **Arquivamento a cada 5 MINORs** (MINOR múltiplo de 5: …v1.5.0, v2.0.0, v2.5.0…): ao
+  fechar uma dessas versões, **separar** o backlog — mover os itens **entregues (✅)** para
   `docs/BACKLOG-HISTORICO.md` e manter em `docs/BACKLOG.md` apenas o que está **a fazer**
   (`⬜`) ou **parado/bloqueado** (`⛔`). Preservar no histórico a versão de entrega de cada
   item; manter no backlog as notas de contexto ainda relevantes (ex.: bloqueios).
 - `docs/BACKLOG.md` é a **fonte da verdade**. `docs/BACKLOG-ESFORCO.md` é uma **visão**
   (ranking por esforço) — ao adicionar/entregar/remover um item, atualizar também essa visão.
 
-## Versionamento (`va.b`)
-- Formato **`va.b`**: `a` sobe a cada **nova implementação** (feature); `b` sobe a cada
-  **fix**. Ao subir `a`, zera `b`. Ex.: `v1.0` → feature → `v2.0`; `v2.0` → fix → `v2.1`.
-- A cada release: atualizar `package.json` (`a.b.0`), adicionar entrada no `CHANGELOG.md`
-  e criar tag git `vA.B` (`git tag -a vA.B -m ...` + `git push --tags`).
-- O app exibe a versão no cabeçalho (vinda de `package.json` via `app.getVersion()`).
+## Versionamento (SemVer `MAJOR.MINOR.PATCH`, a partir da v1.0.0)
+- **MAJOR** — marco/release significativo (decisão manual). **MINOR** — a cada **nova
+  implementação** (feature); ao subir MINOR, zera PATCH. **PATCH** — a cada **fix**.
+  Ex.: `v2.0.0` → feature → `v2.1.0`; `v2.1.0` → fix → `v2.1.1`.
+  (Histórico: o antigo `va.b` equivale a `v0.a.b`; detalhes no `CHANGELOG.md`.)
+- O stamp do backlog usa `✅ vMAJOR.MINOR.PATCH` (ex.: `✅ v2.1.0`).
+- A cada release: atualizar `<ApplicationDisplayVersion>` em
+  `dotnet/TbhTracker.App/TbhTracker.App.csproj`, adicionar entrada no `CHANGELOG.md` e
+  criar tag git `vMAJOR.MINOR.PATCH` (`git tag -a vX.Y.Z -m ...` + `git push --tags`).
+- O app exibe a versão no cabeçalho via `AppInfo.Current.VersionString` — exposto por
+  `TrackerApi.GetVersion()` e renderizado em `Components/Shell.razor`.
 
 ## Segurança (inegociável)
 - Tracker é **somente leitura e passivo**: só lê o arquivo de save quando ele muda.
@@ -30,22 +39,25 @@ alwaysApply: false
   ou modificar o save. A chave ES3 nunca é commitada.
 
 ## Git — branches e PR (obrigatório)
-- A branch `main` é **protegida**: push direto é proibido (inclui admin). Toda mudança
-  entra via **Pull Request**.
-- **Ao iniciar QUALQUER item/feature solicitado**, antes de codar: sincronizar a `main`
+- **`dev` é a base de integração** (branch padrão do repo): toda feature/fix sai dela e o
+  **PR tem a `dev` como base**. `main` é a branch **estável/release** (protegida) —
+  promovida a partir da `dev` nos releases; nunca recebe push direto. Push direto em
+  `dev`/`main` é proibido (toda mudança entra via **Pull Request**).
+- **Ao iniciar QUALQUER item/feature solicitado**, antes de codar: sincronizar a `dev`
   local com o remoto e criar a branch **a partir dela** —
-  `git checkout main && git pull --ff-only`, depois `git checkout -b feature/<assunto>`
-  (ou `fix/<assunto>`). Sempre partir da `main` **atualizada**, nunca de outra branch.
-- **Não empilhar features:** cada PR sai direto da `main` e tem a `main` como base. Não
+  `git checkout dev && git pull --ff-only`, depois `git checkout -b feature/<assunto>`
+  (ou `fix/<assunto>`). Sempre partir da `dev` **atualizada**, nunca de outra feature branch.
+- **Não empilhar features:** cada PR sai direto da `dev` e tem a `dev` como base. Não
   criar uma feature em cima de outra feature branch ainda **não mergeada** — PRs empilhados
-  podem ser mergeados na base errada e a feature de cima não chega na `main`. Se duas
+  podem ser mergeados na base errada e a feature de cima não chega na `dev`. Se duas
   features forem mesmo dependentes, entregar/mergear a de baixo **primeiro** e só então
-  partir da `main` atualizada para a próxima.
-- O agente **nunca** faz merge na `main`: abre o PR (`gh pr create`) e o **merge é feito
-  por um humano**. Nunca usar `--admin`/bypass nem force-push na `main`.
+  partir da `dev` atualizada para a próxima.
+- O agente **nunca** faz merge: abre o PR (`gh pr create --base dev`) e o **merge é feito
+  por um humano**. Nunca usar `--admin`/bypass nem force-push em `dev`/`main`.
 - **Sempre que um PR for mencionado** (na conversa ou em respostas), citá-lo como **link
   Markdown** para a URL do PR — ex.: `[PR #15 — título](https://github.com/LucasAMatos/TBH-Tracker/pull/15)`.
   Nunca mencionar um PR apenas pelo número sem o link.
 
 ## Repositório
-- Pessoal (GitHub `github.com/LucasAMatos/TBH-Tracker`), branch padrão `main`.
+- Pessoal (GitHub `github.com/LucasAMatos/TBH-Tracker`). Branch padrão/integração: `dev`;
+  branch estável/release: `main`.
