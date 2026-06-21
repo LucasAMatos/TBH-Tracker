@@ -16,13 +16,14 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | U12 | P2 | Repensar/remover o widget "Level-ups" | decisão (a confirmar) + toggle do U10 já permite esconder |
 | C3 | P2 | Curva de XP do Cubo por nível | criar catálogo `cube_levels` (100 níveis); cruza com `CubeLevel`/`CubeExp`; sinergia D5 |
 | H14 | P2 | XP para o próximo level-up (aba Heróis) | criar catálogo da curva de XP por nível (100 níveis) |
+| I14 | P2 | Passe de arquivamento do backlog (v0.16→v2.1.0) | mecânico: mover ✅ para `BACKLOG-HISTORICO.md` + resetar a convenção de corte |
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
 | D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
-| PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + `DB.pets`/`petStats`; novo `gen-pets.cjs` |
+| PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + corpus **W6 `pets.json`** (já pronto) → só cruzar + UI (esforço caiu p/ 🟢–🟡) |
 | A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
 | N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
 | I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
@@ -44,6 +45,11 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | V2 | P2 | Épico V: ouro por kill (comum × boss) | desbloqueia G4; valida com `aggregateSaveDatas` |
 | V4 | P2 | Épico V: validação cruzada (cumulativos) | `aggregateSaveDatas` Type 2/0 como verdade-terreno |
 | V5 | P3 | Épico V: documentação & (opcional) nova wiki | depende de V0–V4; o maior do épico |
+| I12 | P2 | CI nos PRs (build + testes) | GitHub Actions `dotnet build`+`test`; opcional: check de backlog no PR |
+| U13 | P2 | Save → Pedia (deep-links) | reaproveita `PediaNav` (W9); ponte do estado real p/ a entrada da pedia |
+| A4 | P2 | Estatísticas acumuladas (`aggregateSaveDatas`) | ouro/ato + kills/monstro (lifetime); cruza com nomes do W5 |
+| H15 | P2 | Equipamento atual por herói (loadout) | itens equipados (D3); base de UI do H11; vínculo item→herói a confirmar |
+| I13 | P2 | Empacotar/distribuir release (MSIX/exe) | artefato instalável do MAUI + passo a passo da release |
 
 ## 🔴 Difícil — dependências pesadas, catálogos grandes ou modelagem
 
