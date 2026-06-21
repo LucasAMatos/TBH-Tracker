@@ -169,33 +169,48 @@ Fontes: **taskbarhero.wiki** (PT), **taskbarherowiki.com**, **taskbarhero.org**,
 > **Faseado e incremental.** W0/W1 são a fundação; W2–W8 ingerem um domínio por vez (cada um já
 > entrega valor na TBHPedia); W9 unifica a navegação. *Esforço do épico:* 🔴 (grande).
 
-- **W0 (P2) — Levantamento + esquema canônico:** inventariar **o que cada uma das 5 wikis cobre**
+> **Entregue na v2.1.0 (jun/2026):** fundação **W0+W1** (esquema canônico `docs/PEDIA-CORPUS.md` +
+> pipeline `scripts/pedia/lib.cjs` + geradores `gen-pedia-*.cjs` → `Core/Data/pedia/*.json`),
+> domínios **W2/W3/W5/W6** (heróis, runas, mapa/estágios/monstros, pets) **completos** e **W4/W7
+> parciais** (efeitos de material e baús), e a UI **W9** (TBHPedia unificada: busca global, nav
+> agrupada, cross-links, atribuição). Fonte primária: `taskbarherowiki.com` (JSON no payload RSC).
+> **Pendentes:** itens-DB/afixos por instância (W4), Cubo/Soul Stones/mecânicas (W7) e **W8** (guias
+> em prosa da `taskbarhero.wiki`, Remix — **deferido**).
+
+- **W0 (P2) ✅ v2.1.0 — Levantamento + esquema canônico:** inventariar **o que cada uma das 5 wikis cobre**
   (heróis, pets, runas, itens, efeitos, estágios/farm, monstros, cubo, baús, soul stones, mecânicas,
   guias) e **como expõe os dados** (JSON/RSC estruturado vs. HTML; idiomas). Definir o **esquema
   canônico** da TBHPedia (tópico → entrada → campos/seções, com `source`, `sourceUrl`, `lang`,
   `fetchedAt`) e as **regras de conflito/autoridade** (qual wiki manda por domínio; PT-BR canônico;
   dedup/merge). Saída: doc de cobertura + tipos do corpus. *Esforço:* 🟡.
-- **W1 (P2) — Pipeline de ingestão reutilizável:** geradores no padrão `scripts/gen-*.cjs`
+- **W1 (P2) ✅ v2.1.0 — Pipeline de ingestão reutilizável:** geradores no padrão `scripts/gen-pedia-*.cjs`
   (um por wiki/domínio) que **buscam, parseiam e normalizam** para o esquema do W0, com **cache do
-  bruto + proveniência** e *rate limit*. Saída: `src/shared/pedia/*` (catálogo gerado) + helpers.
+  bruto + proveniência** e *rate limit*. *Entregue:* `scripts/pedia/lib.cjs` (extração do payload RSC
+  do Next.js + parser de JSON balanceado) → corpus em `Core/Data/pedia/*.json`, carregado por `Catalog`.
   *Esforço:* 🔴 (parsing heterogêneo entre as fontes).
-- **W2 (P2) — Domínio Heróis (completo):** stats, árvore de habilidades, builds e descrições de
-  todas as wikis. *Estende:* `heroes.ts`/H9 (já temos a base via `taskbarhero.wiki`). *Esforço:* 🟡.
-- **W3 (P2) — Domínio Runas:** preencher lacunas além do R1 (efeitos completos, prioridades,
-  notas) cruzando as fontes. *Base:* `runeTree.ts` (v0.4.0). *Esforço:* 🟡.
-- **W4 (P2) — Domínio Itens & Efeitos:** gear, **efeitos/afixos**, drops e descrições. *Sinergia:*
-  D3 (catálogo de itens) e **D4** (catálogo de bônus). *Esforço:* 🟡.
-- **W5 (P2) — Domínio Estágios/Farm/Monstros/Mapa:** além do F0 (108 fases), trazer **monstros**,
-  *threat*, bosses de ato e o mapa do mundo. *Sinergia:* F0/S5/S6 e G4 (ouro por kill). *Esforço:* 🟡.
-- **W6 (P3) — Domínio Pets/Mascotes:** catálogo completo + efeitos. *Sinergia:* **PE1**. *Esforço:* 🟡.
-- **W7 (P3) — Domínio Cubo, Baús, Soul Stones e mecânicas gerais:** Alchemy/Crafting/Decoration/
-  Removal/Engraving/Inscription/Offering, tipos de baú, soul stones, fórmulas e mecânicas. *Esforço:* 🟡.
-- **W8 (P3) — Guias & estratégias (prosa):** "Task Bar Hero 101" e guias de comunidade, como
-  artigos navegáveis (texto longo, não só tabelas). *Esforço:* 🟡.
-- **W9 (P2) — TBHPedia unificada na UI:** reconstruir a aba TBHPedia para renderizar **todo o
-  corpus** com **busca global**, **cross-links** (herói → runas/itens/estágios recomendados),
-  **atribuição de fonte** e "atualizado em <data>". Opcional: ação "atualizar das wikis" (como o
-  refresh da N1) ou geração em build. *Sinergia:* U6 (i18n, wikis são multilíngues). *Esforço:* 🟡–🔴.
+- **W2 (P2) ✅ v2.1.0 — Domínio Heróis (completo):** stats, árvore de habilidades, builds e descrições.
+  *Entregue:* `gen-pedia-heroes.cjs` → `heroes.json` (6 heróis: stats base, ataque base e árvore
+  passiva/ativa). *Esforço:* 🟡.
+- **W3 (P2) ✅ v2.1.0 — Domínio Runas:** efeitos completos, valores por nível e custos. *Entregue:*
+  `gen-pedia-runes.cjs` → `runes.json` (197 runas + 195 edges + 8 categorias). *Base:* R1 (v0.4.0). *Esforço:* 🟡.
+- **W4 (P2) ✅ (parcial) v2.1.0 — Domínio Itens & Efeitos:** *Entregue:* domínio **Efeitos de material**
+  (`gen-pedia-effects.cjs` → `effects.json`, 79 deco/gravação/inscrição com stat/slot/tier). *Pendente:*
+  o **DB de itens** (5.934) não vem no SSR — segue pelo catálogo **D3/D4**; **afixos por instância** ainda
+  dependem do save (ver D4/U11). *Esforço:* 🟡.
+- **W5 (P2) ✅ v2.1.0 — Domínio Estágios/Farm/Monstros/Mapa:** *Entregue:* `gen-pedia-map.cjs` →
+  `map.json` (120 estágios com **monstros**, **boss** e **drops**). *Sinergia:* F0/S5/S6 e G4. *Esforço:* 🟡.
+- **W6 (P3) ✅ v2.1.0 — Domínio Pets/Mascotes:** catálogo completo + efeitos. *Entregue:* `gen-pedia-pets.cjs`
+  → `pets.json` (8 pets: stats + desbloqueio/farm), como prova do pipeline. *Sinergia:* **PE1**. *Esforço:* 🟡.
+- **W7 (P3) ✅ (parcial) v2.1.0 — Domínio Cubo, Baús, Soul Stones e mecânicas gerais:** *Entregue:* **Baús**
+  (`gen-pedia-chests.cjs` → `chests.json`, 41 com pools/odds e onde aparecem). *Pendente:* Cubo/Soul Stones e
+  mecânicas (Alchemy/Crafting/Decoration/Engraving/Inscription/Offering, fórmulas) — parte sai com o W8. *Esforço:* 🟡.
+- **W8 (P3) ⛔ deferido — Guias & estratégias (prosa):** "Task Bar Hero 101" e guias de comunidade, como
+  artigos navegáveis. *Deferido na v2.1.0:* fonte `taskbarhero.wiki` é **Remix** (estrutura distinta), conteúdo
+  P3 em prosa, baixo valor relativo. Follow-up. *Esforço:* 🟡.
+- **W9 (P2) ✅ v2.1.0 — TBHPedia unificada na UI:** *Entregue:* aba TBHPedia reconstruída com **busca global**,
+  navegação agrupada (Wikis + Guia), **6 componentes de domínio**, **cross-links** (ex.: pet → estágio de farm)
+  e **atribuição de fonte** ("atualizado em <data>"). *Pendente opcional:* ação "atualizar das wikis" em runtime.
+  *Sinergia:* U6 (i18n). *Esforço:* 🟡–🔴.
 
 ## Épico V — Análise empírica de XP & ouro das fases
 
