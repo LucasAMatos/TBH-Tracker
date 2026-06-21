@@ -50,6 +50,8 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | A4 | P2 | Estatísticas acumuladas (`aggregateSaveDatas`) | ouro/ato + kills/monstro (lifetime); cruza com nomes do W5 |
 | H15 | P2 | Equipamento atual por herói (loadout) | itens equipados (D3); base de UI do H11; vínculo item→herói a confirmar |
 | I13 | P2 | Empacotar/distribuir release (MSIX/exe) | artefato instalável do MAUI + passo a passo da release |
+| D7 | P2 | Craftings possíveis pelo inventário | cruzar `itemSaveDatas[]` (D3) com catálogo de receitas (a criar); sinergia D5/W7 |
+| D8 | P2 | Item-alvo: avisar quando cair no drop | delta de `itemSaveDatas[]` (item novo); não depende de D1; alerta via A3 |
 
 ## 🔴 Difícil — dependências pesadas, catálogos grandes ou modelagem
 
