@@ -1,0 +1,44 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+@using TbhTracker.App.Services
+
+<div class="pediadom">
+    <div class="pediadom__grid">
+        @foreach (var p in Catalog.PediaPets.Entries)
+        {
+            <div class="pcard">
+                <div class="pcard__head">
+                    <strong>@p.Name</strong>
+                    @if (p.Dlc)
+                    {
+                        <span class="badge badge--dlc">DLC</span>
+                    }
+                </div>
+                <ul class="pcard__stats">
+                    @foreach (var s in p.Stats)
+                    {
+                        <li><span class="pcard__disp">@s.Disp</span> @s.Label</li>
+                    }
+                </ul>
+                <div class="pcard__unlock">
+                    @if (p.Unlock.Type == "KillMonster" && p.Unlock.Farm is { } f)
+                    {
+                        <span>Derrotar <b>@p.Unlock.MonsterName</b> @(p.Unlock.Count?.ToString("N0"))x</span>
+                        <button class="link" @onclick="@(() => Nav.Go("stages", f.Label))">
+                            melhor: @f.Label @f.StageName (@f.Share% spawn)
+                        </button>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(p.Unlock.Note))
+                    {
+                        <span class="pcard__note">@p.Unlock.Note</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <PediaSource Provenance="Catalog.PediaPets.Provenance" />
+</div>
+
+@code {
+    [CascadingParameter] public PediaNav Nav { get; set; } = new();
+}

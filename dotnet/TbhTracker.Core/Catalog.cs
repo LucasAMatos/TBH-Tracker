@@ -30,6 +30,16 @@ public static class Catalog
     // Corpus da TBHPedia (Epico W) — recursos em Data/pedia/<dominio>.json.
     private static readonly Lazy<PediaCorpus<PetEntry>> _pediaPets =
         new(() => Load<PediaCorpus<PetEntry>>("pedia.pets.json"));
+    private static readonly Lazy<PediaCorpus<PediaHeroEntry>> _pediaHeroes =
+        new(() => Load<PediaCorpus<PediaHeroEntry>>("pedia.heroes.json"));
+    private static readonly Lazy<PediaRunesFile> _pediaRunes =
+        new(() => Load<PediaRunesFile>("pedia.runes.json"));
+    private static readonly Lazy<PediaCorpus<PediaEffectEntry>> _pediaEffects =
+        new(() => Load<PediaCorpus<PediaEffectEntry>>("pedia.effects.json"));
+    private static readonly Lazy<PediaCorpus<PediaMapStage>> _pediaMap =
+        new(() => Load<PediaCorpus<PediaMapStage>>("pedia.map.json"));
+    private static readonly Lazy<PediaCorpus<PediaChestEntry>> _pediaChests =
+        new(() => Load<PediaCorpus<PediaChestEntry>>("pedia.chests.json"));
 
     public static RuneTreeData Runes => _runes.Value;
     public static StatDataModel Stats => _stats.Value;
@@ -40,4 +50,9 @@ public static class Catalog
     public static List<PediaSection> Pedia => _pedia.Value;
     public static List<WidgetDef> Widgets => _widgets.Value;
     public static PediaCorpus<PetEntry> PediaPets => _pediaPets.Value;
+    public static PediaCorpus<PediaHeroEntry> PediaHeroes => _pediaHeroes.Value;
+    public static PediaRunesFile PediaRunes => _pediaRunes.Value;
+    public static PediaCorpus<PediaEffectEntry> PediaEffects => _pediaEffects.Value;
+    public static PediaCorpus<PediaMapStage> PediaMap => _pediaMap.Value;
+    public static PediaCorpus<PediaChestEntry> PediaChests => _pediaChests.Value;
 }

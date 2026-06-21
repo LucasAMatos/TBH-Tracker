@@ -282,6 +282,224 @@ body {
   padding: 8px;
 }
 
+/* TBHPedia — corpus das wikis (Epico W / W9) */
+.pedia__group {
+  margin: 12px 4px 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.pedia__attrib {
+  margin-top: 22px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.pedia__attrib a {
+  color: var(--accent);
+}
+
+.pediadom__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip--active {
+  background: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.pediadom__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.pcard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.pcard__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pcard__stats {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pcard__disp {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.pcard__unlock,
+.pcard__note {
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  background: var(--border);
+  color: var(--text);
+}
+
+.badge--dlc {
+  background: #6d28d9;
+  color: #fff;
+}
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+}
+
+.muted {
+  color: var(--text-dim);
+}
+
+/* Heróis (detalhe) */
+.tier {
+  margin-bottom: 12px;
+}
+
+.tier__head {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.tier__nodes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  font-size: 12px;
+}
+
+.node--active {
+  border-left: 3px solid var(--accent);
+}
+
+.node__meta {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.node__desc {
+  color: var(--text);
+}
+
+/* Estágios (master-detail) */
+.stages {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+}
+
+.stages__list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.stages__item {
+  display: flex;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stages__item:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.stages__item--active {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.stages__label {
+  font-weight: 600;
+  min-width: 38px;
+}
+
+/* Baús (pools) */
+.pool {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.pool__label {
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+
+.pool__entries {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+}
+
 /* Dashboard grid */
 .grid {
   display: grid;

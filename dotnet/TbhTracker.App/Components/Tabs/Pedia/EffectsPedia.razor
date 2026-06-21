@@ -1,0 +1,51 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+
+<div class="pediadom">
+    <div class="pediadom__tabs">
+        <button class="chip @(_cat == null ? "chip--active" : "")" @onclick="@(() => _cat = null)">Todos (@Effects.Count)</button>
+        @foreach (var c in Cats)
+        {
+            <button class="chip @(_cat == c ? "chip--active" : "")" @onclick="@(() => _cat = c)">@Pt(c)</button>
+        }
+    </div>
+
+    <div class="pedia__tablewrap">
+        <table class="table">
+            <thead>
+                <tr><th>Material</th><th>Raridade</th><th>Categoria</th><th>Concede (por slot)</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Filtered)
+                {
+                    <tr>
+                        <td>@e.Name</td>
+                        <td>@e.Grade</td>
+                        <td>@Pt(e.Category)</td>
+                        <td class="muted">
+                            @string.Join(" · ", e.Groups.Select(g => $"{g.Slot}: {g.Disp}"))
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <PediaSource Provenance="Catalog.PediaEffects.Provenance" />
+</div>
+
+@code {
+    private List<PediaEffectEntry> Effects => Catalog.PediaEffects.Entries;
+    private List<string> Cats => Effects.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
+    private string? _cat;
+    private IEnumerable<PediaEffectEntry> Filtered =>
+        _cat == null ? Effects : Effects.Where(e => e.Category == _cat);
+
+    private static string Pt(string c) => c switch
+    {
+        "DECORATION" => "Decoração",
+        "ENGRAVING" => "Gravação",
+        "INSCRIPTION" => "Inscrição",
+        _ => c
+    };
+}

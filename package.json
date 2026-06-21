@@ -13,6 +13,12 @@
     "gen:items": "node scripts/gen-items.cjs",
     "gen:attributes": "node scripts/gen-attributes.cjs",
     "gen:pedia-pets": "node scripts/gen-pedia-pets.cjs",
+    "gen:pedia-heroes": "node scripts/gen-pedia-heroes.cjs",
+    "gen:pedia-runes": "node scripts/gen-pedia-runes.cjs",
+    "gen:pedia-effects": "node scripts/gen-pedia-effects.cjs",
+    "gen:pedia-map": "node scripts/gen-pedia-map.cjs",
+    "gen:pedia-chests": "node scripts/gen-pedia-chests.cjs",
+    "gen:pedia": "node scripts/gen-pedia-pets.cjs && node scripts/gen-pedia-heroes.cjs && node scripts/gen-pedia-runes.cjs && node scripts/gen-pedia-effects.cjs && node scripts/gen-pedia-map.cjs && node scripts/gen-pedia-chests.cjs",
     "export-json": "node scripts/export-json.cjs"
   },
   "devDependencies": {

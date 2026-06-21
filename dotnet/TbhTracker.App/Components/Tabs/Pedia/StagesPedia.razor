@@ -1,0 +1,97 @@
+@using TbhTracker.Core
+@using TbhTracker.Core.Models
+
+<div class="pediadom">
+    <div class="pediadom__tabs">
+        @foreach (var d in Difficulties)
+        {
+            <button class="chip @(_diff == d ? "chip--active" : "")" @onclick="@(() => _diff = d)">@Pt(d)</button>
+        }
+    </div>
+
+    <div class="stages">
+        <div class="stages__list">
+            @foreach (var s in Filtered)
+            {
+                <button class="stages__item @(s.Key == _sel ? "stages__item--active" : "")" @onclick="@(() => _sel = s.Key)">
+                    <span class="stages__label">@s.Label</span> @s.Name
+                </button>
+            }
+        </div>
+        <div class="stages__detail">
+            @if (Active is { } st)
+            {
+                <h3>@st.Label · @st.Name <span class="muted">(@Pt(st.Difficulty), nível @st.Level)</span></h3>
+
+                @if (st.Boss is { } boss)
+                {
+                    <p><b>Boss:</b> @boss.Name</p>
+                }
+
+                @if (st.Monsters.Count > 0)
+                {
+                    <h4 class="pedia__caption">Monstros</h4>
+                    <ul class="pedia__notes">
+                        @foreach (var m in st.Monsters)
+                        {
+                            <li>@m.Name <span class="muted">(@m.Count.ToString("N0") HP/onda)</span></li>
+                        }
+                    </ul>
+                }
+
+                @if (st.Drops.Count > 0)
+                {
+                    <h4 class="pedia__caption">Baús que caem aqui</h4>
+                    <ul class="pedia__notes">
+                        @foreach (var d in st.Drops)
+                        {
+                            <li>@d.Name <span class="muted">[@d.Grade · @d.Source]</span></li>
+                        }
+                    </ul>
+                }
+            }
+            else
+            {
+                <p class="pedia__empty">Selecione um estágio.</p>
+            }
+        </div>
+    </div>
+
+    <PediaSource Provenance="Catalog.PediaMap.Provenance" />
+</div>
+
+@code {
+    // Selecao vinda de cross-link (ex.: label "2-9" a partir dos Pets).
+    [Parameter] public object? Select { get; set; }
+
+    private List<PediaMapStage> Stages => Catalog.PediaMap.Entries;
+    private List<string> Difficulties => Stages.Select(s => s.Difficulty).Distinct().ToList();
+    private string _diff = "NORMAL";
+    private int _sel;
+
+    private IEnumerable<PediaMapStage> Filtered => Stages.Where(s => s.Difficulty == _diff);
+    private PediaMapStage? Active => Stages.FirstOrDefault(s => s.Key == _sel);
+
+    protected override void OnParametersSet()
+    {
+        if (Select is string label && !string.IsNullOrEmpty(label))
+        {
+            var hit = Stages.FirstOrDefault(s => s.Label == label);
+            if (hit != null)
+            {
+                _diff = hit.Difficulty;
+                _sel = hit.Key;
+            }
+        }
+        if (_sel == 0) _sel = Filtered.FirstOrDefault()?.Key ?? 0;
+    }
+
+    private static string Pt(string d) => d switch
+    {
+        "NORMAL" => "Normal",
+        "NIGHTMARE" => "Pesadelo",
+        "HELL" => "Inferno",
+        "TORMENT" => "Tormento",
+        _ => d
+    };
+}
