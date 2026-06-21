@@ -21,6 +21,35 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v2.1.0 — TBHPedia completa: ingestão das wikis (Épico W)
+
+### Adicionado
+- **Pipeline de ingestão das wikis (W0+W1):** esquema canônico do corpus (`docs/PEDIA-CORPUS.md`) +
+  tooling Node em `scripts/pedia/lib.cjs` (fetch com cache/proveniência/*rate-limit*, extração do
+  payload **RSC do Next.js** de `taskbarherowiki.com` e parser de JSON balanceado) e geradores
+  `scripts/gen-pedia-*.cjs` (um por domínio) → corpus em `dotnet/TbhTracker.Core/Data/pedia/*.json`
+  (recursos embutidos), carregado por `Catalog` com modelos `PediaCorpus<T>`/`PediaProvenance`.
+- **Domínios ingeridos:** **Heróis** (W2, `heroes.json`), **Runas** (W3, `runes.json` — 197 nós +
+  195 *edges*), **Efeitos de material** (W4, `effects.json` — 79), **Mapa/Estágios/Monstros** (W5,
+  `map.json` — 120 estágios com monstros/boss/drops), **Pets** (W6, `pets.json` — 8) e **Baús**
+  (W7, `chests.json` — 41 com *pools*/odds).
+- **TBHPedia unificada na UI (W9):** aba reconstruída (`TbhPedia.razor`) com **busca global**,
+  navegação agrupada (Wikis + Guia), 6 componentes de domínio (`Components/Tabs/Pedia/*.razor`),
+  **cross-links** (ex.: pet → estágio de farm) via `PediaNav` e **atribuição de fonte**
+  ("atualizado em <data>", `PediaSource.razor`). Estilos novos em `wwwroot/app-tbh.css`.
+- **Testes:** `PediaCorpusTests` valida contagem, proveniência e estrutura de cada domínio (83 no total).
+
+### Alterado
+- **Versão do app:** `<ApplicationDisplayVersion>` 1.0 → **2.1.0** (estava defasada desde a migração v2.0.0).
+
+### Notas
+- **Parciais:** W4 entrega só os **efeitos de material** (o DB de 5.934 itens não vem no SSR — segue
+  por D3/D4; afixos por instância dependem do save) e W7 só os **baús** (Cubo/Soul Stones/mecânicas em
+  prosa ficam pendentes).
+- **Deferido:** **W8** (guias em prosa da `taskbarhero.wiki`, fonte Remix) — follow-up.
+- Postura **passiva**: apenas leitura de páginas **públicas**; proveniência (fonte + URL + idioma +
+  data de coleta) versionada por item.
+
 ## v2.0.0 — Migração para C# (.NET MAUI Blazor Hybrid)
 
 ### Alterado
