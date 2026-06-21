@@ -21,6 +21,7 @@ import {
   type HeroEvents,
   type HeroSnapshot,
   type InventorySummary,
+  type MeltSummary,
   type PetSnapshot,
   type RuneTargetPlan,
   type Snapshot,
@@ -552,6 +553,60 @@ function InventoryRarityBody({ inventory }: { inventory: InventorySummary }): JS
   )
 }
 
+// D5: calculadora de derretimento (Alchemy). Soma ouro de venda + XP de Cubo do gear
+// derretível, excluindo equipados e Legendary+ (vendáveis no Market). Dados em meltData.ts.
+function MeltdownBody({ melt }: { melt: MeltSummary }): JSX.Element {
+  const hasItems = melt.itemCount > 0
+  const present = melt.byRarity.slice().sort((a, b) => b.tier - a.tier)
+  return (
+    <>
+      <div className="melt__totals">
+        <div className="melt__metric">
+          <span className="melt__value melt__value--gold">{fmtNum(melt.totalGold)}</span>
+          <span className="melt__label">ouro de venda</span>
+        </div>
+        <div className="melt__metric">
+          <span className="melt__value melt__value--cube">{fmtNum(melt.totalCubeXp)}</span>
+          <span className="melt__label">XP de Cubo</span>
+        </div>
+        <div className="melt__metric">
+          <span className="melt__value">{fmtNum(melt.itemCount)}</span>
+          <span className="melt__label">itens derretíveis</span>
+        </div>
+      </div>
+      {hasItems ? (
+        <div className="raritystrip">
+          {present.map((row) => {
+            const g = GRADES[row.tier]
+            if (!g) return null
+            return (
+              <div
+                className="raritychip"
+                key={row.tier}
+                title={`${g.namePt}: ${fmtNum(row.count)} itens · ${fmtNum(row.gold)} ouro · ${fmtNum(row.cubeXp)} XP de Cubo`}
+              >
+                <span className="raritychip__dot" style={{ background: g.color }} />
+                <span className="raritychip__name" style={{ color: g.color }}>
+                  {g.namePt}
+                </span>
+                <span className="raritychip__count">{fmtNum(row.count)}</span>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="card__hint">Nenhum gear derretível no save lido.</p>
+      )}
+      <p className="card__hint">
+        Exclui <strong>{fmtNum(melt.excludedEquipped)}</strong> equipados e{' '}
+        <strong>{fmtNum(melt.excludedMarketable)}</strong> Legendary+ (vendáveis no Market)
+        {melt.noData > 0 ? ` · ${fmtNum(melt.noData)} sem valor no catálogo` : ''}. Estimativa por
+        venda direta — a Alchemy converte o gear nesse ouro + XP de Cubo.
+      </p>
+    </>
+  )
+}
+
 // PE1: progresso de pets (desbloqueado/bloqueado) + bônus do pet ATIVO. O bônus não é
 // cumulativo: apenas o pet equipado concede seu efeito. Catálogo (nome/efeitos) em petData.ts.
 function PetsBody({ pets }: { pets: PetSnapshot[] }): JSX.Element {
@@ -902,6 +957,12 @@ export function Dashboard({
       {s.inventory && s.inventory.gearCount > 0 && (
         <Widget id="inventoryRarity" layout={layout} onToggleCollapse={toggleCollapse}>
           <InventoryRarityBody inventory={s.inventory} />
+        </Widget>
+      )}
+
+      {s.melt && (s.melt.itemCount > 0 || s.melt.excludedMarketable > 0) && (
+        <Widget id="meltdown" layout={layout} onToggleCollapse={toggleCollapse}>
+          <MeltdownBody melt={s.melt} />
         </Widget>
       )}
 

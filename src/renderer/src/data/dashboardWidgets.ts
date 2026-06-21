@@ -18,6 +18,7 @@ export const DASHBOARD_WIDGETS: WidgetDef[] = [
   { id: 'stageProgress', title: 'Progresso de estágio', collapsible: true, defaultOn: true },
   { id: 'boxes', title: 'Baús por tipo', collapsible: true, defaultOn: true },
   { id: 'inventoryRarity', title: 'Raridade do inventário', collapsible: true, defaultOn: true },
+  { id: 'meltdown', title: 'Derretimento (Alchemy)', collapsible: true, defaultOn: true },
   { id: 'pets', title: 'Pets', collapsible: true, defaultOn: true },
   { id: 'cubeMilestones', title: 'Marcos do Cubo', collapsible: true, defaultOn: true },
   { id: 'activeHeroes', title: 'Heróis ativos', collapsible: true, defaultOn: true },

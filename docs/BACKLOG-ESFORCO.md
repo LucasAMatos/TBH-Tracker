@@ -17,11 +17,9 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
-| D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
 | H12 | P2 | Árvore de atributos por herói (visualizador) | `attributeSaveDatas` × `DB.attributes`/`statMods`; reusa `RuneTree.tsx` |
 | A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
-| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
-| I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
+| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo |
 | O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
 | I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
 | W0 | P2 | Épico W: levantamento das wikis + esquema canônico | Mapear cobertura/estrutura/ToS das 5 wikis; define o corpus. Ponto de partida do épico |

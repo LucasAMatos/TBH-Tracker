@@ -1,6 +1,7 @@
 import { BOX_TYPES, kindFromTypeValue, type BoxKind } from '@shared/boxes'
 import { heroName } from '@shared/heroes'
 import { classifyItem, GEAR_TYPES, GRADES } from '@shared/items'
+import { summarizeMelt, type MeltCandidate } from '@shared/melt'
 import { decodeStage } from '@shared/stage'
 import type {
   BoxCount,
@@ -8,6 +9,7 @@ import type {
   InventoryRow,
   InventorySummary,
   ItemLocation,
+  MeltSummary,
   PetSnapshot,
   RuneLevel,
   Snapshot
@@ -366,6 +368,33 @@ function parseInventory(player: Json): InventorySummary | null {
   }
 }
 
+/**
+ * Resumo de derretimento/Alchemy (D5): monta os candidatos de gear (com raridade e local)
+ * e delega a soma/regras de exclusão para summarizeMelt (lógica pura testável).
+ */
+function parseMelt(player: Json): MeltSummary | null {
+  const items = asArray(pick(player, ['itemSaveDatas', 'ItemSaveDatas']))
+  if (items.length === 0) return null
+
+  const locations = buildItemLocationMap(player)
+  const candidates: MeltCandidate[] = []
+  for (const entry of items) {
+    if (!isObj(entry)) continue
+    const key = pick(entry, ['ItemKey', 'itemKey', 'Key', 'key'])
+    const info = key === undefined ? null : classifyItem(key as number | string)
+    if (!info || info.type !== 'GEAR') continue // só gear é derretido
+    const uid = pick(entry, ['UniqueId', 'uniqueId', 'Id', 'id'])
+    candidates.push({
+      key: info.key,
+      gradeTier: info.gradeTier,
+      marketable: info.marketable,
+      equipped: (locations.get(String(uid)) ?? 'loose') === 'equipped'
+    })
+  }
+
+  return summarizeMelt(candidates)
+}
+
 /** Constroi um snapshot tipado a partir do JSON ES3 ja descriptografado. */
 export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
   const player = extractPlayer(root)
@@ -397,6 +426,7 @@ export function parseSnapshot(root: Json, includeRaw = false): Snapshot {
     runes: parseRunes(player),
     pets: parsePets(player, common),
     inventory: parseInventory(player),
+    melt: parseMelt(player),
     raw: includeRaw ? player : undefined
   }
 }

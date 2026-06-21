@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
+import { Diagnostics } from './components/Diagnostics'
 import { Farm } from './components/Farm'
 import { Heroes } from './components/Heroes'
 import { Inventory } from './components/Inventory'
@@ -10,7 +11,15 @@ import { TbhPedia } from './components/TbhPedia'
 import { Updates } from './components/Updates'
 import type { TrackerState } from '@shared/types'
 
-type Tab = 'dashboard' | 'farm' | 'herois' | 'inventario' | 'runes' | 'atualizacoes' | 'tbhpedia'
+type Tab =
+  | 'dashboard'
+  | 'farm'
+  | 'herois'
+  | 'inventario'
+  | 'runes'
+  | 'atualizacoes'
+  | 'tbhpedia'
+  | 'diagnostico'
 
 const EMPTY: TrackerState = {
   status: 'no-save',
@@ -113,11 +122,19 @@ export function App(): JSX.Element {
         >
           TBHPedia
         </button>
+        <button
+          className={`tabs__btn ${tab === 'diagnostico' ? 'tabs__btn--active' : ''}`}
+          onClick={() => setTab('diagnostico')}
+        >
+          Diagnóstico
+        </button>
       </nav>
 
       <main className="app__main">
         {tab === 'tbhpedia' ? (
           <TbhPedia />
+        ) : tab === 'diagnostico' ? (
+          <Diagnostics state={state} version={version} />
         ) : tab === 'atualizacoes' ? (
           <Updates />
         ) : tab === 'herois' ? (

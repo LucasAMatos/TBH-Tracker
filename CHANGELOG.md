@@ -21,6 +21,32 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v1.9.0 — Derretimento/Alchemy no Dashboard (D5) + Painel de diagnóstico (I9)
+
+### Adicionado
+- **Catálogo de derretimento (D5):** novo gerador `scripts/gen-melt.cjs` → `src/shared/meltData.ts`
+  (5.744 itens) com **ouro de venda** (`itemSell`) e **XP de Cubo** (`itemCubeExp`) por `ItemKey`.
+- **Lógica pura `src/shared/melt.ts`:** `summarizeMelt` soma ouro + XP de Cubo do gear derretível,
+  **excluindo equipados e Legendary+** (vendáveis no Market), com quebra por raridade.
+- **Leitura do save:** o parser monta os candidatos (gear × local × raridade) e popula
+  `snapshot.melt` (`MeltSummary`).
+- **Widget "Derretimento (Alchemy)" no Dashboard (U10):** total de ouro + XP de Cubo recuperável,
+  nº de itens derretíveis e as exclusões (equipados / Legendary+ / sem catálogo), com tiras por
+  raridade. Liga/desliga e colapsável como os demais widgets.
+- **Aba "Diagnóstico" (I9):** estado da conexão, caminho/chave do save, heartbeat e última leitura
+  num só lugar + **avisos de catálogo desatualizado** (ItemKeys/estágio fora do datamine). Somente
+  leitura.
+- **Testes:** `test/melt.test.ts` (catálogo + regras de exclusão de `summarizeMelt`) — suíte sobe
+  para 75.
+
+### Notas
+- O derretimento é estimado por **venda direta** (`itemSell`); a Alchemy converte o gear nesse ouro
+  + XP de Cubo. Em aberto: confirmar se "derreter" usa exatamente `itemSell` ou outra tabela e se o
+  valor escala com o nível do item.
+- D5 e I9 fecham o tier fácil–médio do backlog; entregues num lote único conforme combinado.
+
+---
+
 ## v1.8.0 — Pets no Dashboard: desbloqueio + bônus ativos (PE1)
 
 ### Adicionado

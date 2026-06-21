@@ -156,7 +156,7 @@ Arquivo: `%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero\SaveFile_Li
 | `heroSaveDatas[]` (`heroKey,HeroLevel,HeroExp,IsUnLock`) | Heróis | Level-ups, XP/h, composição |
 | `cubeSaveLevelData.Level/Exp` | Cubo | Marcos (nível 10 = Trade Ship) |
 | `BoxData` = arrays paralelos `BoxTypes[]`/`BoxUniqueId[]`/`BoxQuantity[]` | Baús não abertos (lote i: tipo `BoxTypes[i]`, qtd `BoxQuantity[i]`) | Somar `BoxQuantity` agrupando por `BoxTypes` (0=Comum · 1=Estágio · 2=Ato) + alerta de acúmulo |
-| `itemSaveDatas[]` (`ItemKey,UniqueId,...`) | Itens/inventário | Drops novos por corrida |
+| `itemSaveDatas[]` (`ItemKey,UniqueId,...`) | Itens/inventário | Drops novos por corrida; ✅ D5 (v1.9.0): derretimento (ouro+XP de Cubo) via `DB.itemSell`/`itemCubeExp` (`meltData.ts`), excluindo equipados/Legendary+ |
 | `RuneSaveData[]` (`RuneKey,Level`) | Runas (197); `RuneKey` = key do catálogo `runeTree.ts` | ✅ R1 níveis/mapa; gasto de ouro (calibrar recuperação) pendente |
 | `PetSaveData[]` (`PetKey,IsUnlock`) | Pets (8); catálogo `petData.ts` (`gen-pets.cjs`) | ✅ PE1 (v1.8.0): widget "Pets" no Dashboard — desbloqueados/total + bônus do pet ativo (não cumulativo) |
 | `attributeSaveDatas[]` (`Key,Level`) | Atributos da árvore | — |

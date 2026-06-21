@@ -207,6 +207,26 @@ export interface InventorySummary {
   locationTotals: Record<ItemLocation, number> // total de instâncias por localização
 }
 
+// Uma linha do resumo de derretimento por raridade (D5).
+export interface MeltRarityRow {
+  tier: number // tier da raridade (índice em GRADES)
+  count: number // gear derretível nessa raridade
+  gold: number // ouro de venda somado
+  cubeXp: number // XP de Cubo somado
+}
+
+// Resumo do derretimento/Alchemy do inventário (D5): só gear, excluindo equipados e
+// Legendary+ (vendáveis no Market). Calculado no parser a partir de meltData.ts.
+export interface MeltSummary {
+  totalGold: number // ouro recuperável derretendo o gear elegível
+  totalCubeXp: number // XP de Cubo recuperável
+  itemCount: number // nº de gear derretível
+  excludedMarketable: number // Legendary+ excluídos (vendáveis no Market)
+  excludedEquipped: number // equipados excluídos
+  noData: number // itens sem valor no catálogo (datamine velho)
+  byRarity: MeltRarityRow[] // por raridade (só as com itens), tier asc
+}
+
 export interface Snapshot {
   capturedAt: number // epoch ms da leitura
   playTimeSeconds: number | null
@@ -224,6 +244,7 @@ export interface Snapshot {
   runes: RuneLevel[] // nós da árvore de runas com nível > 0
   pets: PetSnapshot[] // pets do save (desbloqueado/bloqueado) — PE1
   inventory: InventorySummary | null // distribuição de itens por tipo × raridade (D3)
+  melt: MeltSummary | null // derretimento/Alchemy: ouro + XP de Cubo recuperável (D5)
   goldFlow?: GoldFlow // fluxo de ouro da sessão (preenchido pelo Tracker, não pelo parser)
   heroEvents?: HeroEvents // level-ups da sessão (preenchido pelo Tracker, não pelo parser)
   stageEvents?: StageEvents // eventos de estágio da sessão (preenchido pelo Tracker)
@@ -290,6 +311,7 @@ export type WidgetId =
   | 'stageProgress'
   | 'boxes'
   | 'inventoryRarity'
+  | 'meltdown'
   | 'pets'
   | 'cubeMilestones'
   | 'activeHeroes'
@@ -304,6 +326,7 @@ export const WIDGET_IDS: readonly WidgetId[] = [
   'stageProgress',
   'boxes',
   'inventoryRarity',
+  'meltdown',
   'pets',
   'cubeMilestones',
   'activeHeroes',
