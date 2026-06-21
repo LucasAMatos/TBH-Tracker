@@ -13,7 +13,6 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
 | R4 | P2 | Custo para maximizar todas as runas | soma os custos do `runeTree` × níveis atuais; total/investido/falta |
-| U12 | P2 | Repensar/remover o widget "Level-ups" | decisão (a confirmar) + toggle do U10 já permite esconder |
 | C3 | P2 | Curva de XP do Cubo por nível | criar catálogo `cube_levels` (100 níveis); cruza com `CubeLevel`/`CubeExp`; sinergia D5 |
 | H14 | P2 | XP para o próximo level-up (aba Heróis) | criar catálogo da curva de XP por nível (100 níveis) |
 | I14 | P2 | Passe de arquivamento do backlog (v0.16→v2.1.0) | mecânico: mover ✅ para `BACKLOG-HISTORICO.md` + resetar a convenção de corte |

@@ -100,7 +100,6 @@ Cada item nasce de algo que conseguimos **observar no save** (ver `TBHPEDIA.md �
 | U11 (P2) ✅ v1.7.0 | **Itens na TBHPedia** com **filtro por status (bônus)** + **lista de seleção de bônus** (ex.: "+35 de armadura") | Entregue: seção **"Bônus de itens"** na TBHPedia (`ItemBonusExplorer`) — busca + filtro por tipo de modificador + faixas (min–max), consumindo o catálogo D4. Afixos por instância seguem pendentes (save). |
 | U2 (P1) ✅ v0.20.0 | Aba de Farm (ouro/h, xp/h, melhores estágios, histórico) | Entregue: `Farm.tsx` + aba; medições F2/F3 + recomendação F4. (F1 segue bloqueado, mas a aba não depende dele) |
 | U9 (P2) ✅ v0.17.0 | Aba **Atualizações** (patch notes/anúncios da Steam) | Entregue junto do N1 (`Updates.tsx` + aba na navegação) |
-| U12 (P2) | **Repensar/remover o widget "Level-ups"** do Dashboard | Avaliado como pouco útil; candidato a sair em favor do **Fluxo de XP** (X1) + **ETA de level-up** (X2). Confirmar antes de remover (toggle do U10 já permite escondê-lo) |
 | U13 (P2) | **Save → Pedia (deep-links)** — do estado real abrir a entrada certa da TBHPedia | Payoff do W9: estágio atual → `StagesPedia`; herói ativo → `HeroesPedia`; pet → `PetsPedia`; runa → `RunesPedia`. Reaproveita o `PediaNav` (cross-links) já existente; só falta a ponte a partir dos cards do Dashboard/abas. *Esforço:* 🟡 |
 | U4 (P2) | Eventos coloridos / log de atividade | Progress, gold, level-up, chest |
 | U5 (P3) | Gráficos de sessão (ouro acumulado, taxa) | — |
