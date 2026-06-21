@@ -1,0 +1,150 @@
+@implements IDisposable
+@using TbhTracker.Core.Models
+
+@*
+    I9 — Painel de diagnostico: estado da conexao, caminho/chave do save, heartbeat e a
+    ultima leitura num so lugar, mais avisos de catalogo desatualizado (chaves fora do
+    datamine). Tudo somente-leitura; ajuda a calibrar e a perceber patch novo.
+*@
+
+<section class="diag">
+    <header class="diag__head">
+        <h2 class="diag__title">Diagnóstico</h2>
+        <p class="diag__sub">Estado da leitura passiva do save e avisos de catálogo. Somente leitura.</p>
+    </header>
+
+    <div class="diag__grid">
+        <div class="diag__row">
+            <span class="diag__k">Estado</span>
+            <span class="diag__v"><span class="diag__dot diag__dot--@_statusCls"></span>@_statusText</span>
+        </div>
+        <div class="diag__row">
+            <span class="diag__k">Versão do app</span>
+            <span class="diag__v">@(string.IsNullOrEmpty(Version) ? "—" : Version)</span>
+        </div>
+        <div class="diag__row">
+            <span class="diag__k">Chave ES3</span>
+            <span class="diag__v">@(State.HasKey ? "configurada" : "ausente")</span>
+        </div>
+        <div class="diag__row diag__row--wide">
+            <span class="diag__k">Caminho do save</span>
+            <span class="diag__v diag__v--mono">@(State.SavePath ?? "—")</span>
+        </div>
+        <div class="diag__row">
+            <span class="diag__k">Última mudança</span>
+            <span class="diag__v">@TimeWithAgo(State.LastChangeAt)</span>
+        </div>
+        <div class="diag__row">
+            <span class="diag__k">Heartbeat</span>
+            <span class="diag__v">@TimeWithAgo(State.HeartbeatAt)</span>
+        </div>
+        <div class="diag__row">
+            <span class="diag__k">Última leitura</span>
+            <span class="diag__v">@TimeWithAgo(State.Snapshot?.CapturedAt)</span>
+        </div>
+        @if (!string.IsNullOrEmpty(State.LastError))
+        {
+            <div class="diag__row diag__row--wide">
+                <span class="diag__k">Último erro</span>
+                <span class="diag__v diag__v--err">@State.LastError</span>
+            </div>
+        }
+    </div>
+
+    <div class="diag__warns">
+        <h3 class="diag__warnstitle">Avisos de catálogo</h3>
+        @{
+            var warnings = BuildWarnings();
+        }
+        @if (warnings.Count == 0)
+        {
+            <p class="card__hint">Nenhum aviso — catálogo coerente com o save lido.</p>
+        }
+        else
+        {
+            <ul class="diag__warnlist">
+                @foreach (var w in warnings)
+                {
+                    <li class="diag__warn diag__warn--@w.Level">@w.Text</li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public TrackerState State { get; set; } = new();
+    [Parameter] public string Version { get; set; } = "";
+
+    private static readonly System.Globalization.CultureInfo PtBr =
+        System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+
+    private System.Timers.Timer? _ticker;
+    private string _statusText = "—";
+    private string _statusCls = "warn";
+
+    private sealed record Warn(string Level, string Text);
+
+    protected override void OnInitialized()
+    {
+        _ticker = new System.Timers.Timer(1000) { AutoReset = true };
+        _ticker.Elapsed += (_, _) => InvokeAsync(StateHasChanged);
+        _ticker.Start();
+    }
+
+    protected override void OnParametersSet()
+    {
+        (_statusText, _statusCls) = State.Status switch
+        {
+            ConnectionStatus.Monitoring => ("Monitorando", "ok"),
+            ConnectionStatus.NoKey => ("Sem chave ES3", "warn"),
+            ConnectionStatus.NoSave => ("Save não encontrado", "warn"),
+            ConnectionStatus.Error => ("Erro", "err"),
+            _ => ("—", "warn")
+        };
+    }
+
+    private static long NowMs() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private static string FmtAgo(long ms)
+    {
+        var s = ms / 1000;
+        if (s < 60) return $"{s}s";
+        var m = s / 60;
+        if (m < 60) return $"{m}min";
+        var h = m / 60;
+        return $"{h}h {m % 60}min";
+    }
+
+    private static string FmtClock(long at) =>
+        DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss", PtBr);
+
+    private static string TimeWithAgo(long? at)
+    {
+        if (at == null) return "—";
+        return $"{FmtClock(at.Value)} · há {FmtAgo(NowMs() - at.Value)}";
+    }
+
+    private List<Warn> BuildWarnings()
+    {
+        var list = new List<Warn>();
+        var snap = State.Snapshot;
+        var inv = snap?.Inventory;
+        var melt = snap?.Melt;
+        if (inv != null && inv.UnknownCount > 0)
+            list.Add(new Warn("warn",
+                $"{inv.UnknownCount} ItemKey(s) do save fora do catálogo — datamine pode estar desatualizado (patch novo?)."));
+        if (melt != null && melt.NoData > 0)
+            list.Add(new Warn("info",
+                $"{melt.NoData} item(ns) de gear sem valor de venda no catálogo de derretimento."));
+        if (snap != null && snap.Stage == null && snap.MaxCompletedStage == null)
+            list.Add(new Warn("warn", "Estágio atual não reconhecido — chave de estágio fora do catálogo."));
+        return list;
+    }
+
+    public void Dispose()
+    {
+        _ticker?.Stop();
+        _ticker?.Dispose();
+    }
+}

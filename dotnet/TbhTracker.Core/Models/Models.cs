@@ -213,6 +213,35 @@ public sealed class InventorySummary
     public Dictionary<string, int> LocationTotals { get; set; } = new();
 }
 
+public sealed class PetSnapshot
+{
+    public int Key { get; set; }
+    public bool Unlocked { get; set; }
+    public bool Active { get; set; }
+}
+
+// Uma linha do resumo de derretimento por raridade (D5).
+public sealed class MeltRarityRow
+{
+    public int Tier { get; set; }
+    public int Count { get; set; }
+    public double Gold { get; set; }
+    public double CubeXp { get; set; }
+}
+
+// Resumo do derretimento/Alchemy do inventario (D5): so gear, excluindo equipados e
+// Legendary+ (vendaveis no Market). Calculado no parser a partir de meltData.json.
+public sealed class MeltSummary
+{
+    public double TotalGold { get; set; }
+    public double TotalCubeXp { get; set; }
+    public int ItemCount { get; set; }
+    public int ExcludedMarketable { get; set; }
+    public int ExcludedEquipped { get; set; }
+    public int NoData { get; set; }
+    public List<MeltRarityRow> ByRarity { get; set; } = new();
+}
+
 public sealed class Snapshot
 {
     public long CapturedAt { get; set; }
@@ -230,7 +259,9 @@ public sealed class Snapshot
     public List<string> ArrangedHeroKeys { get; set; } = new();
     public List<RuneLevel> Runes { get; set; } = new();
     public List<HeroAttributeLevel> HeroAttributes { get; set; } = new();
+    public List<PetSnapshot> Pets { get; set; } = new();
     public InventorySummary? Inventory { get; set; }
+    public MeltSummary? Melt { get; set; }
     public GoldFlow? GoldFlow { get; set; }
     public HeroEvents? HeroEvents { get; set; }
     public StageEvents? StageEvents { get; set; }
@@ -302,6 +333,8 @@ public static class WidgetIds
     public const string StageProgress = "stageProgress";
     public const string Boxes = "boxes";
     public const string InventoryRarity = "inventoryRarity";
+    public const string Meltdown = "meltdown";
+    public const string Pets = "pets";
     public const string CubeMilestones = "cubeMilestones";
     public const string ActiveHeroes = "activeHeroes";
     public const string RawJson = "rawJson";
@@ -310,7 +343,7 @@ public static class WidgetIds
     public static readonly string[] All =
     {
         Cards, RuneTarget, GoldFlow, LevelUps, StageProgress,
-        Boxes, InventoryRarity, CubeMilestones, ActiveHeroes, RawJson
+        Boxes, InventoryRarity, Meltdown, Pets, CubeMilestones, ActiveHeroes, RawJson
     };
 }
 

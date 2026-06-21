@@ -21,6 +21,33 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v2.2.0 — Pets no Dashboard (PE1) + Derretimento/Alchemy (D5) + Diagnóstico (I9)
+
+> Primeiro lote de features portadas para o app **.NET MAUI/Blazor** (a `main`/Electron foi
+> descontinuada; estas três tinham sido implementadas por engano lá e foram refeitas aqui).
+
+### Adicionado
+- **Pets no Dashboard (PE1):** `SaveParser.ParsePets` lê `PetSaveData[]` (`PetKey`/`IsUnlock` +
+  detecção tolerante do **pet ativo**) → `Snapshot.Pets`. Widget **"Pets"** (liga/desliga +
+  colapsável) reusando o corpus **W6 `pets.json`** (`Catalog.PediaPets`): **desbloqueados/total**,
+  **bônus do pet ativo** (não cumulativo) e a lista dos 8 pets (estado + efeitos).
+- **Derretimento/Alchemy (D5):** gerador `scripts/gen-melt.cjs` → `Data/meltData.json` (5.744 itens:
+  `itemSell` + `itemCubeExp`); lógica pura `Logic/Melt.cs` (`Melt.Summarize`) soma ouro + XP de Cubo
+  do gear derretível **excluindo equipados e Legendary+**, com quebra por raridade;
+  `SaveParser.ParseMelt` popula `Snapshot.Melt`. Widget **"Derretimento (Alchemy)"** no Dashboard.
+- **Painel de diagnóstico (I9):** aba **"Diagnóstico"** (`Components/Tabs/Diagnostics.razor`) com
+  estado/caminho/chave do save, heartbeat, última leitura e **avisos de catálogo desatualizado**
+  (ItemKeys fora do catálogo, gear sem valor de melt, estágio não reconhecido). Somente leitura.
+- **Testes:** `MeltTests` (catálogo + regras de exclusão de `Melt.Summarize`) — suíte sobe para 89.
+
+### Notas
+- O derretimento é estimado por **venda direta** (`itemSell`); em aberto confirmar se a Alchemy usa
+  exatamente essa tabela e se escala com o nível do item.
+- O **campo do pet equipado** no save ainda não foi confirmado (detecção tolerante) — registrado como
+  **BUG-PET-ATIVO** no `BACKLOG.md`.
+
+---
+
 ## v2.1.0 — TBHPedia completa: ingestão das wikis (Épico W)
 
 ### Adicionado

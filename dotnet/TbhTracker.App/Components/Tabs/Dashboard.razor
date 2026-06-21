@@ -83,6 +83,14 @@
     {
         @Widget(WidgetIds.InventoryRarity, null, RenderInventoryRarity(s.Inventory))
     }
+    @if (s.Melt != null && (s.Melt.ItemCount > 0 || s.Melt.ExcludedMarketable > 0))
+    {
+        @Widget(WidgetIds.Meltdown, null, RenderMeltdown(s.Melt))
+    }
+    @if (s.Pets.Count > 0)
+    {
+        @Widget(WidgetIds.Pets, null, RenderPets(s.Pets))
+    }
     @if (s.CubeLevel != null)
     {
         @Widget(WidgetIds.CubeMilestones, null, RenderCubeMilestones(s.CubeLevel.Value, nextCube))
@@ -445,6 +453,98 @@
             Detalhe completo (tipo × raridade, por local) na aba Inventário. Apenas Legendary+ é
             vendável no Steam Market.
         </p>
+    };
+
+    private RenderFragment RenderMeltdown(MeltSummary melt) => __builder =>
+    {
+        var present = melt.ByRarity.OrderByDescending(r => r.Tier).ToList();
+        <div class="melt__totals">
+            <div class="melt__metric">
+                <span class="melt__value melt__value--gold">@Ui.FmtNum(melt.TotalGold)</span>
+                <span class="melt__label">ouro de venda</span>
+            </div>
+            <div class="melt__metric">
+                <span class="melt__value melt__value--cube">@Ui.FmtNum(melt.TotalCubeXp)</span>
+                <span class="melt__label">XP de Cubo</span>
+            </div>
+            <div class="melt__metric">
+                <span class="melt__value">@Ui.FmtNum(melt.ItemCount)</span>
+                <span class="melt__label">itens derretíveis</span>
+            </div>
+        </div>
+        if (melt.ItemCount > 0)
+        {
+            <div class="raritystrip">
+                @foreach (var row in present)
+                {
+                    var g = Items.GradeByTier(row.Tier);
+                    if (g != null)
+                    {
+                        <div class="raritychip" title="@g.NamePt: @Ui.FmtNum(row.Count) itens · @Ui.FmtNum(row.Gold) ouro · @Ui.FmtNum(row.CubeXp) XP de Cubo">
+                            <span class="raritychip__dot" style="background:@g.Color"></span>
+                            <span class="raritychip__name" style="color:@g.Color">@g.NamePt</span>
+                            <span class="raritychip__count">@Ui.FmtNum(row.Count)</span>
+                        </div>
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <p class="card__hint">Nenhum gear derretível no save lido.</p>
+        }
+        <p class="card__hint">
+            Exclui <strong>@Ui.FmtNum(melt.ExcludedEquipped)</strong> equipados e
+            <strong>@Ui.FmtNum(melt.ExcludedMarketable)</strong> Legendary+ (vendáveis no Market)@(melt.NoData > 0 ? $" · {Ui.FmtNum(melt.NoData)} sem valor no catálogo" : ""). Estimativa por venda direta — a Alchemy converte o gear nesse ouro + XP de Cubo.
+        </p>
+    };
+
+    private RenderFragment RenderPets(List<PetSnapshot> pets) => __builder =>
+    {
+        var unlockedSet = pets.Where(p => p.Unlocked).Select(p => p.Key).ToHashSet();
+        var activeKey = pets.FirstOrDefault(p => p.Active && p.Unlocked)?.Key;
+        var entries = Catalog.PediaPets.Entries;
+        var total = entries.Count;
+        var activePet = activeKey != null ? entries.FirstOrDefault(e => e.Key == activeKey.Value) : null;
+        <div class="petshi @(activePet != null ? "petshi--on" : "")">
+            <span class="petshi__count">@unlockedSet.Count / @total</span>
+            <span class="petshi__label">desbloqueados</span>
+            @if (activePet != null)
+            {
+                <span class="petshi__active">ativo: @activePet.Name</span>
+            }
+        </div>
+        if (activePet != null && activePet.Stats.Count > 0)
+        {
+            <div class="petsbonus">
+                <div class="petsbonus__title">Bônus do pet ativo (não cumulativo)</div>
+                <ul class="petsbonus__list">
+                    @foreach (var st in activePet.Stats)
+                    {
+                        <li class="petsbonus__item"><span class="petsbonus__disp">@st.Disp</span> @st.Label</li>
+                    }
+                </ul>
+            </div>
+        }
+        else
+        {
+            <p class="card__hint">
+                Nenhum pet ativo detectado — só o pet equipado concede bônus (não é cumulativo). O campo
+                exato do pet equipado no save ainda está sendo confirmado.
+            </p>
+        }
+        <ul class="petslist">
+            @foreach (var e in entries)
+            {
+                var unlocked = unlockedSet.Contains(e.Key);
+                var active = activeKey != null && e.Key == activeKey.Value;
+                var cls = "petrow" + (active ? " petrow--active" : unlocked ? "" : " petrow--locked");
+                <li class="@cls">
+                    <span class="petrow__name">@(active ? "★ " : "")@e.Name</span>
+                    <span class="petrow__state">@(active ? "ativo" : unlocked ? "desbloqueado" : "bloqueado")</span>
+                </li>
+            }
+        </ul>
     };
 
     private RenderFragment RenderCubeMilestones(int cubeLevel, CubeMilestone? nextCube) => __builder =>

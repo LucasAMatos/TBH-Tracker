@@ -89,6 +89,14 @@ public sealed class ItemDataModel
     public Dictionary<string, int[]> Items { get; set; } = new();
 }
 
+// ── Derretimento / Alchemy (meltData.json, D5) ───────────────────────────────
+
+public sealed class MeltDataModel
+{
+    // valor = [ouroVenda, xpCubo] por ItemKey (itemSell + itemCubeExp do datamine).
+    public Dictionary<string, int[]> Items { get; set; } = new();
+}
+
 // ── Atributos (attributeData.ts) ─────────────────────────────────────────────
 
 public sealed class AttrGroup

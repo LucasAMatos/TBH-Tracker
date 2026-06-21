@@ -22,11 +22,8 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
-| D5 | P2 | Calculadora de derretimento (Alchemy) | `DB.itemSell`/`itemCubeExp` + inventário (D3); excluir Legendary+/equipados |
-| PE1 | P2 | Aba/catálogo de Pets | App não cobre pets; `PetSaveData[]` + corpus **W6 `pets.json`** (já pronto) → só cruzar + UI (esforço caiu p/ 🟢–🟡) |
 | A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
-| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo; sinergia com I9 |
-| I9 | P2 | Painel de diagnóstico | Caminho/chave/última leitura + avisos de catálogo velho |
+| N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo (avisos já no painel de Diagnóstico, I9) |
 | O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
 | I11 | P3 | Suporte Proton/Linux | `locator` já tem caminhos base (pendente do K1) |
 | H7 | P2 | Herói líder em destaque | Depende de localizar o campo do líder no save |

@@ -56,6 +56,9 @@
                           Target="_runeTarget"
                           OnSetTarget="ChangeRuneTarget" />
                 break;
+            case "diagnostico":
+                <Diagnostics State="_state" Version="_version" />
+                break;
             default:
                 @if (_state.Status == ConnectionStatus.Monitoring && _state.Snapshot != null)
                 {
@@ -86,7 +89,8 @@
         new("inventario", "Inventário"),
         new("runes", "Runas"),
         new("atualizacoes", "Atualizações"),
-        new("tbhpedia", "TBHPedia")
+        new("tbhpedia", "TBHPedia"),
+        new("diagnostico", "Diagnóstico")
     };
 
     private TrackerState _state = new();

@@ -21,6 +21,7 @@ public static class Catalog
     private static readonly Lazy<RuneTreeData> _runes = new(() => Load<RuneTreeData>("runeTree.json"));
     private static readonly Lazy<StatDataModel> _stats = new(() => Load<StatDataModel>("statData.json"));
     private static readonly Lazy<ItemDataModel> _items = new(() => Load<ItemDataModel>("itemData.json"));
+    private static readonly Lazy<MeltDataModel> _melt = new(() => Load<MeltDataModel>("meltData.json"));
     private static readonly Lazy<AttributeDataModel> _attrs = new(() => Load<AttributeDataModel>("attributeData.json"));
     private static readonly Lazy<StageDataModel> _stages = new(() => Load<StageDataModel>("stageData.json"));
     private static readonly Lazy<List<HeroCatalogEntry>> _heroes = new(() => Load<List<HeroCatalogEntry>>("heroes.json"));
@@ -44,6 +45,7 @@ public static class Catalog
     public static RuneTreeData Runes => _runes.Value;
     public static StatDataModel Stats => _stats.Value;
     public static ItemDataModel Items => _items.Value;
+    public static MeltDataModel Melt => _melt.Value;
     public static AttributeDataModel Attributes => _attrs.Value;
     public static StageDataModel Stages => _stages.Value;
     public static List<HeroCatalogEntry> Heroes => _heroes.Value;
