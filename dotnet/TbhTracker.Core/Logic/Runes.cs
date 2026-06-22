@@ -25,6 +25,19 @@ public sealed class RuneProgress
     public Dictionary<string, RuneProgressCategory> ByCategory { get; set; } = new();
 }
 
+// R4 — custo para maximizar todas as runas (todos os nós em todos os níveis).
+public sealed class RuneMaxCost
+{
+    public double TotalGold { get; set; }       // ouro para levar TODOS os nós ao nível máximo
+    public double InvestedGold { get; set; }    // ouro já gasto (níveis atuais)
+    public double RemainingGold { get; set; }   // falta (total − investido)
+    public int TotalLevels { get; set; }        // Σ dos MaxLevel de cada nó (100%)
+    public int OwnedLevels { get; set; }        // Σ dos níveis atuais
+    public bool HasNonGold { get; set; }        // algum nível custa soul stones (não somado no ouro)
+    public double GoldProgress { get; set; }    // investido / total (0..1)
+    public double LevelProgress { get; set; }   // owned / total de níveis (0..1)
+}
+
 public static class Runes
 {
     public static readonly IReadOnlyDictionary<string, RuneCategoryMeta> CategoryMeta =
@@ -119,6 +132,49 @@ public static class Runes
             TotalNodes = Catalog.Runes.Nodes.Count,
             MaxedNodes = maxedNodes,
             ByCategory = byCategory
+        };
+    }
+
+    // ── Maximizar todas as runas (R4) ────────────────────────────────────────
+
+    public static RuneMaxCost SummarizeMaxCost(IEnumerable<RuneLevel> levels)
+    {
+        var levelByKey = levels.ToDictionary(l => l.Key, l => l.Level);
+        double total = 0, invested = 0;
+        var totalLevels = 0;
+        var ownedLevels = 0;
+        var hasNonGold = false;
+
+        foreach (var node in Catalog.Runes.Nodes)
+        {
+            var lv = levelByKey.TryGetValue(node.Key, out var l) ? Math.Clamp(l, 0, node.MaxLevel) : 0;
+            totalLevels += node.MaxLevel;
+            ownedLevels += lv;
+            for (var i = 0; i < node.MaxLevel; i++)
+            {
+                var c = i < node.GoldCost.Count ? node.GoldCost[i] : 0;
+                if (c > 0)
+                {
+                    total += c;
+                    if (i < lv) invested += c;
+                }
+                else
+                {
+                    hasNonGold = true;
+                }
+            }
+        }
+
+        return new RuneMaxCost
+        {
+            TotalGold = total,
+            InvestedGold = invested,
+            RemainingGold = Math.Max(0, total - invested),
+            TotalLevels = totalLevels,
+            OwnedLevels = ownedLevels,
+            HasNonGold = hasNonGold,
+            GoldProgress = total <= 0 ? 1 : Math.Clamp(invested / total, 0, 1),
+            LevelProgress = totalLevels <= 0 ? 1 : Math.Clamp((double)ownedLevels / totalLevels, 0, 1)
         };
     }
 

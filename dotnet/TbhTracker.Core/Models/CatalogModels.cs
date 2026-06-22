@@ -163,6 +163,14 @@ public sealed class StageDataModel
     public Dictionary<string, StageDatum> Stages { get; set; } = new();
 }
 
+// ── Curva de XP por nível (levels.json, H14) ─────────────────────────────────
+
+public sealed class LevelDataModel
+{
+    // levels[i] = XP para subir do nível (i+1) para o (i+2); levels[0] = custo do 1→2.
+    public List<double> Levels { get; set; } = new();
+}
+
 // ── Herois (heroes.ts) ───────────────────────────────────────────────────────
 
 public sealed class HeroBaseStats

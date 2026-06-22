@@ -25,6 +25,7 @@ public static class Catalog
     private static readonly Lazy<AttributeDataModel> _attrs = new(() => Load<AttributeDataModel>("attributeData.json"));
     private static readonly Lazy<StageDataModel> _stages = new(() => Load<StageDataModel>("stageData.json"));
     private static readonly Lazy<List<HeroCatalogEntry>> _heroes = new(() => Load<List<HeroCatalogEntry>>("heroes.json"));
+    private static readonly Lazy<LevelDataModel> _levels = new(() => Load<LevelDataModel>("levels.json"));
     private static readonly Lazy<List<PediaSection>> _pedia = new(() => Load<List<PediaSection>>("tbhpedia.json"));
     private static readonly Lazy<List<WidgetDef>> _widgets = new(() => Load<List<WidgetDef>>("dashboardWidgets.json"));
 
@@ -49,6 +50,7 @@ public static class Catalog
     public static AttributeDataModel Attributes => _attrs.Value;
     public static StageDataModel Stages => _stages.Value;
     public static List<HeroCatalogEntry> Heroes => _heroes.Value;
+    public static LevelDataModel Levels => _levels.Value;
     public static List<PediaSection> Pedia => _pedia.Value;
     public static List<WidgetDef> Widgets => _widgets.Value;
     public static PediaCorpus<PetEntry> PediaPets => _pediaPets.Value;

@@ -53,6 +53,7 @@
         public bool Unlocked;
         public bool Active;
         public int? Slot;
+        public HeroLevelXp LevelXp = HeroLogic.LevelProgress(null, null);
     }
 
     private List<HeroRow> BuildRows()
@@ -72,7 +73,8 @@
                 Exp = save?.Exp,
                 Unlocked = save?.Unlocked ?? false,
                 Active = save?.Active ?? false,
-                Slot = slot
+                Slot = slot,
+                LevelXp = HeroLogic.LevelProgress(save?.Level, save?.Exp)
             };
         }).ToList();
     }
@@ -120,6 +122,19 @@
                     <span class="herocard__exp">@Ui.FmtNum(row.Exp)</span>
                 </div>
             </div>
+            @if (row.LevelXp.NeededForNext != null)
+            {
+                <div class="heroxp">
+                    <div class="heroxp__bar">
+                        <div class="heroxp__fill" style="width:@((int)Math.Round((row.LevelXp.Progress ?? 0) * 100))%"></div>
+                    </div>
+                    <span class="heroxp__hint">faltam @Ui.FmtNum(row.LevelXp.Remaining) p/ o Nv @(row.Level + 1)</span>
+                </div>
+            }
+            else if (row.LevelXp.Maxed)
+            {
+                <div class="heroxp"><span class="heroxp__hint heroxp__hint--ok">nível máximo</span></div>
+            }
             <div class="herostats">
                 <div class="herostat"><span class="herostat__label">HP</span><span class="herostat__value">@Ui.Fmt(c.BaseStats.Hp)</span></div>
                 <div class="herostat"><span class="herostat__label">ATK</span><span class="herostat__value">@Ui.Fmt(c.BaseStats.Atk)</span></div>
@@ -156,9 +171,29 @@
             <div class="herodetail__live">
                 <div class="kv"><span class="herostat__label">Nível</span><span class="kv__val">@(row.Level?.ToString() ?? "—")</span></div>
                 <div class="kv"><span class="herostat__label">XP</span><span class="kv__val">@Ui.FmtNum(row.Exp)</span></div>
+                <div class="kv">
+                    <span class="herostat__label">@(row.LevelXp.Maxed ? "Próximo nível" : $"XP até o Nv {(row.Level ?? 0) + 1}")</span>
+                    <span class="kv__val">@(row.LevelXp.Maxed ? "máximo" : row.LevelXp.NeededForNext != null ? Ui.FmtNum(row.LevelXp.NeededForNext) : "—")</span>
+                </div>
                 <div class="kv"><span class="herostat__label">Pontos de habilidade</span><span class="kv__val">@(row.Level?.ToString() ?? "—")</span></div>
                 <div class="kv"><span class="herostat__label">DPS base</span><span class="kv__val">@Ui.Fmt(c.Dps)</span></div>
             </div>
+            @if (row.LevelXp.NeededForNext != null)
+            {
+                <div class="heroxp heroxp--lg">
+                    <div class="heroxp__bar">
+                        <div class="heroxp__fill" style="width:@((int)Math.Round((row.LevelXp.Progress ?? 0) * 100))%"></div>
+                    </div>
+                    <span class="heroxp__hint">
+                        @Ui.FmtNum(row.LevelXp.CurrentExp) / @Ui.FmtNum(row.LevelXp.NeededForNext) XP ·
+                        faltam @Ui.FmtNum(row.LevelXp.Remaining) (@((int)Math.Round((row.LevelXp.Progress ?? 0) * 100))%)
+                    </span>
+                </div>
+                <p class="card__hint">
+                    Curva de XP do datamine (100 níveis). Assume que o XP do save é o progresso no nível atual —
+                    a confirmar contra um save real.
+                </p>
+            }
         </section>
 
         <section class="section">

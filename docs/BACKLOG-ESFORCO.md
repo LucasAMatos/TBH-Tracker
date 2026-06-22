@@ -10,17 +10,16 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
-| # | Prioridade | Item | Observação |
-|---|-----------|------|-----------|
-| R4 | P2 | Custo para maximizar todas as runas | soma os custos do `runeTree` × níveis atuais; total/investido/falta |
-| C3 | P2 | Curva de XP do Cubo por nível | criar catálogo `cube_levels` (100 níveis); cruza com `CubeLevel`/`CubeExp`; sinergia D5 |
-| H14 | P2 | XP para o próximo level-up (aba Heróis) | criar catálogo da curva de XP por nível (100 níveis) |
-| I14 | P2 | Passe de arquivamento do backlog (v0.16→v2.1.0) | mecânico: mover ✅ para `BACKLOG-HISTORICO.md` + resetar a convenção de corte |
+> **Sem itens 🟢 pendentes no momento.** Os últimos (R4, H14, I14) foram entregues na **v2.3.0**
+> (ver `BACKLOG-HISTORICO.md`). O **C3** (curva de XP do Cubo) era 🟢 mas foi **reclassificado para
+> 🟡** — a curva de níveis do Cubo **não está** no `gamedata.js` do `tbh-farm` (a fonte dos
+> geradores), então falta resolver a origem dos dados (ver abaixo e no `BACKLOG.md`).
 
 ## 🟡 Médio — catálogo novo, UI dedicada ou cálculo moderado
 
 | # | Prioridade | Item | Observação |
 |---|-----------|------|-----------|
+| C3 | P2 | Curva de XP do Cubo por nível | criar catálogo `cube_levels` (100 níveis) cruzando `CubeLevel`/`CubeExp`; **dados não estão no `gamedata.js`** — precisa de outra fonte (datamine direto ou save); sinergia D5 |
 | A3 | P2 | System tray + notificações nativas | Eventos já existem (B2/H2/S3/R3); falta `Tray`/`Notification` |
 | N2 | P2 | Detecção de patch / catálogo desatualizado | Chave/`GameAssembly` + chaves fora do catálogo (avisos já no painel de Diagnóstico, I9) |
 | O1 | P3 | Estimador de recompensa offline | `DB.offlineRewards` + `[OfflineReward]` no `Player.log` |
@@ -35,7 +34,7 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 | R6 | P2 | Runa-alvo: validar nível comprado + detalhar upgrades | sobre o R3; relaciona BUG-1 |
 | D6 | P2 | Filtros do Inventário (status + raridade) | D4 pronto; afixos por instância pendentes (raridade é 🟢) |
 | X1 | P2 | Fluxo de XP no Dashboard | análogo ao Fluxo de ouro (G3); Σ deltas de `HeroExp` |
-| X2 | P2 | ETA do próximo level-up (heróis ativos) | depende de X1 + H14 |
+| X2 | P2 | ETA do próximo level-up (heróis ativos) | depende de X1 (H14 já pronto, v2.3.0: `Heroes.LevelProgress`) |
 | V0 | P2 | Épico V: metodologia & instrumentação | coleta controlada de deltas isolando multiplicadores |
 | V1 | P2 | Épico V: reconciliação catálogo × medido | erro por fase; separa multiplicador global de erro do catálogo |
 | V2 | P2 | Épico V: ouro por kill (comum × boss) | desbloqueia G4; valida com `aggregateSaveDatas` |

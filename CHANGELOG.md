@@ -21,6 +21,30 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v2.3.0 — Itens fáceis: maximizar runas (R4) + XP por nível (H14) + arquivamento do backlog (I14)
+
+### Adicionado
+- **Custo para maximizar todas as runas (R4):** `Runes.SummarizeMaxCost` soma o ouro para levar
+  **todos os nós a todos os níveis** (catálogo `runeTree`) e cruza com os níveis atuais →
+  **custo total**, **já investido**, **quanto falta** e **% / níveis adquiridos**. Card
+  **"Maximizar todas as runas"** na aba **Runas** (barra de progresso). Níveis que custam soul
+  stones não entram no ouro. Coberto por `RunesTests`.
+- **XP para o próximo level-up por herói (H14):** novo catálogo da **curva de XP por nível**
+  (`scripts/gen-levels.cjs` → `Core/Data/levels.json`, 100 níveis do `DB.levels`); lógica
+  `Heroes.LevelProgress` (XP exigido, quanto falta e % do nível atual); UI no **card** e no
+  **detalhe** do herói (barra + "faltam X p/ o Nv N+1" / "nível máximo"). Coberto por
+  `HeroesTests`. *Em aberto:* confirmar contra save real que `HeroExp` é o progresso no nível atual.
+
+### Mantido / docs
+- **Passe de arquivamento do backlog (I14):** os itens entregues (✅) de **v0.16 → v2.3.0** saíram do
+  `docs/BACKLOG.md` para `docs/BACKLOG-HISTORICO.md` (lote "quarto arquivamento"); o `BACKLOG.md`
+  passa a listar só o que está **a fazer/parado**. Convenção de corte resetada — dívida do ciclo
+  v0→v2 quitada; próximo corte regular **v2.5.0**.
+- **C3 reclassificado (🟢 → 🟡):** a **curva de XP por nível do Cubo não está** no `gamedata.js` do
+  `tbh-farm` (só `itemCubeExp` por item + `synthesis`); as wikis expõem só totais esparsos. C3 fica
+  pendente até resolver a origem dos dados (datamine direto do jogo ou observação via save). Notas
+  atualizadas no `BACKLOG.md`/`BACKLOG-ESFORCO.md`.
+
 ## v2.2.0 — Pets no Dashboard (PE1) + Derretimento/Alchemy (D5) + Diagnóstico (I9)
 
 > Primeiro lote de features portadas para o app **.NET MAUI/Blazor** (a `main`/Electron foi
