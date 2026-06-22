@@ -12,6 +12,7 @@
     "gen:stats": "node scripts/gen-stats.cjs",
     "gen:items": "node scripts/gen-items.cjs",
     "gen:attributes": "node scripts/gen-attributes.cjs",
+    "gen:levels": "node scripts/gen-levels.cjs",
     "gen:pedia-pets": "node scripts/gen-pedia-pets.cjs",
     "gen:pedia-heroes": "node scripts/gen-pedia-heroes.cjs",
     "gen:pedia-runes": "node scripts/gen-pedia-runes.cjs",

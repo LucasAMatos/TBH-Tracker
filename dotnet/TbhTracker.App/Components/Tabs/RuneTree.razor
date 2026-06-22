@@ -4,6 +4,7 @@
 @{
     var levelByKey = Levels.ToDictionary(l => l.Key, l => l.Level);
     var progress = Runes.SummarizeRunes(Levels);
+    var maxCost = Runes.SummarizeMaxCost(Levels);
     var nodes = Catalog.Runes.Nodes;
     var edges = Catalog.Runes.Edges;
     var nodeByKey = nodes.ToDictionary(n => n.Key);
@@ -88,6 +89,27 @@
                 @RenderDetail(selectedNode, selectedNode != null ? levelByKey.GetValueOrDefault(selectedNode.Key) : 0)
             </aside>
             <aside class="rune-view__stats flex-fill">
+                <div class="card rune-card mb-3">
+                    <div class="card-header rune-header">
+                        💰 Maximizar todas as runas
+                    </div>
+                    <div class="card-body">
+                        <div class="runemax__nums">
+                            <div><span class="card__label">Custo total</span><span class="runemax__val">@FmtGold(maxCost.TotalGold) ouro</span></div>
+                            <div><span class="card__label">Já investido</span><span class="runemax__val">@FmtGold(maxCost.InvestedGold) ouro</span></div>
+                            <div>
+                                <span class="card__label">@(maxCost.RemainingGold <= 0 ? "Tudo no máx." : "Falta")</span>
+                                <span class="runemax__val @(maxCost.RemainingGold <= 0 ? "runemax__val--ok" : "")">@(maxCost.RemainingGold <= 0 ? "✓" : $"{FmtGold(maxCost.RemainingGold)} ouro")</span>
+                            </div>
+                        </div>
+                        <div class="runemax__bar">
+                            <div class="runemax__fill @(maxCost.RemainingGold <= 0 ? "runemax__fill--ok" : "")" style="width:@((int)Math.Round(maxCost.GoldProgress * 100))%"></div>
+                        </div>
+                        <p class="card__hint">
+                            @((int)Math.Round(maxCost.GoldProgress * 100))% do ouro · @maxCost.OwnedLevels/@maxCost.TotalLevels níveis adquiridos@(maxCost.HasNonGold ? " · alguns níveis custam soul stones (não contados no ouro)" : "")
+                        </p>
+                    </div>
+                </div>
                 <div class="card rune-card mb-3">
                     <div class="card-header rune-header">
                         🪄 Estatísticas das Runas
