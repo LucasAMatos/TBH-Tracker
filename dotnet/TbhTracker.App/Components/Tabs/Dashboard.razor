@@ -45,7 +45,7 @@
     @Widget(WidgetIds.Cards, null, @<text>
         <div class="grid">
             @Card("Ouro", Ui.FmtNum(s.Gold), goldRate != null ? FmtRate(goldRate) : null, null)
-            @Card("Estagio atual", s.Stage != null ? s.Stage.Raw : "—", s.Stage?.Label, null)
+            @Card("Estagio atual", s.Stage != null ? s.Stage.Label : "—", s.Stage?.Raw, null)
             @Card("Onda", s.CurrentWave != null ? s.CurrentWave.ToString() : "—", s.CurrentWave == 0 ? "clear" : null, null)
             @Card("Estagio maximo", s.MaxCompletedStage != null ? s.MaxCompletedStage.Raw : "—", s.MaxCompletedStage?.Label, null)
             @Card("Cubo", s.CubeLevel != null ? $"Nv {s.CubeLevel}" : "—",

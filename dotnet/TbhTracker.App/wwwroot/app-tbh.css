@@ -519,13 +519,13 @@ body {
 
 .card__label {
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .card__value {
-  font-size: 26px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -733,7 +733,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 16px;
+  padding: 12px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1368,6 +1368,18 @@ body {
 
 .btn--ghost {
   background: transparent;
+}
+
+.btn--danger {
+  background: var(--err);
+  border-color: var(--err);
+  color: #1a0606;
+  font-weight: 600;
+}
+
+.btn--danger:hover:not(:disabled) {
+  border-color: var(--err);
+  filter: brightness(1.1);
 }
 
 /* Runas / mapa da árvore */

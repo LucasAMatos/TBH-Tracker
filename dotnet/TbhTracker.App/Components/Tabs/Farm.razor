@@ -10,6 +10,7 @@
         <span class="card__hint">Exportar:</span>
         <button class="btn btn--ghost btn--sm" @onclick="ExportJson" disabled="@(Snapshot == null)">Sessão (JSON)</button>
         <button class="btn btn--ghost btn--sm" @onclick="ExportCsv" disabled="@(Snapshot == null)">Farm (CSV)</button>
+        <button class="btn btn--ghost btn--sm" @onclick="ClearData" disabled="@(Snapshot == null)">Limpar</button>
     </div>
 
     @RenderLevelAdvice()
@@ -17,6 +18,32 @@
     @RenderProgress(maxRaw)
     @RenderBestStages(currentRaw)
 </div>
+
+@if (_showClearConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rune-card">
+                <div class="modal-header rune-header">
+                    <h5 class="modal-title">Limpar histórico de farm</h5>
+                    <button type="button" class="btn-close" @onclick="CancelClear"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Isto vai apagar <strong>todas as medições de farm</strong> deste save — tanto da sessão
+                        atual quanto do histórico salvo na base. Esta ação <strong>não pode ser desfeita</strong>.
+                    </p>
+                    <p>Deseja continuar?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn--ghost btn--sm" @onclick="CancelClear">Cancelar</button>
+                    <button type="button" class="btn btn--danger btn--sm" @onclick="ConfirmClear">Limpar histórico</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
 
 @code {
     [Parameter] public Snapshot? Snapshot { get; set; }
@@ -74,6 +101,22 @@
     {
         if (Snapshot == null) return;
         _ = Api.SaveTextFileAsync($"tbh-farm-{Export.ExportStamp()}.csv", Export.BuildFarmCsv(Snapshot));
+    }
+    private bool _showClearConfirm;
+
+    private void ClearData()
+    {
+        if (Snapshot == null) return;
+        _showClearConfirm = true;
+    }
+
+    private void CancelClear() => _showClearConfirm = false;
+
+    private void ConfirmClear()
+    {
+        _showClearConfirm = false;
+        Snapshot?.StageFarm?.Entries.Clear();
+        Api.ClearStageFarmHistory();
     }
 
     private RenderFragment RenderLevelAdvice() => __builder =>
@@ -141,8 +184,8 @@
                             <th @onclick='() => HandleMeasureSort("Stage")' style="cursor:pointer">Estágio</th>
                             <th>Dificuldade</th>
                             <th class="farmtable__num">Tempo</th>
-                            <th class="farmtable__num">Ouro/h</th>
-                            <th class="farmtable__num">XP/h</th>
+                            <th class="farmtable__num" @onclick='() => HandleMeasureSort("GoldPerHour")' style="cursor:pointer">Ouro/h</th>
+                            <th class="farmtable__num" @onclick='() => HandleMeasureSort("ExpPerHour")' style="cursor:pointer">XP/h</th>
                             <th class="farmtable__num">Clears/h</th>
                             <th class="farmtable__num">Tempo/clear</th>
                             <th class="farmtable__num">Clears (est.)</th>
@@ -346,6 +389,8 @@
     private object MeasureGetValueByColumn(dynamic s, string col) => col switch
     {
         "Stage" => (object)s.StageRaw,
+        "GoldPerHour" => (object)s.GoldPerHour,
+        "ExpPerHour" => (object)s.ExpPerHour,
         _ => (object)s.StageRaw
     };
 }

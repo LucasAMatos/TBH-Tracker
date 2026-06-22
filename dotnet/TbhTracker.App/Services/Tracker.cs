@@ -167,6 +167,20 @@ public sealed class Tracker : IDisposable
         return _state;
     }
 
+    /// <summary>Apaga o historico de medicoes de farm (memoria + base persistida) do save atual.</summary>
+    public TrackerState ClearStageFarmHistory()
+    {
+        lock (_gate)
+        {
+            _stageFarm.Reset();
+            _history.SaveHistory(_state.SavePath, "stageFarm", _stageFarm.Serialize());
+            _history.Flush();
+            if (_state.Snapshot != null) _state.Snapshot.StageFarm = null;
+            Emit();
+        }
+        return _state;
+    }
+
     /// <summary>Le o save agora e devolve so o JSON bruto do player (sob demanda, para o
     /// visualizador de calibracao). Nao toca no estado/snapshot em curso.</summary>
     public object? ReadRawSave()

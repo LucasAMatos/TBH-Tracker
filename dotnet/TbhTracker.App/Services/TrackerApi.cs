@@ -81,6 +81,9 @@ public sealed class TrackerApi
 
     public TrackerState Refresh() => _tracker.Refresh();
 
+    /// <summary>Apaga o historico de medicoes de farm (memoria + base persistida).</summary>
+    public TrackerState ClearStageFarmHistory() => _tracker.ClearStageFarmHistory();
+
     public object? GetRawSave() => _tracker.ReadRawSave();
 
     public BoxThresholds GetBoxThresholds() => _store.GetBoxThresholds();
