@@ -364,3 +364,11 @@ public sealed class BoxThresholds
     public int Warn { get; set; }
     public int High { get; set; }
 }
+
+public sealed class StatInfo
+{
+    public string Stat { get; set; } = "";
+    public int Count { get; set; }
+    public List<string> Effects { get; set; } = new();
+    public List<string> Icons { get; set; } = new();
+}

@@ -236,19 +236,24 @@ public static class Runes
         var targetLeveling = LevelGold(node, currentLevel, node.MaxLevel);
         if (!alreadyComplete)
         {
-            steps.Add(new RuneTargetStep
+            for (int i = currentLevel; i < node.MaxLevel; i++)
             {
-                Key = targetKey,
-                Name = node.Name,
-                Icon = node.Icon,
-                Category = node.Category,
-                FromLevel = currentLevel,
-                ToLevel = node.MaxLevel,
-                GoldCost = targetLeveling.Gold,
-                PayableInGold = targetLeveling.Gold > 0,
-                IsTarget = true,
-                Affordable = false
-            });
+                var targetStep = LevelGold(node, i, i+1);
+
+                steps.Add(new RuneTargetStep
+                {
+                    Key = targetKey,
+                    Name = node.Name,
+                    Icon = node.Icon,
+                    Category = node.Category,
+                    FromLevel = i,
+                    ToLevel = i+1,
+                    GoldCost = targetStep.Gold,
+                    PayableInGold = targetStep.Gold > 0,
+                    IsTarget = true,
+                    Affordable = false
+                });
+            }
         }
 
         var totalGoldCost = steps.Sum(s => s.GoldCost);

@@ -18,6 +18,28 @@ public static class Ui
 
     public static string FmtNum(int? n) => n == null ? "—" : n.Value.ToString("#,##0", PtBr);
 
+    /// <summary>Converte horas decimais para string "Xd Xh Ym".</summary>
+    public static string FmtTime(double? totalHours)
+    {
+        if (totalHours == null) return "—";
+
+        double total = totalHours.Value;
+
+        // Calcula os dias, horas e minutos
+        int days = (int)(total / 24);
+        int remainingHours = (int)(total % 24);
+        int minutes = (int)((total - (int)total) * 60);
+
+        // Constrói a string apenas com os componentes que existem
+        var parts = new List<string>();
+
+        if (days > 0) parts.Add($"{days}d");
+        if (remainingHours > 0) parts.Add($"{remainingHours}h");
+        if (minutes > 0) parts.Add($"{minutes}m");
+
+        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
+    }
+
     public static string Fmt(double n)
     {
         var isInt = n == Math.Floor(n);

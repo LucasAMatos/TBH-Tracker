@@ -103,9 +103,11 @@ public static class Stages
         return g + e;
     }
 
-    public static List<StageDatum> RankStages(string metric, int? difficulty = null, int? limit = null)
+    public static List<StageDatum> RankStages(string metric, int? difficulty = null, int? limit = null, int MaxStage = 0)
     {
         var stages = Catalog.Stages.Stages.Values.AsEnumerable();
+        if (MaxStage > 0)
+            stages = stages.Where(x => x.Key <= MaxStage);
         if (difficulty != null) stages = stages.Where(s => s.Difficulty == difficulty);
         var list = stages.ToList();
         var maxGold = list.Count > 0 ? list.Max(s => s.GoldPerHP) : 0;

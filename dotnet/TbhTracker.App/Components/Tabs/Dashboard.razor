@@ -57,13 +57,13 @@
         </div>
     </text>)
 
-    @if (runePlan != null)
-    {
-        @Widget(WidgetIds.RuneTarget, null, RenderRuneTarget(runePlan))
-    }
     @if (flow != null)
     {
         @Widget(WidgetIds.GoldFlow, null, RenderGoldFlow(flow))
+    }
+    @if (runePlan != null)
+    {
+        @Widget(WidgetIds.RuneTarget, null, RenderRuneTarget(runePlan, flow))
     }
     @if (s.StageEvents != null)
     {
@@ -207,13 +207,16 @@
         </section>
     };
 
-    private RenderFragment RenderRuneTarget(RuneTargetPlan plan) => __builder =>
+    private RenderFragment RenderRuneTarget(RuneTargetPlan plan, GoldFlow flow) => __builder =>
     {
         var meta = Runes.CategoryMeta.GetValueOrDefault(plan.Category) ?? new RuneCategoryMeta();
         var icon = AssetUrls.RuneIcon(plan.TargetIcon);
         var pct = (int)Math.Round(plan.Progress * 100);
         var done = plan.AlreadyComplete || (plan.GoldHave != null && plan.GoldMissing <= 0);
         var readyCount = plan.Steps.Count(step => step.Affordable);
+        var hourToReach = plan.GoldMissing != null && flow.WindowRatePerHour != null && flow.WindowRatePerHour > 0
+            ? plan.GoldMissing / flow.WindowRatePerHour.Value
+            : (double?)null;
         <div class="runetarget @(done ? "runetarget--done" : "")">
             <div class="runetarget__head">
                 @if (icon != null)
@@ -243,6 +246,7 @@
                         <span class="card__label">@(done ? "Pode comprar" : "Falta")</span>
                         <span class="runetarget__val @(done ? "runetarget__val--ok" : "")">@(done ? "✓" : Ui.FmtNum(plan.GoldMissing))</span>
                     </div>
+                    <div><span class="card__label">Previsão</span><span class="runetarget__val">@Ui.FmtTime(hourToReach)</span></div>
                 </div>
                 <div class="runetarget__bar">
                     <div class="runetarget__fill @(done ? "runetarget__fill--ok" : "")" style="width:@(pct)%"></div>

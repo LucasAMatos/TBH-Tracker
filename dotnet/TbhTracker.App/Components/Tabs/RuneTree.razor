@@ -82,12 +82,60 @@
             </g>
         </svg>
 
-        <aside class="rune-view__side">
-            @RenderDetail(selectedNode, selectedNode != null ? levelByKey.GetValueOrDefault(selectedNode.Key) : 0)
-            <p class="card__hint rune-view__hint">
-                Arraste para mover · roda do mouse para zoom. Catálogo: taskbarhero.wiki.
-            </p>
-        </aside>
+        <div class="rune-view d-flex flex-wrap">
+            <aside class="rune-view__side flex-fill">
+                <!-- Detalhes do node -->
+                @RenderDetail(selectedNode, selectedNode != null ? levelByKey.GetValueOrDefault(selectedNode.Key) : 0)
+            </aside>
+            <aside class="rune-view__stats flex-fill">
+                <div class="card rune-card mb-3">
+                    <div class="card-header rune-header">
+                        🪄 Estatísticas das Runas
+                    </div>
+                    <div class="card-body">
+                        @if (statsCount == null)
+                        {
+                            <p>Carregando...</p>
+                        }
+                        else
+                        {
+                            <select class="rune-select" @onchange="OnStatSelected">
+                                <option value="">Selecione um stat...</option>
+                                @foreach (var item in statsCount)
+                                {
+                                    <option value="@item.Stat">@item.Stat (@item.Count)</option>
+                                }
+                            </select>
+                        }
+                    </div>
+                </div>
+            </aside>
+
+            @if (selectedStatInfo != null)
+            {
+                <div class="modal fade show d-block" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content rune-card">
+                            <div class="modal-header rune-header">
+                                <h5 class="modal-title">@selectedStatInfo.Stat</h5>
+                                <button type="button" class="btn-close" @onclick="ClosePopup"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Quantidade: @selectedStatInfo.Count</p>
+                                <p>Nodes comprados: @selectedStatInfo.OwnedCount / @selectedStatInfo.Count</p>
+                                <ul>
+                                    @foreach (var effect in selectedStatInfo.Effects)
+                                    {
+                                        <li>@effect</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-backdrop fade show"></div>
+            }
+        </div>
     </div>
 </div>
 
@@ -129,6 +177,28 @@
         _fullW = b.MaxX - b.MinX + Pad * 2;
         _fullH = b.MaxY - b.MinY + Pad * 2;
         SetFullView();
+    }
+
+    protected override void OnParametersSet()
+    {
+        var levelByKey = Levels.ToDictionary(l => l.Key, l => l.Level);
+
+        statsCount = Catalog.Runes.Nodes
+            .GroupBy(x => x.Stat)
+            .Select(g => new RuneStatInfo
+            {
+                Stat = g.Key,
+                Count = g.Count(),
+                OwnedCount = g.Count(n => levelByKey.GetValueOrDefault(n.Key) > 0),
+                Effects = g.Select(n => n.Effect).Distinct().ToList(),
+                Icons = g.Select(n => n.Icon).Distinct().ToList()
+            })
+            .ToList();
+
+        if (selectedStatInfo != null)
+        {
+            selectedStatInfo = statsCount.FirstOrDefault(s => s.Stat == selectedStatInfo.Stat);
+        }
     }
 
     private void SetFullView()
@@ -265,6 +335,29 @@
         public double Top { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
+    }
+
+    private List<RuneStatInfo> statsCount = new();
+
+    private RuneStatInfo? selectedStatInfo;
+
+    private void OnStatSelected(ChangeEventArgs e)
+    {
+        var stat = e.Value?.ToString();
+        selectedStatInfo = statsCount.FirstOrDefault(s => s.Stat == stat);
+    }
+    private void ClosePopup()
+    {
+        selectedStatInfo = null;
+    }
+
+    private sealed class RuneStatInfo
+    {
+        public string Stat { get; set; } = "";
+        public int Count { get; set; }
+        public int OwnedCount { get; set; }
+        public List<string> Effects { get; set; } = new();
+        public List<string> Icons { get; set; } = new();
     }
 
     public async ValueTask DisposeAsync()

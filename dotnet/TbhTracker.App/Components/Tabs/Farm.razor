@@ -31,6 +31,10 @@
         new("exp", "XP", "EXP por HP abatido"),
         new("combo", "Combo", "ouro + XP equilibrados")
     };
+
+    private string _sortColumn = "GoldPerHP"; // Coluna padrão de ordenação
+    private bool _sortAscending = false;      // false = descendente (ideal para rankings)
+
     private static readonly int[] Difficulties = { 0, 1, 2, 3, 4 };
 
     private string _metric = "gold";
@@ -125,6 +129,7 @@
                     <thead>
                         <tr>
                             <th>Estágio</th>
+                            <th>Dificuldade</th>
                             <th class="farmtable__num">Tempo</th>
                             <th class="farmtable__num">Ouro/h</th>
                             <th class="farmtable__num">XP/h</th>
@@ -139,6 +144,8 @@
                             var data = Stages.StageDataForRaw(e.StageRaw);
                             var label = data?.Label ?? e.StageRaw;
                             var name = data?.Name;
+                            int diffucultyNum = data?.Difficulty ?? 0;
+                            var difficulty = Stages.DifficultyName(diffucultyNum);
                             var isCurrent = farm.CurrentStageRaw == e.StageRaw;
                             <tr class="@(isCurrent ? "farmtable__row--current" : "")">
                                 <td>
@@ -150,6 +157,12 @@
                                     @if (isCurrent)
                                     {
                                         <span class="farmtable__here">atual</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(difficulty))
+                                    {
+                                        <span class="farmtable__name">@difficulty</span>
                                     }
                                 </td>
                                 <td class="farmtable__num">@FmtDuration(e.Seconds)</td>
@@ -165,9 +178,13 @@
             </div>
             <p class="card__hint">
                 Taxas medidas pelo delta entre leituras enquanto o estágio fica estável (intervalos com
-                troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>Clears são
-                estimados</strong> = kills no estágio ÷ inimigos por clear do catálogo; o <strong>tempo por
-                clear</strong> é derivado dessa estimativa (o save não registra a fronteira/tempo de cada
+                troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>
+                    Clears são
+                    estimados
+                </strong> = kills no estágio ÷ inimigos por clear do catálogo; o <strong>
+                    tempo por
+                    clear
+                </strong> é derivado dessa estimativa (o save não registra a fronteira/tempo de cada
                 corrida individual). Estágios fora do catálogo (ex.: boss de ato) não têm estimativa de clears.
             </p>
         </section>
@@ -207,15 +224,21 @@
 
     private RenderFragment RenderBestStages(string? currentRaw) => __builder =>
     {
-        var ranked = Stages.RankStages(_metric, _difficulty == 0 ? null : _difficulty, TopLimit);
+        // 1. Obtém a lista e aplica a ordenação dinâmica
+        var maxRaw = Convert.ToInt32(Snapshot?.MaxCompletedStage?.Raw);
+        var rankedRaw = Stages.RankStages(_metric, _difficulty == 0 ? null : _difficulty, TopLimit, maxRaw);
+
+        var ranked = (_sortAscending
+        ? rankedRaw.OrderBy(s => GetValueByColumn(s, _sortColumn))
+        : rankedRaw.OrderByDescending(s => GetValueByColumn(s, _sortColumn))).ToList();
+
         <section class="section">
             <div class="section__head">
-                <h3 class="section__title">Melhores estágios</h3>
-                <span class="card__hint">
-                    Eficiência pelo catálogo (densidade por HP) — proxy de ganho por tempo. Medições reais
-                    refinam isto abaixo.
-                </span>
+                <h3 class="section__title">Melhores estágios (Filtra Somente Estágios que estão habilitados)</h3>
+                <span class="card__hint">Clique no cabeçalho para reordenar.</span>
             </div>
+
+            @* (Mantive seus filtros originais aqui...) *@
             <div class="farm-filters">
                 <div class="invscopes">
                     @foreach (var m in Metrics)
@@ -230,17 +253,18 @@
                     }
                 </div>
             </div>
+
             <div class="farmtable__wrap">
                 <table class="farmtable">
                     <thead>
                         <tr>
                             <th class="farmtable__rank">#</th>
-                            <th>Estágio</th>
-                            <th class="farmtable__num">Nível</th>
-                            <th class="farmtable__num">Ouro/clear</th>
-                            <th class="farmtable__num">XP/clear</th>
-                            <th class="farmtable__num">Ouro/HP</th>
-                            <th class="farmtable__num">XP/HP</th>
+                            <th @onclick='() => HandleSort("Name")' style="cursor:pointer">Estágio</th>
+                            <th class="farmtable__num" @onclick='() => HandleSort("Level")' style="cursor:pointer">Nível</th>
+                            <th class="farmtable__num" @onclick='() => HandleSort("Gold")' style="cursor:pointer">Ouro/clear</th>
+                            <th class="farmtable__num" @onclick='() => HandleSort("XP")' style="cursor:pointer">XP/clear</th>
+                            <th class="farmtable__num" @onclick='() => HandleSort("GoldPerHP")' style="cursor:pointer">Ouro/HP</th>
+                            <th class="farmtable__num" @onclick='() => HandleSort("ExpPerHP")' style="cursor:pointer">XP/HP</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -269,10 +293,30 @@
                     </tbody>
                 </table>
             </div>
-            <p class="card__hint">
-                O catálogo cobre as fases 1–9 de cada ato (sem boss de ato). Ouro/clear e XP/clear são
-                valores base; ganhos reais variam com runas, nível e composição.
-            </p>
         </section>
+    };
+
+    private void HandleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortAscending = !_sortAscending;
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortAscending = false;
+        }
+    }
+
+    private object GetValueByColumn(dynamic s, string col) => col switch
+    {
+        "Name" => (object)s.Name,
+        "Level" => (object)s.Level,
+        "Gold" => (object)s.ExpectedGold,
+        "XP" => (object)s.ExpectedEXP,
+        "GoldPerHP" => (object)s.GoldPerHP,
+        "ExpPerHP" => (object)s.ExpPerHP,
+        _ => (object)s.GoldPerHP
     };
 }

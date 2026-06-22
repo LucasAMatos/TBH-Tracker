@@ -1332,7 +1332,7 @@ body {
 .rune-view {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 90%;
   gap: 12px;
 }
 
@@ -1413,6 +1413,16 @@ body {
   border-radius: var(--radius);
   padding: 16px;
   overflow: auto;
+}
+.rune-view__stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    overflow: auto;
 }
 
 .rune-detail__head {
@@ -2970,3 +2980,81 @@ body {
 
 #app { height: 100%; }
 #blazor-error-ui { background: #f85149; color:#fff; }
+
+.rune-card {
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: 0 0 12px rgba(255, 176, 32, 0.4);
+}
+
+.rune-header {
+    background: linear-gradient(90deg, #ffb020, #d29922);
+    color: #0d1117;
+    font-weight: bold;
+    font-family: 'Cinzel', serif; /* fonte medieval */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rune-table th {
+    background-color: var(--bg-elev);
+    color: var(--accent);
+    text-transform: uppercase;
+}
+
+.rune-table td {
+    color: var(--text);
+}
+
+.toggle-icon {
+    font-size: 0.9em;
+    transition: transform 0.3s ease;
+}
+
+.collapse:not(.show) + .toggle-icon {
+    transform: rotate(-90deg);
+}
+.rune-view__stats {
+    max-width: 350px; /* controla largura */
+    flex: 0 0 auto; /* impede que expanda demais */
+}
+
+.rune-scroll {
+    max-height: 300px; /* controla altura */
+    overflow-y: auto; /* adiciona scroll interno */
+    padding: 0.5rem;
+}
+
+/* opcional: estilizar scrollbar */
+.rune-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rune-scroll::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+.rune-select {
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius);
+    border: 2px solid var(--accent);
+    background-color: var(--bg-card);
+    color: var(--text);
+    font-family: 'Cinzel', serif; /* ou outra fonte temática */
+}
+
+.rune-select option {
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+.rune-node.highlight {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    transform: scale(1.1);
+    z-index: 10;
+}
