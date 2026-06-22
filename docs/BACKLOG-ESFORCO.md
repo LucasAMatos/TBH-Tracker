@@ -8,6 +8,13 @@ aqui é só o ranking. Atualizar quando entrar/sair item ou mudar a estimativa.
 O esforço considera o quanto já existe pronto (catálogos/infra), a complexidade da lógica e as
 **dependências** (item que depende de outro tende a ser mais difícil).
 
+**Coluna `Tokens ~`:** estimativa **grosseira** do custo de implementação em **tokens de agente**
+(em milhares), incluindo ler o código relevante, gerar catálogos, escrever lógica + UI + testes,
+buildar e iterar. É um chute calibrado, não medição — use só para **priorizar e decidir o que
+quebrar**. *Âncora (PR v2.3.0):* R4 ≈ **50k**, H14 ≈ **120k**, I14 (doc) ≈ **80k**.
+**🔪 = grande demais para uma tacada só (≳ 200k): quebrar em subtarefas antes de implementar.**
+Ao quebrar um item, registre as subtarefas no `BACKLOG.md` (fonte da verdade) e reflita aqui.
+
 ## 🟢 Fácil — diffs de snapshot, filtros e dados estáticos
 
 > **Sem itens 🟢 pendentes no momento.** Os últimos (R4, H14, I14) foram entregues na **v2.3.0**
@@ -50,15 +57,20 @@ O esforço considera o quanto já existe pronto (catálogos/infra), a complexida
 
 ## 🔴 Difícil — dependências pesadas, catálogos grandes ou modelagem
 
-| # | Prioridade | Item | Por que é difícil |
-|---|-----------|------|-------------------|
-| H10 | P2 | Modelo de stats do personagem (derivar todos os status) | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 |
-| H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
-| D1 | P2 | Detectar drops novos por corrida | Depende da **fronteira de corrida**, que segue inviável pelo save (o F1 entregou só eficiência/clears estimados, não a corrida individual) |
-| F5 | P2 | Projeção de estágios não medidos | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v0.20.0) |
-| R2 | P2 | Calibrar gasto de ouro em runas | Depende do agente de corridas |
-| H13 | P2 | Stats atuais por herói (base + bônus) | Consome **H10** (preso nele) + curva de crescimento por nível |
-| V3 | P2 | Épico V: modelo de XP (clear/kill, over-level, retenção) | Base do F5; modelagem |
+| # | Prioridade | Item | Tokens ~ | Por que é difícil |
+|---|-----------|------|----------|-------------------|
+| R2 | P2 | Calibrar gasto de ouro em runas | ~150k | Depende do agente de corridas (parte bloqueada) |
+| H13 | P2 | Stats atuais por herói (base + bônus) | ~160k | Consome **H10** (preso nele) + curva de crescimento por nível — estimativa **depois** do H10 |
+| D1 | P2 | Detectar drops novos por corrida | ~200k | Depende da **fronteira de corrida**, que segue inviável pelo save (o F1 entregou só eficiência/clears estimados, não a corrida individual) — **bloqueado** |
+| F5 | P2 | Projeção de estágios não medidos | 🔪 ~240k | Modelagem de tempo/retenção de XP; agora pode usar as medições reais (F2/F3, v0.20.0) |
+| H11 | P2 | Analisador de impacto de item (delta de stats com/sem item) | 🔪 ~260k | Depende de H10 + D4 (bônus do item) e dos afixos por instância |
+| V3 | P2 | Épico V: modelo de XP (clear/kill, over-level, retenção) | 🔪 ~260k | Base do F5; modelagem |
+| H10 | P2 | Modelo de stats do personagem (derivar todos os status) | 🔪 ~400k | Save não tem stats finais; modelar base+nível+atributos+equip+runas+pets. Fontes mapeadas (`DB.heroes`/`attributes`/`statMods`/`gear`); abertos: curva por nível + regras de stacking. Pré-req do H11 — **o maior candidato a quebrar** (catálogo de stacking → curva por nível → 1 fonte de stat por vez) |
+
+> **🔪 Candidatos a quebrar antes de implementar (≳ 200k):** **H10** (~400k), **U6** (~280k),
+> **H11** (~260k), **V3** (~260k), **F5** (~240k), **V5** (~220k). Para esses, criar subtarefas no
+> `BACKLOG.md` (ex.: H10 → catálogo de regras de stacking → curva de crescimento por nível → uma
+> fonte de stat por vez; U6 → uma aba/tela por subtarefa) e só então puxar uma subtarefa por PR.
 
 > **Épico W (ingerir as 5 wikis na TBHPedia)** — **entregue na v2.1.0** (W0–W7 + W9; W4/W7 parciais,
 > W8 deferido). Detalhe e pendências em `BACKLOG.md`. As fontes estruturadas (`taskbarherowiki.com`)

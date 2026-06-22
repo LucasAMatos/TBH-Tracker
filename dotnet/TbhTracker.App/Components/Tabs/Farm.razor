@@ -32,8 +32,11 @@
         new("combo", "Combo", "ouro + XP equilibrados")
     };
 
-    private string _sortColumn = "GoldPerHP"; // Coluna padrão de ordenação
-    private bool _sortAscending = false;      // false = descendente (ideal para rankings)
+    private string _sortBestStageColumn = "GoldPerHP"; // Coluna padrão de ordenação
+    private bool _sortBestStageAscending = false;      // false = descendente (ideal para rankings)
+
+    private string _sortMeasureColumn = "Stage"; // Coluna padrão de ordenação
+    private bool _sortMeasureAscending = false;      // false = descendente (ideal para rankings)
 
     private static readonly int[] Difficulties = { 0, 1, 2, 3, 4 };
 
@@ -50,9 +53,10 @@
         var v = perHour.Value < 10 ? perHour.Value.ToString("0.0", Inv) : FmtNum(perHour);
         return $"{v}/h";
     }
-    private static string FmtDuration(double seconds)
+
+    private static string FmtDuration(double seconds, bool forceSeconds = false)
     {
-        if (seconds < 60) return $"{Math.Round(seconds)}s";
+        if (forceSeconds || seconds < 60) return $"{Math.Round(seconds)}s";
         var totalMin = (int)Math.Round(seconds / 60);
         var h = totalMin / 60;
         var m = totalMin % 60;
@@ -118,7 +122,13 @@
             </section>
             return;
         }
-        var entries = farm.Entries.OrderByDescending(e => e.Seconds).ToList();
+
+        var entries = farm.Entries.ToList();
+
+        var entriesRaw = (_sortMeasureAscending
+        ? entries.OrderBy(s => MeasureGetValueByColumn(s, _sortMeasureColumn))
+        : entries.OrderByDescending(s => MeasureGetValueByColumn(s, _sortMeasureColumn))).ToList();
+
         <section class="section">
             <div class="section__head">
                 <h3 class="section__title">Medições da sessão</h3>
@@ -128,7 +138,7 @@
                 <table class="farmtable">
                     <thead>
                         <tr>
-                            <th>Estágio</th>
+                            <th @onclick='() => HandleMeasureSort("Stage")' style="cursor:pointer">Estágio</th>
                             <th>Dificuldade</th>
                             <th class="farmtable__num">Tempo</th>
                             <th class="farmtable__num">Ouro/h</th>
@@ -139,7 +149,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in entries)
+                        @foreach (var e in entriesRaw)
                         {
                             var data = Stages.StageDataForRaw(e.StageRaw);
                             var label = data?.Label ?? e.StageRaw;
@@ -169,7 +179,7 @@
                                 <td class="farmtable__num farmtable__num--gold">@FmtRate(e.GoldPerHour)</td>
                                 <td class="farmtable__num farmtable__num--exp">@FmtRate(e.ExpPerHour)</td>
                                 <td class="farmtable__num">@FmtClearsRate(e.ClearsPerHour)</td>
-                                <td class="farmtable__num">@(e.SecondsPerClear != null ? FmtDuration(e.SecondsPerClear.Value) : "—")</td>
+                                <td class="farmtable__num">@(e.SecondsPerClear != null ? FmtDuration(e.SecondsPerClear.Value, true) : "—")</td>
                                 <td class="farmtable__num">@(e.Clears != null ? FmtNum(e.Clears) : "—")</td>
                             </tr>
                         }
@@ -228,9 +238,9 @@
         var maxRaw = Convert.ToInt32(Snapshot?.MaxCompletedStage?.Raw);
         var rankedRaw = Stages.RankStages(_metric, _difficulty == 0 ? null : _difficulty, TopLimit, maxRaw);
 
-        var ranked = (_sortAscending
-        ? rankedRaw.OrderBy(s => GetValueByColumn(s, _sortColumn))
-        : rankedRaw.OrderByDescending(s => GetValueByColumn(s, _sortColumn))).ToList();
+        var ranked = (_sortBestStageAscending
+        ? rankedRaw.OrderBy(s => BestStageGetValueByColumn(s, _sortBestStageColumn))
+        : rankedRaw.OrderByDescending(s => BestStageGetValueByColumn(s, _sortBestStageColumn))).ToList();
 
         <section class="section">
             <div class="section__head">
@@ -259,12 +269,12 @@
                     <thead>
                         <tr>
                             <th class="farmtable__rank">#</th>
-                            <th @onclick='() => HandleSort("Name")' style="cursor:pointer">Estágio</th>
-                            <th class="farmtable__num" @onclick='() => HandleSort("Level")' style="cursor:pointer">Nível</th>
-                            <th class="farmtable__num" @onclick='() => HandleSort("Gold")' style="cursor:pointer">Ouro/clear</th>
-                            <th class="farmtable__num" @onclick='() => HandleSort("XP")' style="cursor:pointer">XP/clear</th>
-                            <th class="farmtable__num" @onclick='() => HandleSort("GoldPerHP")' style="cursor:pointer">Ouro/HP</th>
-                            <th class="farmtable__num" @onclick='() => HandleSort("ExpPerHP")' style="cursor:pointer">XP/HP</th>
+                            <th @onclick='() => HandleBestStageSort("Name")' style="cursor:pointer">Estágio</th>
+                            <th class="farmtable__num" @onclick='() => HandleBestStageSort("Level")' style="cursor:pointer">Nível</th>
+                            <th class="farmtable__num" @onclick='() => HandleBestStageSort("Gold")' style="cursor:pointer">Ouro/clear</th>
+                            <th class="farmtable__num" @onclick='() => HandleBestStageSort("XP")' style="cursor:pointer">XP/clear</th>
+                            <th class="farmtable__num" @onclick='() => HandleBestStageSort("GoldPerHP")' style="cursor:pointer">Ouro/HP</th>
+                            <th class="farmtable__num" @onclick='() => HandleBestStageSort("ExpPerHP")' style="cursor:pointer">XP/HP</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -296,20 +306,33 @@
         </section>
     };
 
-    private void HandleSort(string column)
+    private void HandleBestStageSort(string column)
     {
-        if (_sortColumn == column)
+        if (_sortBestStageColumn == column)
         {
-            _sortAscending = !_sortAscending;
+            _sortBestStageAscending = !_sortBestStageAscending;
         }
         else
         {
-            _sortColumn = column;
-            _sortAscending = false;
+            _sortBestStageColumn = column;
+            _sortBestStageAscending = false;
         }
     }
 
-    private object GetValueByColumn(dynamic s, string col) => col switch
+    private void HandleMeasureSort(string column)
+    {
+        if (_sortMeasureColumn == column)
+        {
+            _sortMeasureAscending = !_sortMeasureAscending;
+        }
+        else
+        {
+            _sortMeasureColumn = column;
+            _sortMeasureAscending = false;
+        }
+    }
+
+    private object BestStageGetValueByColumn(dynamic s, string col) => col switch
     {
         "Name" => (object)s.Name,
         "Level" => (object)s.Level,
@@ -318,5 +341,11 @@
         "GoldPerHP" => (object)s.GoldPerHP,
         "ExpPerHP" => (object)s.ExpPerHP,
         _ => (object)s.GoldPerHP
+    };
+
+    private object MeasureGetValueByColumn(dynamic s, string col) => col switch
+    {
+        "Stage" => (object)s.StageRaw,
+        _ => (object)s.StageRaw
     };
 }
