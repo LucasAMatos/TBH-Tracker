@@ -5,7 +5,7 @@
     var activeHeroes = s.Heroes.Where(h => h.Active).ToList();
     var heroSlots = BuildHeroSlots(s);
     var nextCube = Cube.NextMilestone(s.CubeLevel);
-    var boxLevel = Boxes.ClassifyBacklog(s.BoxQuantity, _boxThresholds);
+    var boxLevel = Boxes.ClassifyBacklog(0, _boxThresholds);
     var flow = s.GoldFlow;
     double? goldRate = flow != null ? (flow.WindowRatePerHour ?? flow.SessionRatePerHour) : null;
 }
@@ -45,12 +45,11 @@
     @Widget(WidgetIds.Cards, null, @<text>
         <div class="grid">
             @Card("Ouro", Ui.FmtNum(s.Gold), goldRate != null ? FmtRate(goldRate) : null, null)
-            @Card("Estagio atual", s.Stage != null ? s.Stage.Label : "—", s.Stage?.Raw, null)
-            @Card("Onda", s.CurrentWave != null ? s.CurrentWave.ToString() : "—", s.CurrentWave == 0 ? "clear" : null, null)
-            @Card("Estagio maximo", s.MaxCompletedStage != null ? s.MaxCompletedStage.Raw : "—", s.MaxCompletedStage?.Label, null)
+            @Card("Estagio atual", s.Stage != null ? s.Stage.Label : "—", s.Stage?.Raw, null)   
+            @Card("Estagio maximo", s.MaxCompletedStage != null ? s.MaxCompletedStage.Label : "—", s.MaxCompletedStage?.Raw, null)
             @Card("Cubo", s.CubeLevel != null ? $"Nv {s.CubeLevel}" : "—",
                 s.CubeLevel == null ? null : (nextCube != null ? $"Próx: Nv {nextCube.Level} · {nextCube.Name}" : "tudo desbloqueado"), null)
-            @Card("Baús", Ui.FmtNum(s.BoxQuantity),
+            @Card("Baús", s.BoxQuantity,
                 boxLevel == "high" ? "transbordando" : boxLevel == "warn" ? "acumulando" : null, BacklogTone(boxLevel))
             @Card("Herois ativos", $"{activeHeroes.Count} / {HeroSlots}", s.Heroes.Count > 0 ? $"{s.Heroes.Count} no roster" : null, null)
             @Card("Tempo de jogo", FmtPlayTime(s.PlayTimeSeconds), null, null)
@@ -352,7 +351,7 @@
         }
     };
 
-    private RenderFragment RenderBoxes(List<BoxCount> boxes, int? total, string level) => __builder =>
+    private RenderFragment RenderBoxes(List<BoxCount> boxes, string total, string level) => __builder =>
     {
         var drains = boxes.Select(b => Boxes.BoxDrainSeconds(b.Kind, b.Quantity)).Where(x => x != null).Select(x => x!.Value).ToList();
         var fullClear = drains.Count > 0 ? (int?)drains.Max() : null;
@@ -361,8 +360,8 @@
         {
             <div class="alert @(level == "high" ? "alert--err" : "alert--warn")">
                 @(level == "high"
-                    ? $"Muitos baús não abertos ({Ui.FmtNum(total)}) — risco de perder drops se o inventário/stash encher. "
-                    : $"Baús acumulando ({Ui.FmtNum(total)}). ")
+                    ? $"Muitos baús não abertos ()) — risco de perder drops se o inventário/stash encher. "
+                    : $"Baús acumulando (). ")
                 Abra-os ou garanta o auto-abrir (runas do Extremo Norte) e espaço de inventário/stash.
             </div>
         }

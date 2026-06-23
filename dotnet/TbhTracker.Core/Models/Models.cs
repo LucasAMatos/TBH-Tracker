@@ -253,7 +253,7 @@ public sealed class Snapshot
     public StageInfo? MaxCompletedStage { get; set; }
     public int? CubeLevel { get; set; }
     public double? CubeExp { get; set; }
-    public int? BoxQuantity { get; set; }
+    public string BoxQuantity { get; set; }
     public List<BoxCount> Boxes { get; set; } = new();
     public List<HeroSnapshot> Heroes { get; set; } = new();
     public List<string> ArrangedHeroKeys { get; set; } = new();

@@ -355,7 +355,7 @@ public static class SaveParser
             MaxCompletedStage = Stages.DecodeStage(AsString(Pick(common, "maxCompletedStage", "MaxCompletedStage"))),
             CubeLevel = cubeLevel != null ? (int)cubeLevel.Value : null,
             CubeExp = ToNumber(Pick(cube, "Exp", "exp")),
-            BoxQuantity = TotalBoxes(boxes),
+            BoxQuantity = "zero",
             Boxes = boxes,
             Heroes = ParseHeroes(player, arrangedHeroKeys),
             ArrangedHeroKeys = arrangedHeroKeys,

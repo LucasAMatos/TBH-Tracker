@@ -64,11 +64,27 @@ public sealed class StageFarmTracker
         _lastGold = state?.LastGold;
         _lastExp = state?.LastExp;
         _lastKills = state?.LastKills;
+
+        // Remove medicoes de fase 10 (boss) gravadas antes desta regra.
+        PurgeBossStages();
+    }
+
+    // Apaga buckets de estagios boss (fase 10 do ato, ex.: 1110, 2110).
+    private void PurgeBossStages()
+    {
+        var bossKeys = _stages.Keys
+            .Where(k => Stages.DecodeStage(k)?.IsBoss == true)
+            .ToList();
+        foreach (var k in bossKeys)
+            _stages.Remove(k);
     }
 
     public StageFarm? Record(long at, string? stageRaw, double? gold, double? totalExp, double? totalKills)
     {
-        var canAttribute = _lastAt != null && _lastStageRaw != null
+        // Fase 10 do ato (boss, ex.: 1110, 2110) nao entra na medicao de farm.
+        var isBossStage = Stages.DecodeStage(stageRaw)?.IsBoss == true;
+
+        var canAttribute = !isBossStage && _lastAt != null && _lastStageRaw != null
             && stageRaw != null && stageRaw == _lastStageRaw;
 
         if (canAttribute)
