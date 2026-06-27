@@ -16,6 +16,23 @@ public sealed class WindowState
     public bool Maximized { get; set; }
 }
 
+public sealed class NotificationSettings
+{
+    public bool ChestsOverflow { get; set; } = true;
+    public bool LevelUp { get; set; } = true;
+    public bool NewMaxStage { get; set; } = true;
+    public bool RuneAffordable { get; set; } = true;
+
+    public bool IsEnabled(NotificationCategory category) => category switch
+    {
+        NotificationCategory.ChestsOverflow => ChestsOverflow,
+        NotificationCategory.LevelUp => LevelUp,
+        NotificationCategory.NewMaxStage => NewMaxStage,
+        NotificationCategory.RuneAffordable => RuneAffordable,
+        _ => false
+    };
+}
+
 internal sealed class PersistShape
 {
     public string? EncryptedKey { get; set; }
@@ -26,6 +43,11 @@ internal sealed class PersistShape
     public int? RuneTargetKey { get; set; }
     public DashboardLayout? DashboardLayout { get; set; }
     public WindowState? WindowState { get; set; }
+    public bool? NotifyChestsOverflow { get; set; }
+    public bool? NotifyLevelUp { get; set; }
+    public bool? NotifyNewMaxStage { get; set; }
+    public bool? NotifyRuneAffordable { get; set; }
+    public bool? MinimizeToTray { get; set; }
 }
 
 /// <summary>Port de src/main/store.ts. Config JSON em AppDataDirectory; chave ES3 cifrada
@@ -188,6 +210,39 @@ public sealed class ConfigStore
         data.DashboardLayout = normalized;
         Save(data);
         return normalized;
+    }
+
+    public NotificationSettings GetNotificationSettings()
+    {
+        var data = Load();
+        return new NotificationSettings
+        {
+            ChestsOverflow = data.NotifyChestsOverflow ?? true,
+            LevelUp = data.NotifyLevelUp ?? true,
+            NewMaxStage = data.NotifyNewMaxStage ?? true,
+            RuneAffordable = data.NotifyRuneAffordable ?? true
+        };
+    }
+
+    public NotificationSettings SetNotificationSettings(NotificationSettings settings)
+    {
+        var data = Load();
+        data.NotifyChestsOverflow = settings.ChestsOverflow;
+        data.NotifyLevelUp = settings.LevelUp;
+        data.NotifyNewMaxStage = settings.NewMaxStage;
+        data.NotifyRuneAffordable = settings.RuneAffordable;
+        Save(data);
+        return GetNotificationSettings();
+    }
+
+    public bool GetMinimizeToTray() => Load().MinimizeToTray ?? true;
+
+    public bool SetMinimizeToTray(bool value)
+    {
+        var data = Load();
+        data.MinimizeToTray = value;
+        Save(data);
+        return GetMinimizeToTray();
     }
 
     public WindowState? GetWindowState()

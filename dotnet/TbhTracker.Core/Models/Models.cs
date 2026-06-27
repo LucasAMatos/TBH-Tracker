@@ -140,6 +140,8 @@ public sealed class StageEvents
 public sealed class StageFarmEntry
 {
     public string StageRaw { get; set; } = "";
+    public string CompKey { get; set; } = "";
+    public List<string> CompHeroKeys { get; set; } = new();
     public double GoldGained { get; set; }
     public double ExpGained { get; set; }
     public double KillsGained { get; set; }
@@ -160,6 +162,8 @@ public sealed class StageFarm
     public List<StageFarmEntry> Entries { get; set; } = new();
     public double TotalSeconds { get; set; }
     public string? CurrentStageRaw { get; set; }
+    public string? CurrentCompKey { get; set; }
+    public List<string> CurrentCompHeroKeys { get; set; } = new();
 }
 
 public sealed class BoxCount
@@ -220,6 +224,27 @@ public sealed class PetSnapshot
     public bool Active { get; set; }
 }
 
+// Estado de uma linha de receita do Cubo no save (cubeRecipeSaveDatas). CubeKey identifica a
+// operação (ver Logic/CubeRecipes); MaxUnlockRecipeKey é o ponteiro interno de desbloqueio.
+public sealed class CubeRecipeState
+{
+    public int CubeKey { get; set; }
+    public int TypeInt { get; set; }
+    public int MaxUnlockRecipeKey { get; set; }
+}
+
+// Contagem de Soul Stones por tipo (ingressos de boss de Ato). Total = baú (stash) + inventário.
+public sealed class SoulStoneCount
+{
+    public string Kind { get; set; } = "";
+    public string Label { get; set; } = "";
+    public string Color { get; set; } = "";
+    public int ItemKey { get; set; }
+    public int Stash { get; set; }
+    public int Inventory { get; set; }
+    public int Total { get; set; }
+}
+
 // Uma linha do resumo de derretimento por raridade (D5).
 public sealed class MeltRarityRow
 {
@@ -260,6 +285,8 @@ public sealed class Snapshot
     public List<RuneLevel> Runes { get; set; } = new();
     public List<HeroAttributeLevel> HeroAttributes { get; set; } = new();
     public List<PetSnapshot> Pets { get; set; } = new();
+    public List<CubeRecipeState> CubeRecipes { get; set; } = new();
+    public List<SoulStoneCount> SoulStones { get; set; } = new();
     public InventorySummary? Inventory { get; set; }
     public MeltSummary? Melt { get; set; }
     public GoldFlow? GoldFlow { get; set; }
@@ -332,6 +359,7 @@ public static class WidgetIds
     public const string LevelUps = "levelUps";
     public const string StageProgress = "stageProgress";
     public const string Boxes = "boxes";
+    public const string SoulStones = "soulStones";
     public const string InventoryRarity = "inventoryRarity";
     public const string Meltdown = "meltdown";
     public const string Pets = "pets";
@@ -343,7 +371,7 @@ public static class WidgetIds
     public static readonly string[] All =
     {
         Cards, RuneTarget, GoldFlow, LevelUps, StageProgress,
-        Boxes, InventoryRarity, Meltdown, Pets, CubeMilestones, ActiveHeroes, RawJson
+        Boxes, SoulStones, InventoryRarity, Meltdown, Pets, CubeMilestones, ActiveHeroes, RawJson
     };
 }
 

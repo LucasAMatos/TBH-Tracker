@@ -51,6 +51,9 @@
             case "inventario":
                 <Inventory InventoryData="_state.Snapshot?.Inventory" />
                 break;
+            case "crafting":
+                <Crafting Snapshot="_state.Snapshot" />
+                break;
             case "runes":
                 <RuneTree Levels="@(_state.Snapshot?.Runes ?? new())"
                           Target="_runeTarget"
@@ -58,6 +61,9 @@
                 break;
             case "diagnostico":
                 <Diagnostics State="_state" Version="_version" />
+                break;
+            case "configuracoes":
+                <Settings />
                 break;
             default:
                 @if (_state.Status == ConnectionStatus.Monitoring && _state.Snapshot != null)
@@ -87,10 +93,12 @@
         new("herois", "Heróis"),
         new("atributos", "Atributos"),
         new("inventario", "Inventário"),
+        new("crafting", "Crafting"),
         new("runes", "Runas"),
         new("atualizacoes", "Atualizações"),
         new("tbhpedia", "TBHPedia"),
-        new("diagnostico", "Diagnóstico")
+        new("diagnostico", "Diagnóstico"),
+        new("configuracoes", "Configurações")
     };
 
     private TrackerState _state = new();

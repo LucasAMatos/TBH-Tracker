@@ -1,0 +1,90 @@
+@inject TrackerApi Api
+
+@*
+    A3 — Configuracoes: toggles dos alertas nativos (toast) por tipo de evento e a opcao
+    "fechar minimiza para a bandeja". Tudo persistido no ConfigStore via TrackerApi.
+*@
+
+<section class="diag">
+    <header class="diag__head">
+        <h2 class="diag__title">Configurações</h2>
+        <p class="diag__sub">Alertas nativos e comportamento da janela. O app continua somente leitura.</p>
+    </header>
+
+    <div class="settings">
+        <h3 class="settings__group">Notificações na bandeja</h3>
+        <p class="settings__hint">Avisos do sistema mesmo com a janela minimizada ou fora de foco.</p>
+
+        <label class="settings__row">
+            <input type="checkbox" @bind="_chestsOverflow" @bind:after="SaveNotifications" />
+            <span>
+                <strong>Baús transbordando</strong>
+                <span class="settings__desc">quando o acúmulo de baús cruza o limiar de alerta.</span>
+            </span>
+        </label>
+
+        <label class="settings__row">
+            <input type="checkbox" @bind="_levelUp" @bind:after="SaveNotifications" />
+            <span>
+                <strong>Level up de herói</strong>
+                <span class="settings__desc">quando um herói sobe de nível.</span>
+            </span>
+        </label>
+
+        <label class="settings__row">
+            <input type="checkbox" @bind="_newMaxStage" @bind:after="SaveNotifications" />
+            <span>
+                <strong>Novo estágio máximo</strong>
+                <span class="settings__desc">quando você supera o estágio máximo concluído.</span>
+            </span>
+        </label>
+
+        <label class="settings__row">
+            <input type="checkbox" @bind="_runeAffordable" @bind:after="SaveNotifications" />
+            <span>
+                <strong>Runa-alvo disponível</strong>
+                <span class="settings__desc">quando você junta ouro suficiente para a runa-alvo (Runas).</span>
+            </span>
+        </label>
+
+        <h3 class="settings__group">Janela</h3>
+        <label class="settings__row">
+            <input type="checkbox" @bind="_minimizeToTray" @bind:after="SaveMinimizeToTray" />
+            <span>
+                <strong>Fechar minimiza para a bandeja</strong>
+                <span class="settings__desc">o X esconde na bandeja; use "Sair" no ícone para encerrar.</span>
+            </span>
+        </label>
+    </div>
+</section>
+
+@code {
+    private bool _chestsOverflow = true;
+    private bool _levelUp = true;
+    private bool _newMaxStage = true;
+    private bool _runeAffordable = true;
+    private bool _minimizeToTray = true;
+
+    protected override void OnInitialized()
+    {
+        var s = Api.GetNotificationSettings();
+        _chestsOverflow = s.ChestsOverflow;
+        _levelUp = s.LevelUp;
+        _newMaxStage = s.NewMaxStage;
+        _runeAffordable = s.RuneAffordable;
+        _minimizeToTray = Api.GetMinimizeToTray();
+    }
+
+    private void SaveNotifications()
+    {
+        Api.SetNotificationSettings(new NotificationSettings
+        {
+            ChestsOverflow = _chestsOverflow,
+            LevelUp = _levelUp,
+            NewMaxStage = _newMaxStage,
+            RuneAffordable = _runeAffordable
+        });
+    }
+
+    private void SaveMinimizeToTray() => Api.SetMinimizeToTray(_minimizeToTray);
+}

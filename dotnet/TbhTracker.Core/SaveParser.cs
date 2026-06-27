@@ -305,6 +305,67 @@ public static class SaveParser
         return outList;
     }
 
+    private static List<CubeRecipeState> ParseCubeRecipes(JsonElement? player)
+    {
+        var list = Pick(player, "cubeRecipeSaveDatas", "CubeRecipeSaveDatas");
+        var outList = new List<CubeRecipeState>();
+        foreach (var entry in AsArray(list))
+        {
+            if (!IsObj(entry)) continue;
+            var cubeKey = ToNumber(Pick(entry, "CubeKey", "cubeKey", "Key", "key"));
+            if (cubeKey == null) continue;
+            var typeInt = ToNumber(Pick(entry, "CubeRecipeTypeInt", "cubeRecipeTypeInt", "Type", "type"));
+            var maxKey = ToNumber(Pick(entry, "MaxUnlockRecipeKey", "maxUnlockRecipeKey"));
+            outList.Add(new CubeRecipeState
+            {
+                CubeKey = (int)cubeKey.Value,
+                TypeInt = typeInt != null ? (int)typeInt.Value : -1,
+                MaxUnlockRecipeKey = maxKey != null ? (int)maxKey.Value : 0
+            });
+        }
+        return outList;
+    }
+
+    private static List<SoulStoneCount> ParseSoulStones(JsonElement? player)
+    {
+        var items = AsArray(Pick(player, "itemSaveDatas", "ItemSaveDatas")).ToList();
+        var locations = BuildItemLocationMap(player);
+
+        var stash = new Dictionary<string, int>();
+        var inventory = new Dictionary<string, int>();
+        foreach (var entry in items)
+        {
+            if (!IsObj(entry)) continue;
+            var keyStr = AsString(Pick(entry, "ItemKey", "itemKey", "Key", "key"));
+            if (keyStr == null || !int.TryParse(keyStr, out var key)) continue;
+            var kind = SoulStones.KindFromItemKey(key);
+            if (kind == null) continue;
+
+            var uid = AsString(Pick(entry, "UniqueId", "uniqueId", "Id", "id"));
+            var loc = uid != null && locations.TryGetValue(uid, out var l) ? l : ItemLocation.Loose;
+            if (loc == ItemLocation.Stash)
+                stash[kind] = stash.GetValueOrDefault(kind) + 1;
+            else if (loc == ItemLocation.Inventory)
+                inventory[kind] = inventory.GetValueOrDefault(kind) + 1;
+        }
+
+        return SoulStones.Types.Select(t =>
+        {
+            var inStash = stash.GetValueOrDefault(t.Kind);
+            var inInventory = inventory.GetValueOrDefault(t.Kind);
+            return new SoulStoneCount
+            {
+                Kind = t.Kind,
+                Label = t.Label,
+                Color = t.Color,
+                ItemKey = t.ItemKey,
+                Stash = inStash,
+                Inventory = inInventory,
+                Total = inStash + inInventory
+            };
+        }).ToList();
+    }
+
     private static MeltSummary? ParseMelt(JsonElement? player)
     {
         var items = AsArray(Pick(player, "itemSaveDatas", "ItemSaveDatas")).ToList();
@@ -362,6 +423,8 @@ public static class SaveParser
             Runes = ParseRunes(player),
             HeroAttributes = ParseHeroAttributes(player),
             Pets = ParsePets(player, common),
+            CubeRecipes = ParseCubeRecipes(player),
+            SoulStones = ParseSoulStones(player),
             Inventory = ParseInventory(player),
             Melt = ParseMelt(player),
             Raw = includeRaw && player.HasValue ? player.Value.Clone() : null

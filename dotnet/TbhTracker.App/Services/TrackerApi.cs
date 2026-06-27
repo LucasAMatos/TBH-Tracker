@@ -95,6 +95,12 @@ public sealed class TrackerApi
     public DashboardLayout GetDashboardLayout() => _store.GetDashboardLayout();
     public DashboardLayout SetDashboardLayout(DashboardLayout layout) => _store.SetDashboardLayout(layout);
 
+    public NotificationSettings GetNotificationSettings() => _store.GetNotificationSettings();
+    public NotificationSettings SetNotificationSettings(NotificationSettings settings) => _store.SetNotificationSettings(settings);
+
+    public bool GetMinimizeToTray() => _store.GetMinimizeToTray();
+    public bool SetMinimizeToTray(bool value) => _store.SetMinimizeToTray(value);
+
     public Task<NewsFeed> GetNewsAsync(bool force = false) => _news.FetchNewsAsync(force);
 
     public async Task OpenExternalAsync(string url)

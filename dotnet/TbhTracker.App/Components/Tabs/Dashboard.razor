@@ -74,6 +74,10 @@
             @<ThresholdEditor Thresholds="_boxThresholds" OnSave="SaveBoxThresholds" />,
             RenderBoxes(s.Boxes, s.BoxQuantity, boxLevel))
     }
+    @if (s.SoulStones.Count > 0)
+    {
+        @Widget(WidgetIds.SoulStones, null, RenderSoulStones(s.SoulStones))
+    }
     @if (s.Inventory != null && s.Inventory.GearCount > 0)
     {
         @Widget(WidgetIds.InventoryRarity, null, RenderInventoryRarity(s.Inventory))
@@ -390,6 +394,32 @@
         <p class="card__hint">
             Avisa a partir de @_boxThresholds.Warn e alerta a partir de @_boxThresholds.High baús (não há teto fixo no jogo).
         </p>
+    };
+
+    private RenderFragment RenderSoulStones(List<SoulStoneCount> stones) => __builder =>
+    {
+        var total = stones.Sum(s => s.Total);
+        <div class="soulstones">
+            <div class="boxbar">
+                @foreach (var stone in stones)
+                {
+                    <div class="boxchip @(stone.Total > 0 ? "" : "boxchip--empty")">
+                        <span class="boxchip__dot" style="background:@stone.Color"></span>
+                        <div>
+                            <div class="boxchip__qty">@Ui.FmtNum(stone.Total)</div>
+                            <div class="boxchip__meta">@stone.Label</div>
+                            <div class="boxchip__eta">
+                                @(stone.Total > 0 ? $"baú {stone.Stash} · inventário {stone.Inventory}" : "nenhuma")
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <p class="card__hint">
+                Soul Stones são o ingresso dos bosses de Ato (consumidas só ao vencer) — cada tipo abre o boss
+                da sua dificuldade. Conta o que está no baú + inventário (total: @Ui.FmtNum(total)).
+            </p>
+        </div>
     };
 
     private RenderFragment RenderInventoryRarity(InventorySummary inventory) => __builder =>

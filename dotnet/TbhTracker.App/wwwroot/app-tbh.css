@@ -615,6 +615,15 @@ body {
   margin-top: 2px;
 }
 
+/* Soul Stones (ingressos de boss de Ato) — reutiliza o layout de .boxchip */
+.boxchip--empty {
+  opacity: 0.55;
+}
+
+.boxchip--empty .boxchip__qty {
+  color: var(--text-dim);
+}
+
 /* Fluxo de ouro (G3 + ouro/h) */
 .goldflow__rates {
   display: grid;
@@ -2176,6 +2185,14 @@ body {
   border-radius: 8px;
 }
 
+.farmtable__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
 .farmtable {
   border-collapse: collapse;
   width: 100%;
@@ -3047,6 +3064,55 @@ body {
 .diag__dot--warn { background: #f5c451; }
 .diag__dot--err { background: #f87171; }
 
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--bg-elev);
+}
+
+.settings__group {
+  margin: 6px 0 0;
+  font-size: 15px;
+}
+
+.settings__group:first-child { margin-top: 0; }
+
+.settings__hint {
+  margin: 0 0 4px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.settings__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+
+.settings__row input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.settings__row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings__desc {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
 .diag__warnstitle {
   margin: 0 0 8px;
   font-size: 15px;
@@ -3152,9 +3218,94 @@ body {
     color: var(--text);
 }
 
-.rune-node.highlight {
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    transform: scale(1.1);
-    z-index: 10;
+/* R7: anel/glow nos nós que concedem o stat selecionado no combobox de Estatísticas das Runas. */
+.rune-node__hl {
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #4fd1c5);
+    animation: rune-hl-pulse 1.6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+@keyframes rune-hl-pulse {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+}
+
+/* Aba Crafting (operações de receita do Cubo) */
+.recipes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.recipe {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.recipe--locked {
+    opacity: 0.6;
+}
+
+.recipe__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.recipe__name {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.recipe__type {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 7px;
+}
+
+.recipe__status {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.recipe__status--ok {
+    color: #3fb950;
+}
+
+.recipe__desc {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.recipe__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.recipe__tag {
+    border: 1px solid rgba(63, 185, 80, 0.5);
+    color: #3fb950;
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-size: 11px;
 }

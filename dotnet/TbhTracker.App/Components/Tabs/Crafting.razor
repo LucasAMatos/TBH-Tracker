@@ -1,0 +1,81 @@
+@{
+    var s = Snapshot;
+    var cubeLevel = s?.CubeLevel;
+    var states = s?.CubeRecipes ?? new List<CubeRecipeState>();
+    var stateByKey = states.GroupBy(x => x.CubeKey).ToDictionary(g => g.Key, g => g.First());
+    var rows = CubeRecipes.All
+        .Select(meta =>
+        {
+            stateByKey.TryGetValue(meta.CubeKey, out var st);
+            var inSave = st != null;
+            var available = meta.DefaultUnlocked || (cubeLevel != null && cubeLevel >= meta.CubeLevelReq);
+            return (Meta: meta, State: st, InSave: inSave, Available: available);
+        })
+        .ToList();
+    var availableCount = rows.Count(r => r.Available);
+}
+
+<div class="crafting">
+    <section class="section">
+        <div class="section__head">
+            <h3 class="section__title">Crafting · Cubo</h3>
+            <span class="card__hint">
+                @(cubeLevel != null ? $"Cubo Nv {cubeLevel}" : "Cubo —") · @availableCount/@CubeRecipes.All.Count operações disponíveis
+            </span>
+        </div>
+
+        @if (s == null)
+        {
+            <div class="alert alert--info">
+                Sem save lido. As operações do Cubo e seu desbloqueio aparecem quando o save é lido
+                (campo <code>cubeRecipeSaveDatas</code>).
+            </div>
+        }
+        else
+        {
+            <div class="alert alert--info">
+                <strong>Síntese:</strong> combine <strong>9 itens da mesma raridade</strong> para gerar
+                <strong>1 da raridade acima</strong> (o nível do resultado vem de um seletor, não do material).
+            </div>
+
+            <div class="recipes">
+                @foreach (var r in rows)
+                {
+                    var cls = "recipe" + (r.Available ? "" : " recipe--locked");
+                    <div class="@cls">
+                        <div class="recipe__head">
+                            <span class="recipe__name">@r.Meta.Name</span>
+                            <span class="recipe__type">@r.Meta.Type</span>
+                            @if (r.Available)
+                            {
+                                <span class="recipe__status recipe__status--ok">Disponível</span>
+                            }
+                            else
+                            {
+                                <span class="recipe__status">Requer Cubo Nv @r.Meta.CubeLevelReq</span>
+                            }
+                        </div>
+                        <p class="recipe__desc">@r.Meta.Description</p>
+                        <div class="recipe__meta">
+                            <span>@(r.Meta.DefaultUnlocked ? "Desbloqueio: padrão" : $"Desbloqueio: Cubo Nv {r.Meta.CubeLevelReq}")</span>
+                            @if (r.InSave)
+                            {
+                                <span class="recipe__tag">ativa no save</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <p class="card__hint">
+                Lista as <strong>operações de receita do Cubo</strong> e o que cada uma faz, marcando as
+                <strong>disponíveis</strong> pelo nível do Cubo do save. O detalhe por receita (ingredientes →
+                resultado) não vem em nenhuma fonte pública — só a operação e o progresso de desbloqueio.
+            </p>
+        }
+    </section>
+</div>
+
+@code {
+    [Parameter] public Snapshot? Snapshot { get; set; }
+}

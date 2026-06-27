@@ -9,6 +9,20 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(new MainPage()) { Title = "TbhTracker.App" };
+		var window = new Window(new MainPage()) { Title = "TBH-Tracker" };
+
+#if WINDOWS
+		window.Created += (_, _) =>
+		{
+			if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window native)
+			{
+				var tray = IPlatformApplication.Current?.Services?
+					.GetService(typeof(Services.TrayManager)) as Services.TrayManager;
+				tray?.Attach(native);
+			}
+		};
+#endif
+
+		return window;
 	}
 }

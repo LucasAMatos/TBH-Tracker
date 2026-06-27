@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TbhTracker.App.Services;
 
 namespace TbhTracker.App;
@@ -31,6 +32,16 @@ public static class MauiProgram
 		builder.Services.AddSingleton<Tracker>();
 		builder.Services.AddSingleton<TrackerApi>();
 
-		return builder.Build();
+#if WINDOWS
+		builder.Services.AddSingleton<TrayManager>();
+		builder.Services.AddSingleton<INotifier, WindowsNotifier>();
+#else
+		builder.Services.AddSingleton<INotifier, NoOpNotifier>();
+#endif
+		builder.Services.AddSingleton<NotificationService>();
+
+		var app = builder.Build();
+		app.Services.GetService<NotificationService>()?.Start();
+		return app;
 	}
 }

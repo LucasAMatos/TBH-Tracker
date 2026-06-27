@@ -1,6 +1,6 @@
 @inject TrackerApi Api
 @{
-    var currentRaw = Snapshot?.Stage?.Raw;
+    // var currentRaw = Snapshot?.Stage?.Raw; // usado só por "Melhores estágios" (oculta por enquanto)
     var maxRaw = Snapshot?.MaxCompletedStage?.Raw;
 }
 
@@ -16,7 +16,9 @@
     @RenderLevelAdvice()
     @RenderMeasurements()
     @RenderProgress(maxRaw)
-    @RenderBestStages(currentRaw)
+    @* "Melhores estágios" ocultada por enquanto: ainda não está realmente funcional.
+       Manter o RenderBestStages/RankStages para reativar no futuro.
+    @RenderBestStages(currentRaw) *@
 </div>
 
 @if (_showClearConfirm)
@@ -65,6 +67,9 @@
     private string _sortMeasureColumn = "Stage"; // Coluna padrão de ordenação
     private bool _sortMeasureAscending = false;      // false = descendente (ideal para rankings)
 
+    private const int MeasurePageSize = 10;
+    private int _measurePage = 1; // 1-based
+
     private static readonly int[] Difficulties = { 0, 1, 2, 3, 4 };
 
     private string _metric = "gold";
@@ -79,7 +84,7 @@
         if (perHour == null) return "—";
         var v = perHour.Value < 10 ? perHour.Value.ToString("0.0", Inv) : FmtNum(perHour);
         return $"{v}/h";
-    }
+    }   
 
     private static string FmtDuration(double seconds, bool forceSeconds = false)
     {
@@ -90,6 +95,13 @@
         if (h == 0) return $"{m}min";
         if (m == 0) return $"{h}h";
         return $"{h}h {m}min";
+    }
+
+    private static string CompLabel(StageFarmEntry entry, IReadOnlyDictionary<string, string> heroNames)
+    {
+        if (entry.CompHeroKeys.Count == 0) return "Comp legada";
+        return string.Join(" + ", entry.CompHeroKeys.Select(k =>
+            heroNames.TryGetValue(k, out var name) && !string.IsNullOrEmpty(name) ? name : k));
     }
 
     private void ExportJson()
@@ -172,10 +184,24 @@
         ? entries.OrderBy(s => MeasureGetValueByColumn(s, _sortMeasureColumn))
         : entries.OrderByDescending(s => MeasureGetValueByColumn(s, _sortMeasureColumn))).ToList();
 
+        var totalPages = Math.Max(1, (int)Math.Ceiling(entriesRaw.Count / (double)MeasurePageSize));
+        if (_measurePage > totalPages) _measurePage = totalPages;
+        if (_measurePage < 1) _measurePage = 1;
+        var pageEntries = entriesRaw
+            .Skip((_measurePage - 1) * MeasurePageSize)
+            .Take(MeasurePageSize)
+            .ToList();
+
+        // XP/h medido = soma dos ganhos de XP dos herois ativos no intervalo. Como a medicao agora
+        // fica ligada a uma comp, a media por heroi usa o tamanho da comp historica da linha.
+        var heroNames = (Snapshot?.Heroes ?? new())
+            .GroupBy(h => h.Key)
+            .ToDictionary(g => g.Key, g => string.IsNullOrEmpty(g.First().Name) ? g.Key : g.First().Name);
+
         <section class="section">
             <div class="section__head">
                 <h3 class="section__title">Medições da sessão</h3>
-                <span class="card__hint">@FmtDuration(farm.TotalSeconds) de farm observado · @entries.Count estágio(s)</span>
+                <span class="card__hint">@FmtDuration(farm.TotalSeconds) de farm observado · @entries.Count combinação(ões) de estágio + comp · XP/h média por herói da comp</span>
             </div>
             <div class="farmtable__wrap">
                 <table class="farmtable">
@@ -183,23 +209,32 @@
                         <tr>
                             <th @onclick='() => HandleMeasureSort("Stage")' style="cursor:pointer">Estágio</th>
                             <th>Dificuldade</th>
+                            <th @onclick='() => HandleMeasureSort("Comp")' style="cursor:pointer">Comp</th>
                             <th class="farmtable__num">Tempo</th>
                             <th class="farmtable__num" @onclick='() => HandleMeasureSort("GoldPerHour")' style="cursor:pointer">Ouro/h</th>
-                            <th class="farmtable__num" @onclick='() => HandleMeasureSort("ExpPerHour")' style="cursor:pointer">XP/h</th>
+                            <th class="farmtable__num" @onclick='() => HandleMeasureSort("ExpPerHour")' style="cursor:pointer" title="Média de XP por hora por herói ativo (XP/h total ÷ nº de heróis ativos no save).">XP/h por herói</th>
                             <th class="farmtable__num">Clears/h</th>
                             <th class="farmtable__num">Tempo/clear</th>
                             <th class="farmtable__num">Clears (est.)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in entriesRaw)
+                        @foreach (var e in pageEntries)
                         {
                             var data = Stages.StageDataForRaw(e.StageRaw);
                             var label = data?.Label ?? e.StageRaw;
                             var name = data?.Name;
                             int diffucultyNum = data?.Difficulty ?? 0;
                             var difficulty = Stages.DifficultyName(diffucultyNum);
-                            var isCurrent = farm.CurrentStageRaw == e.StageRaw;
+                            var isCurrent = farm.CurrentStageRaw == e.StageRaw && farm.CurrentCompKey == e.CompKey;
+                            var compLabel = CompLabel(e, heroNames);
+                            var compSize = e.CompHeroKeys.Count;
+                            double? expPerHeroHour = (e.ExpPerHour != null && compSize > 0)
+                                ? e.ExpPerHour / compSize
+                                : e.ExpPerHour;
+                            var xpCellTitle = compSize > 0
+                                ? $"XP/h total {FmtRate(e.ExpPerHour)} ÷ {compSize} herói(s) da comp = {FmtRate(expPerHeroHour)} por herói. Comp: {compLabel}."
+                                : "Medição legada sem comp salva — exibindo o total (sem divisão por herói).";
                             <tr class="@(isCurrent ? "farmtable__row--current" : "")">
                                 <td>
                                     <span class="farmtable__stage">@label</span>
@@ -218,9 +253,12 @@
                                         <span class="farmtable__name">@difficulty</span>
                                     }
                                 </td>
+                                <td>
+                                    <span class="farmtable__name" title="@e.CompKey">@compLabel</span>
+                                </td>
                                 <td class="farmtable__num">@FmtDuration(e.Seconds)</td>
                                 <td class="farmtable__num farmtable__num--gold">@FmtRate(e.GoldPerHour)</td>
-                                <td class="farmtable__num farmtable__num--exp">@FmtRate(e.ExpPerHour)</td>
+                                <td class="farmtable__num farmtable__num--exp" style="cursor:help" title="@xpCellTitle">@FmtRate(expPerHeroHour)</td>
                                 <td class="farmtable__num">@FmtClearsRate(e.ClearsPerHour)</td>
                                 <td class="farmtable__num">@(e.SecondsPerClear != null ? FmtDuration(e.SecondsPerClear.Value, true) : "—")</td>
                                 <td class="farmtable__num">@(e.Clears != null ? FmtNum(e.Clears) : "—")</td>
@@ -229,9 +267,19 @@
                     </tbody>
                 </table>
             </div>
+            @if (totalPages > 1)
+            {
+                <div class="farmtable__pager">
+                    <button class="btn btn--ghost btn--sm" @onclick="() => GoToMeasurePage(_measurePage - 1)" disabled="@(_measurePage <= 1)">‹ Anterior</button>
+                    <span class="card__hint">Página @_measurePage de @totalPages</span>
+                    <button class="btn btn--ghost btn--sm" @onclick="() => GoToMeasurePage(_measurePage + 1)" disabled="@(_measurePage >= totalPages)">Próxima ›</button>
+                </div>
+            }
             <p class="card__hint">
-                Taxas medidas pelo delta entre leituras enquanto o estágio fica estável (intervalos com
-                troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>
+                As métricas consideram apenas as <strong>últimas 10 corridas (clears) medidas em cada
+                estágio</strong> — leituras mais antigas são descartadas, mantendo as taxas representativas
+                do farm recente. Taxas medidas pelo delta entre leituras enquanto o estágio fica estável
+                (intervalos com troca de mapa, gasto de ouro ou jogo parado são descartados). <strong>
                     Clears são
                     estimados
                 </strong> = kills no estágio ÷ inimigos por clear do catálogo; o <strong>
@@ -239,6 +287,10 @@
                     clear
                 </strong> é derivado dessa estimativa (o save não registra a fronteira/tempo de cada
                 corrida individual). Estágios fora do catálogo (ex.: boss de ato) não têm estimativa de clears.
+                As linhas são separadas por <strong>comp ativa</strong>; intervalos com troca de comp são
+                descartados para não misturar resultados. <strong>XP/h por herói</strong> = XP/h total da
+                medição ÷ nº de heróis da comp — uma <strong>média</strong> por personagem (o save não separa
+                a XP por herói individualmente); passe o mouse na célula para ver o total e a comp.
             </p>
         </section>
     };
@@ -373,7 +425,10 @@
             _sortMeasureColumn = column;
             _sortMeasureAscending = false;
         }
+        _measurePage = 1;
     }
+
+    private void GoToMeasurePage(int page) => _measurePage = page;
 
     private object BestStageGetValueByColumn(dynamic s, string col) => col switch
     {
@@ -389,6 +444,7 @@
     private object MeasureGetValueByColumn(dynamic s, string col) => col switch
     {
         "Stage" => (object)s.StageRaw,
+        "Comp" => (object)s.CompKey,
         "GoldPerHour" => (object)s.GoldPerHour,
         "ExpPerHour" => (object)s.ExpPerHour,
         _ => (object)s.StageRaw

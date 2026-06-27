@@ -21,6 +21,89 @@ Exemplos: `v1.0.0` → nova feature → `v1.1.0`; `v1.1.0` → correção → `v
 
 ---
 
+## v2.7.0 — Aba Crafting: operações de receita do Cubo (C4)
+
+### Adicionado
+- **Aba Crafting (C4):** nova aba (após **Inventário**) que **lista as 8 operações de receita do
+  Cubo** — **Síntese, Alquimia, Fabricação, Decoração, Extração, Gravação, Oferenda e Inscrição** —
+  com **nome, descrição e requisito de Cubo**, marcando as **disponíveis** pelo `CubeLevel` do save.
+  Inclui o destaque da regra de **síntese (9 da mesma raridade → 1 da raridade acima)**.
+
+### Detalhes técnicos
+- Fonte do save: `cubeRecipeSaveDatas` (por linha: `CubeKey` + `MaxUnlockRecipeKey`). O mapeamento
+  `CubeKey`→operação/nome/requisito foi confirmado pela tabela **Cube Recipes**
+  (`taskbarhero.wiki/database/cube_recipes`): `100001` Synthesis · `200001` Alchemy · `300001`
+  Decoration · `400001` Engraving · `500001` Inscription · `600001` Crafting · `700001` Offering ·
+  `900001` Extraction. Catalogado em `TbhTracker.Core/Logic/CubeRecipes.cs`.
+- **Limite (verificado jun/2026):** o **detalhe por receita** (ingredientes → resultado) **não vem
+  em nenhuma fonte pública** (gamedata do `tbh-farm` só tem `synthesis` e `itemCubeExp`; a wiki não
+  tem página navegável de Cubo). Por isso a v1 lista a **operação + progresso de desbloqueio**, não
+  cada receita individual.
+- Novos: modelo `CubeRecipeState` + `Snapshot.CubeRecipes`, `SaveParser.ParseCubeRecipes`, a aba
+  `Components/Tabs/Crafting.razor` e o registro do tab em `Shell.razor` (+ estilos `.recipes`/`.recipe`).
+
+---
+
+## v2.6.0 — Contador de Soul Stones no Dashboard (D9)
+
+### Adicionado
+- **Contador de Soul Stones (D9):** novo widget no **Dashboard** mostrando **quantas Soul Stones**
+  o jogador tem de **cada tipo** — **Normal**, **Nightmare**, **Hell** e **Torment** — contando o
+  que está no **baú (stash)** e no **inventário**. Cada chip exibe o **total** e o desdobramento
+  `baú X · inventário Y`; tipos sem estoque aparecem como "nenhuma". O widget é colapsável e pode
+  ser escondido pela aba **Personalizar** (ligado por padrão, logo abaixo de **Baús por tipo**).
+
+### Detalhes técnicos
+- Chaves de item das Soul Stones confirmadas pelos drops dos bosses de Ato (estágios X-10) na
+  `pedia/map.json`: `190001` Normal · `190002` Nightmare · `190003` Hell · `190004` Torment.
+  Catalogadas em `TbhTracker.Core/Logic/SoulStones.cs`.
+- Cada Soul Stone é uma **instância** em `itemSaveDatas` (sem campo de quantidade) — a contagem é o
+  nº de instâncias por `ItemKey`, com a localização (baú/inventário) resolvida pelo mapa de slots já
+  usado no parser (`SaveParser.BuildItemLocationMap`). Itens em outras localizações (ex.: trade ship)
+  não entram na contagem do widget.
+- Novos: modelo `SoulStoneCount` + `Snapshot.SoulStones`, `WidgetIds.SoulStones`,
+  `SaveParser.ParseSoulStones`, render `RenderSoulStones` em `Dashboard.razor` (reaproveita o layout
+  `.boxchip`) e a entrada em `dashboardWidgets.json`.
+
+---
+
+## v2.5.0 — Destaque do stat selecionado na árvore de Runas (R7)
+
+### Adicionado
+- **Destaque na árvore de Runas do stat selecionado (R7):** ao escolher um stat no combobox
+  **"Estatísticas das Runas"** (aba **Runas**), os nós que concedem aquele stat passam a exibir um
+  **anel/glow pulsante** (ciano) no mapa, facilitando localizar visualmente **onde investir**. O
+  modal de detalhes do stat continua abrindo normalmente; selecionar **"Selecione um stat..."**
+  limpa o destaque.
+
+### Detalhes técnicos
+- `RuneTree.razor` guarda o stat realçado em `_highlightStat` (definido no `OnStatSelected`,
+  **independente do modal** — fechar o popup mantém o destaque) e desenha um `<circle>` com a classe
+  `rune-node__hl` nos nós cujo `Stat` casa.
+- CSS `.rune-node__hl` em `app-tbh.css`: `drop-shadow` + animação `rune-hl-pulse` (substitui a antiga
+  regra `.rune-node.highlight`, que não funcionava em SVG e estava sem uso).
+
+---
+
+## v2.4.0 — System tray + notificações nativas (A3)
+
+### Adicionado
+- **System tray + notificações nativas (A3):** o app roda minimizado na **bandeja do Windows**
+  e dispara **toasts nativos** fora da janela nos quatro eventos já detectados — **baús
+  transbordando (B2)**, **level-up (H2)**, **novo estágio máximo (S3)** e **runa-alvo já
+  comprável (R3)**. Toasts via **Windows App SDK** (`AppNotificationManager`/
+  `AppNotificationBuilder`, com registro de **AppUserModelID** por o app ser unpackaged) e
+  ícone na bandeja via Win32 `Shell_NotifyIcon` (menu **Abrir**/**Sair**, duplo-clique
+  restaura), sem dependência externa.
+- **Detecção de eventos (`NotificationDetector`, lógica pura no `Core`):** H2/S3 já vêm como
+  eventos no snapshot (notifica só os `At` novos); **B2 e R3 não são eventos** — usam
+  **detecção de transição** entre leituras (cruzou o limiar de baús / virou comprável). O
+  `NotificationService` assina `Tracker.OnState`, deduplica por `CapturedAt` e respeita os
+  toggles.
+- **Aba Configurações:** toggles **por tipo** de notificação e a opção **"fechar = minimizar
+  para a bandeja"**, persistidos no `ConfigStore`. A janela também passa a **aplicar/salvar o
+  `WindowState`** (tamanho/posição/maximizado), que já era persistido mas não era aplicado.
+
 ## v2.3.0 — Itens fáceis: maximizar runas (R4) + XP por nível (H14) + arquivamento do backlog (I14)
 
 ### Adicionado

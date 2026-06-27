@@ -22,6 +22,16 @@ fãs/comunidade — **valores e chaves podem mudar com patches**.
 | `shigake/tbh-copilot` | https://github.com/shigake/tbh-copilot | Cripto do save (chave ES3 hardcoded validada); referência de parsing. |
 | `Rupelio/TBH-Optimizer` | https://github.com/Rupelio/TBH-Optimizer | Otimização de farm; referência de modelagem. |
 
+## Referência de features/UX (abordagem distinta — **não-passiva**)
+
+> Repositório consultado **só por ideias de feature/UX**, **não** pela forma de aquisição de dados:
+> sua abordagem (leitura de memória do processo) está **fora do escopo** do TBH-Tracker (ver
+> "Fora de escopo" no `BACKLOG.md`). Validar features contra ele é o item **I15**.
+
+| Repo | Link | Usado para |
+|------|------|-----------|
+| `mad-labs-org/tbh-meter` | https://github.com/mad-labs-org/tbh-meter | **Referência de features/UX** (overlay always-on-top): **meter ao vivo de DPS/Ouro/EXP**, **rastreador de corridas** (resultado success/fail/abandoned, ouro/XP e por segundo) com **histórico de runs** e **agrupamento por sessão**, e **snapshot de heróis por corrida** (classe/nível/itens/mods/skills/stats). Site: tbherohelper.com/meter. ⚠️ **Fora do nosso escopo na implementação:** lê **memória do processo** do jogo (`ReadProcessMemory`, reader Python/IL2CPP) — o TBH-Tracker é **passivo via save**. Consultar **apenas** para inspiração de feature/UX; só portar o que for **derivável do save** (deltas de snapshot, à la F2/F3/X1). Métricas dependentes de memória (DPS/dano ao vivo) e a **fronteira exata de corrida** (D1) **não** são portáveis. |
+
 ## Oficial & guias
 
 | Fonte | Link | Usado para |

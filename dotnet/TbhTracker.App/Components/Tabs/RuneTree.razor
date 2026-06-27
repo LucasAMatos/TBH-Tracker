@@ -55,10 +55,15 @@
                     var maxed = owned && lv >= n.MaxLevel;
                     var isSel = n.Key == _selected;
                     var isTarget = n.Key == Target;
+                    var isStatHit = _highlightStat != null && n.Stat == _highlightStat;
                     var color = Runes.RuneColor(n);
                     var icon = AssetUrls.RuneIcon(n.Icon);
                     var key = n.Key;
                     <g transform="translate(@N(n.X),@N(n.Y))" class="rune-node" @onclick="() => _selected = key">
+                        @if (isStatHit)
+                        {
+                            <circle class="rune-node__hl" r="@(NodeR + 7)" fill="none" stroke="#4fd1c5" stroke-width="3" />
+                        }
                         @if (isTarget)
                         {
                             <circle r="@(NodeR + 10)" fill="none" stroke="#ffb020" stroke-width="3" stroke-dasharray="6 5">
@@ -172,6 +177,7 @@
     private ElementReference _svg;
     private IJSObjectReference? _module;
     private int? _selected;
+    private string? _highlightStat;
 
     private double _vx, _vy, _vw, _vh;
     private double _fullW, _fullH;
@@ -300,7 +306,19 @@
         return ((long)n).ToString(pt);
     }
 
-    private async Task ToggleTarget(int key, bool isTarget) => await OnSetTarget.InvokeAsync(isTarget ? null : key);
+    private async Task ToggleTarget(int key, bool isTarget)
+    {
+        if (isTarget)
+        {
+            await OnSetTarget.InvokeAsync(null); // remover o alvo é sempre permitido
+            return;
+        }
+        // BUG-1: não permitir definir como alvo uma runa já no nível máximo (sem ouro a faltar).
+        var node = Catalog.Runes.Nodes.FirstOrDefault(n => n.Key == key);
+        var level = Levels.Where(l => l.Key == key).Select(l => l.Level).FirstOrDefault();
+        if (node != null && level >= node.MaxLevel) return;
+        await OnSetTarget.InvokeAsync(key);
+    }
 
     private RenderFragment RenderDetail(RuneNode? node, int level) => __builder =>
     {
@@ -315,6 +333,7 @@
         var icon = AssetUrls.RuneIcon(node.Icon);
         var isTarget = node.Key == Target;
         var nodeKey = node.Key;
+        var maxed = level >= node.MaxLevel;
         <div class="rune-detail">
             <div class="rune-detail__head">
                 @if (icon != null)
@@ -341,12 +360,20 @@
                     </span>
                 </div>
             </div>
-            <button class="btn btn--sm @(isTarget ? "btn--ghost" : "btn--primary")" @onclick="() => ToggleTarget(nodeKey, isTarget)">
-                @(isTarget ? "Remover alvo" : "Definir como alvo")
-            </button>
-            @if (isTarget)
+            @if (maxed && !isTarget)
             {
-                <p class="card__hint">Esta é a runa-alvo — veja quanto ouro falta no card do Dashboard.</p>
+                <button class="btn btn--sm" disabled title="Runa já no nível máximo — não há ouro a faltar.">Já no nível máximo</button>
+                <p class="card__hint">Esta runa já está no nível máximo (@level/@node.MaxLevel) — não há ouro a faltar, então ela não pode ser definida como alvo.</p>
+            }
+            else
+            {
+                <button class="btn btn--sm @(isTarget ? "btn--ghost" : "btn--primary")" @onclick="() => ToggleTarget(nodeKey, isTarget)">
+                    @(isTarget ? "Remover alvo" : "Definir como alvo")
+                </button>
+                @if (isTarget)
+                {
+                    <p class="card__hint">Esta é a runa-alvo — veja quanto ouro falta no card do Dashboard.</p>
+                }
             }
         </div>
     };
@@ -366,6 +393,8 @@
     private void OnStatSelected(ChangeEventArgs e)
     {
         var stat = e.Value?.ToString();
+        // "Selecione um stat..." (valor vazio) limpa tanto o modal quanto o destaque no mapa.
+        _highlightStat = string.IsNullOrEmpty(stat) ? null : stat;
         selectedStatInfo = statsCount.FirstOrDefault(s => s.Stat == stat);
     }
     private void ClosePopup()

@@ -14,17 +14,22 @@ public class ExportTests
         PlayTimeSeconds = 3600,
         Stage = new StageInfo { Raw = "1101" },
         MaxCompletedStage = new StageInfo { Raw = "1109" },
+        ArrangedHeroKeys = new List<string> { "101", "102", "103" },
         Heroes = new List<HeroSnapshot>(),
         Inventory = new InventorySummary { TotalItems = 0 },
         StageFarm = new StageFarm
         {
             CurrentStageRaw = "1101",
+            CurrentCompKey = "101|102|103",
+            CurrentCompHeroKeys = new List<string> { "101", "102", "103" },
             TotalSeconds = 60,
             Entries = new List<StageFarmEntry>
             {
                 new()
                 {
                     StageRaw = "1101",
+                    CompKey = "101|102|103",
+                    CompHeroKeys = new List<string> { "101", "102", "103" },
                     GoldGained = 600,
                     ExpGained = 120,
                     KillsGained = 20,
@@ -55,7 +60,9 @@ public class ExportTests
         var root = doc.RootElement;
         Assert.Equal(12345, root.GetProperty("gold").GetInt32());
         Assert.Equal(999, root.GetProperty("totalKills").GetInt32());
+        Assert.Equal(3, root.GetProperty("arrangedHeroKeys").GetArrayLength());
         Assert.Equal(1, root.GetProperty("stageFarm").GetProperty("entries").GetArrayLength());
+        Assert.Equal("101|102|103", root.GetProperty("stageFarm").GetProperty("entries")[0].GetProperty("compKey").GetString());
         Assert.Equal(JsonValueKind.String, root.GetProperty("exportedAt").ValueKind);
     }
 
@@ -64,10 +71,12 @@ public class ExportTests
     {
         var lines = Export.BuildFarmCsv(FakeSnapshot()).Split('\n');
         Assert.Contains("estagio", lines[0]);
+        Assert.Contains("comp", lines[0]);
         Assert.Contains("clears_por_hora", lines[0]);
         Assert.Equal(2, lines.Length);
         Assert.Contains("1-1", lines[1]);
         Assert.Contains("1101", lines[1]);
+        Assert.Contains("101|102|103", lines[1]);
     }
 
     [Fact]

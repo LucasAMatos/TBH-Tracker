@@ -136,7 +136,8 @@ public sealed class Tracker : IDisposable
                     snapshot.Stage?.Raw,
                     snapshot.Gold,
                     totalExp,
-                    snapshot.TotalKills);
+                    snapshot.TotalKills,
+                    snapshot.ArrangedHeroKeys);
                 if (stageFarm != null) snapshot.StageFarm = stageFarm;
 
                 _history.SaveHistory(savePath, "goldFlow", _goldFlow.Serialize());

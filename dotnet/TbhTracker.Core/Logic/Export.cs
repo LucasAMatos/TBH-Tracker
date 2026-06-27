@@ -21,6 +21,7 @@ public static class Export
             playTimeSeconds = snapshot.PlayTimeSeconds,
             stage = snapshot.Stage,
             maxCompletedStage = snapshot.MaxCompletedStage,
+            arrangedHeroKeys = snapshot.ArrangedHeroKeys,
             heroes = snapshot.Heroes,
             goldFlow = snapshot.GoldFlow,
             stageFarm = snapshot.StageFarm,
@@ -50,7 +51,7 @@ public static class Export
     {
         var header = new[]
         {
-            "estagio", "estagio_raw", "segundos", "ouro_ganho", "xp_ganho", "kills",
+            "estagio", "estagio_raw", "comp", "comp_hero_keys", "segundos", "ouro_ganho", "xp_ganho", "kills",
             "ouro_por_hora", "xp_por_hora", "clears_estimados", "clears_por_hora", "segundos_por_clear"
         };
         var lines = new List<string> { CsvRow(header) };
@@ -61,6 +62,8 @@ public static class Export
             {
                 label,
                 e.StageRaw,
+                string.IsNullOrEmpty(e.CompKey) ? "unknown" : e.CompKey,
+                e.CompHeroKeys.Count == 0 ? "" : string.Join("|", e.CompHeroKeys),
                 IntStr(e.Seconds),
                 IntStr(e.GoldGained),
                 IntStr(e.ExpGained),
