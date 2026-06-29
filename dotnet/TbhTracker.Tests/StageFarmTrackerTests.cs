@@ -35,10 +35,11 @@ public class StageFarmTrackerTests
     {
         var tracker = new StageFarmTracker();
         tracker.Record(T0, "1101", 0, 0, 0);
-        var farm = tracker.Record(T0 + Step, "1101", 0, 0, 20);
+        var farm = tracker.Record(T0 + 54_000, "1101", 0, 0, 20);
         var e = farm!.Entries.First(x => x.StageRaw == "1101");
         Assert.Equal(2, e.Clears);
         Assert.Equal(15d, e.SecondsPerClear!.Value, 3);
+        Assert.Equal(240d, e.ClearsPerHour!.Value, 3);
     }
 
     [Fact]
@@ -107,6 +108,24 @@ public class StageFarmTrackerTests
     }
 
     [Fact]
+    public void IgnoresBossStagesEndingInTen()
+    {
+        var tracker = new StageFarmTracker();
+        tracker.Record(T0, "3210", 100, 50, 0, CompA);
+        Assert.Null(tracker.Record(T0 + Step, "3210", 999, 999, 999, CompA));
+    }
+
+    [Fact]
+    public void DoesNotBridgeMeasurementsAcrossBossStage()
+    {
+        var tracker = new StageFarmTracker();
+        tracker.Record(T0, "1101", 100, 50, 0, CompA);
+        tracker.Record(T0 + Step, "3210", 999, 999, 999, CompA);
+
+        Assert.Null(tracker.Record(T0 + 2 * Step, "1101", 1200, 1200, 1200, CompA));
+    }
+
+    [Fact]
     public void KeepsOnlyLastTenClearsPerStage()
     {
         // "1101": 10 inimigos por clear (ver EstimatesClearsFromKills). Janela = 10 clears = 100 kills.
@@ -172,6 +191,30 @@ public class StageFarmTrackerTests
         var e = farm!.Entries.First(x => x.StageRaw == "1101");
         Assert.Equal(600, e.GoldGained);   // 500 legado + 100 do novo delta
         Assert.Equal(33, e.KillsGained);   // 30 legado + 3 do novo delta
+    }
+
+    [Fact]
+    public void DropsPersistedBossBucketsOnRestore()
+    {
+        var legacy = new StageFarmState
+        {
+            Stages = new()
+            {
+                ["3210"] = new StageBucket
+                {
+                    GoldGained = 500,
+                    ExpGained = 200,
+                    KillsGained = 30,
+                    Seconds = 90,
+                    Reads = 3,
+                    LastAt = T0
+                }
+            }
+        };
+
+        var tracker = new StageFarmTracker();
+        tracker.Restore(legacy);
+        Assert.Null(tracker.Record(T0 + Step, "1101", 600, 230, 33, CompA));
     }
 
     [Fact]
