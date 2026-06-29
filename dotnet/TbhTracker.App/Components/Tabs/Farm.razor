@@ -100,7 +100,13 @@
     private static string CompLabel(StageFarmEntry entry, IReadOnlyDictionary<string, string> heroNames)
     {
         if (entry.CompHeroKeys.Count == 0) return "Comp legada";
-        return string.Join(" + ", entry.CompHeroKeys.Select(k =>
+        return CompLabel(entry.CompHeroKeys, heroNames);
+    }
+
+    private static string CompLabel(IReadOnlyList<string> heroKeys, IReadOnlyDictionary<string, string> heroNames)
+    {
+        if (heroKeys.Count == 0) return "Comp não identificada";
+        return string.Join(" + ", heroKeys.Select(k =>
             heroNames.TryGetValue(k, out var name) && !string.IsNullOrEmpty(name) ? name : k));
     }
 
@@ -165,7 +171,79 @@
     private RenderFragment RenderMeasurements() => __builder =>
     {
         var farm = Snapshot?.StageFarm;
-        if (farm == null || farm.Entries.Count == 0)
+        var entries = farm?.Entries.ToList() ?? new List<StageFarmEntry>();
+
+        var entriesRaw = (_sortMeasureAscending
+            ? entries.OrderBy(s => MeasureGetValueByColumn(s, _sortMeasureColumn))
+            : entries.OrderByDescending(s => MeasureGetValueByColumn(s, _sortMeasureColumn))).ToList();
+
+        // XP/h medido = soma dos ganhos de XP dos herois ativos no intervalo. Como a medicao agora
+        // fica ligada a uma comp, a media por heroi usa o tamanho da comp historica da linha.
+        var heroNames = (Snapshot?.Heroes ?? new())
+            .GroupBy(h => h.Key)
+            .ToDictionary(g => g.Key, g => string.IsNullOrEmpty(g.First().Name) ? g.Key : g.First().Name);
+
+        var currentRaw = Snapshot?.Stage?.Raw ?? farm?.CurrentStageRaw;
+        var currentStage = Snapshot?.Stage ?? Stages.DecodeStage(currentRaw);
+        var currentData = Stages.StageDataForRaw(currentRaw);
+        var currentLabel = currentData?.Label ?? currentStage?.Label ?? currentRaw ?? "—";
+        var currentName = currentData?.Name;
+        var currentDifficulty = currentStage?.DifficultyName ?? Stages.DifficultyName(currentData?.Difficulty ?? 0);
+        var currentCompKeys = farm?.CurrentCompHeroKeys.Count > 0
+            ? farm.CurrentCompHeroKeys
+            : (Snapshot?.ArrangedHeroKeys ?? new List<string>());
+        var currentCompLabel = CompLabel(currentCompKeys, heroNames);
+        var currentEntry = farm == null
+            ? null
+            : entriesRaw.FirstOrDefault(e => e.StageRaw == farm.CurrentStageRaw && e.CompKey == farm.CurrentCompKey);
+        int? currentPosition = currentEntry == null ? null : entriesRaw.FindIndex(e => ReferenceEquals(e, currentEntry)) + 1;
+        var currentIsIgnored = currentStage?.IsBoss == true;
+
+        <section class="section">
+            <div class="section__head">
+                <h3 class="section__title">Estágio atual</h3>
+                <span class="card__hint">
+                    @(currentPosition != null ? $"posição #{currentPosition} na lista de medições ({entriesRaw.Count} total)" : "ainda sem posição nas medições")
+                </span>
+            </div>
+            <div class="alert @(currentIsIgnored ? "alert--warn" : "alert--info")">
+                <strong>@currentLabel</strong>
+                @if (!string.IsNullOrEmpty(currentName))
+                {
+                    <text> · @currentName</text>
+                }
+                @if (!string.IsNullOrEmpty(currentDifficulty))
+                {
+                    <text> · @currentDifficulty</text>
+                }
+                <br />
+                <span>Comp: @currentCompLabel</span>
+                @if (currentIsIgnored)
+                {
+                    <br />
+                    <span>Fase de boss ignorada nas medições de farm; fases terminadas em 10 não entram no histórico.</span>
+                }
+                else if (currentEntry != null)
+                {
+                    var compSize = currentEntry.CompHeroKeys.Count;
+                    double? expPerHeroHour = (currentEntry.ExpPerHour != null && compSize > 0)
+                        ? currentEntry.ExpPerHour / compSize
+                        : currentEntry.ExpPerHour;
+                    <br />
+                    <span>
+                        Tempo @FmtDuration(currentEntry.Seconds) · Ouro @FmtRate(currentEntry.GoldPerHour) · XP/herói @FmtRate(expPerHeroHour) ·
+                        Clears @FmtClearsRate(currentEntry.ClearsPerHour) · Tempo/clear @(currentEntry.SecondsPerClear != null ? FmtDuration(currentEntry.SecondsPerClear.Value, true) : "—")
+                    </span>
+                }
+                else
+                {
+                    <br />
+                    <span>Sem medição para o estágio + comp atual ainda; aguarde dois saves no mesmo estágio e na mesma comp.</span>
+                }
+            </div>
+        </section>
+
+        if (entries.Count == 0)
         {
             <section class="section">
                 <div class="section__head"><h3 class="section__title">Medições da sessão</h3></div>
@@ -178,12 +256,9 @@
             return;
         }
 
-        var entries = farm.Entries.ToList();
-
-        var entriesRaw = (_sortMeasureAscending
-        ? entries.OrderBy(s => MeasureGetValueByColumn(s, _sortMeasureColumn))
-        : entries.OrderByDescending(s => MeasureGetValueByColumn(s, _sortMeasureColumn))).ToList();
-
+        var totalFarmSeconds = farm?.TotalSeconds ?? entries.Sum(e => e.Seconds);
+        var farmCurrentStageRaw = farm?.CurrentStageRaw;
+        var farmCurrentCompKey = farm?.CurrentCompKey;
         var totalPages = Math.Max(1, (int)Math.Ceiling(entriesRaw.Count / (double)MeasurePageSize));
         if (_measurePage > totalPages) _measurePage = totalPages;
         if (_measurePage < 1) _measurePage = 1;
@@ -192,16 +267,10 @@
             .Take(MeasurePageSize)
             .ToList();
 
-        // XP/h medido = soma dos ganhos de XP dos herois ativos no intervalo. Como a medicao agora
-        // fica ligada a uma comp, a media por heroi usa o tamanho da comp historica da linha.
-        var heroNames = (Snapshot?.Heroes ?? new())
-            .GroupBy(h => h.Key)
-            .ToDictionary(g => g.Key, g => string.IsNullOrEmpty(g.First().Name) ? g.Key : g.First().Name);
-
         <section class="section">
             <div class="section__head">
                 <h3 class="section__title">Medições da sessão</h3>
-                <span class="card__hint">@FmtDuration(farm.TotalSeconds) de farm observado · @entries.Count combinação(ões) de estágio + comp · XP/h média por herói da comp</span>
+                <span class="card__hint">@FmtDuration(totalFarmSeconds) de farm observado · @entries.Count combinação(ões) de estágio + comp · XP/h média por herói da comp</span>
             </div>
             <div class="farmtable__wrap">
                 <table class="farmtable">
@@ -226,7 +295,7 @@
                             var name = data?.Name;
                             int diffucultyNum = data?.Difficulty ?? 0;
                             var difficulty = Stages.DifficultyName(diffucultyNum);
-                            var isCurrent = farm.CurrentStageRaw == e.StageRaw && farm.CurrentCompKey == e.CompKey;
+                            var isCurrent = farmCurrentStageRaw == e.StageRaw && farmCurrentCompKey == e.CompKey;
                             var compLabel = CompLabel(e, heroNames);
                             var compSize = e.CompHeroKeys.Count;
                             double? expPerHeroHour = (e.ExpPerHour != null && compSize > 0)

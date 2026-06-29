@@ -53,6 +53,7 @@ public sealed class StageFarmTracker
     private const int MaxGapSeconds = 180;
     private const int MinSecondsForRate = 20;
     private const string UnknownCompKey = "unknown";
+    private const int ClearOverheadSeconds = 12;
 
     // Janela: por estagio, considerar apenas as ultimas N clears medidas (o resto e descartado).
     private const int MaxClearsWindow = 10;
@@ -101,6 +102,9 @@ public sealed class StageFarmTracker
         {
             var b = kv.Value;
             var identity = ResolveBucketIdentity(kv.Key, b);
+            if (IsIgnoredStage(identity.StageRaw))
+                continue;
+
             b.StageRaw = identity.StageRaw;
             b.CompKey = identity.CompKey;
             b.CompHeroKeys = identity.CompHeroKeys;
@@ -153,6 +157,18 @@ public sealed class StageFarmTracker
         IReadOnlyList<string>? arrangedHeroKeys = null)
     {
         var comp = BuildCompSignature(arrangedHeroKeys);
+        if (IsIgnoredStage(stageRaw))
+        {
+            _lastAt = at;
+            _lastStageRaw = stageRaw;
+            _lastCompKey = comp.Key;
+            _lastCompHeroKeys = comp.HeroKeys;
+            if (gold != null) _lastGold = gold;
+            if (totalExp != null) _lastExp = totalExp;
+            if (totalKills != null) _lastKills = totalKills;
+            return Current(stageRaw, comp.Key, comp.HeroKeys);
+        }
+
         var canAttribute = _lastAt != null && _lastStageRaw != null
             && _lastCompKey != null
             && stageRaw != null && stageRaw == _lastStageRaw
@@ -216,6 +232,8 @@ public sealed class StageFarmTracker
 
     private static string BucketKey(string stageRaw, string compKey) => $"{stageRaw}::{compKey}";
 
+    private static bool IsIgnoredStage(string? stageRaw) => Stages.DecodeStage(stageRaw)?.IsBoss == true;
+
     private static (string StageRaw, string CompKey, List<string> CompHeroKeys) ResolveBucketIdentity(string key, StageBucket bucket)
     {
         var stageRaw = bucket.StageRaw;
@@ -271,6 +289,8 @@ public sealed class StageFarmTracker
             {
                 var identity = ResolveBucketIdentity(kv.Key, kv.Value);
                 var stageRaw = identity.StageRaw;
+                if (IsIgnoredStage(stageRaw)) return null;
+
                 var samples = kv.Value.Samples;
                 var gold = samples.Sum(s => s.Gold);
                 var exp = samples.Sum(s => s.Exp);
@@ -280,6 +300,9 @@ public sealed class StageFarmTracker
                 var perClear = Stages.StageDataForRaw(stageRaw)?.Count;
                 double? clears = perClear is > 0 ? kills / perClear.Value : null;
                 var hasClears = clears != null && clears > 0;
+                var adjustedSecondsPerClear = hasClears
+                    ? Math.Max(0, (seconds / clears!.Value) - ClearOverheadSeconds)
+                    : (double?)null;
                 return new StageFarmEntry
                 {
                     StageRaw = stageRaw,
@@ -293,13 +316,16 @@ public sealed class StageFarmTracker
                     GoldPerHour = rateOk ? (gold / seconds) * 3600 : null,
                     ExpPerHour = rateOk ? (exp / seconds) * 3600 : null,
                     Clears = clears,
-                    ClearsPerHour = rateOk && clears != null ? (clears.Value / seconds) * 3600 : null,
-                    SecondsPerClear = hasClears ? seconds / clears!.Value : null,
+                    ClearsPerHour = rateOk && adjustedSecondsPerClear is > 0 ? 3600 / adjustedSecondsPerClear.Value : null,
+                    SecondsPerClear = adjustedSecondsPerClear,
                     GoldPerClear = hasClears ? gold / clears!.Value : null,
                     ExpPerClear = hasClears ? exp / clears!.Value : null,
                     LastAt = samples[^1].At
                 };
-            }).ToList();
+            })
+            .Where(e => e != null)
+            .Select(e => e!)
+            .ToList();
 
         if (entries.Count == 0) return null;
         entries.Sort((a, b) => b.Seconds.CompareTo(a.Seconds));
